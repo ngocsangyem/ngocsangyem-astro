@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Not found" description="That page does not exist.">
+  <div class="prose-column" data-enter-children>
+    <h1>404</h1>
+    <p>That page does not exist. Try the <a href="/posts">posts index</a>.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-family: var(--font-mono);
+    font-size: 3rem;
+    margin-block: 2rem 0.5rem;
+  }
+
+  p {
+    color: var(--color-ink-light);
+  }
+</style>

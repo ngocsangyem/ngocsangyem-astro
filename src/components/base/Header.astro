@@ -1,0 +1,41 @@
+---
+import { SITE } from '../../config/site';
+import NavLink from './NavLink.astro';
+import SangMark from '../identity/SangMark.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import SearchModal from '../search/SearchModal.astro';
+---
+
+<header class="site-header page" data-pagefind-ignore>
+  <a class="mark-link" href="/" aria-label={`${SITE.author}, home`}>
+    <SangMark />
+  </a>
+
+  <nav aria-label="Main">
+    {SITE.nav.map((link) => <NavLink href={link.href} label={link.label} />)}
+    <SearchModal />
+    <ThemeToggle />
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    align-items: center;
+    background: none;
+    display: flex;
+    justify-content: space-between;
+    min-height: var(--header-height);
+  }
+
+  .mark-link {
+    color: var(--color-ink-deep);
+    display: block;
+    text-decoration: none;
+  }
+
+  nav {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+  }
+</style>

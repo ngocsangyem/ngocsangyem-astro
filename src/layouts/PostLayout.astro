@@ -1,0 +1,67 @@
+---
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import PostMeta from '../components/posts/PostMeta.astro';
+import TagList from '../components/posts/TagList.astro';
+import Toc from '../components/posts/Toc.astro';
+import { getDescription, type Post } from '../lib/posts';
+
+import '../styles/prose.css';
+
+interface Props {
+  post: Post;
+  headings: MarkdownHeading[];
+  minutesRead?: number;
+}
+
+const { post, headings, minutesRead } = Astro.props;
+---
+
+<BaseLayout title={post.data.title} description={getDescription(post)} wide>
+  {/* Prose blocks stagger themselves, so the wrapper stays still: nesting
+      two reveals multiplies their opacity mid-animation. */}
+  <article class="article">
+    <header data-enter>
+      <h1>{post.data.title}</h1>
+      <PostMeta date={post.data.date} minutesRead={minutesRead} />
+      <TagList post={post} />
+    </header>
+
+    <Toc headings={headings} />
+
+    <div class="prose">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .article {
+    margin-inline: auto;
+    max-width: var(--prose-max-width);
+  }
+
+  header {
+    margin-block: 1rem 3rem;
+  }
+
+  h1 {
+    font-size: 1.875rem;
+    letter-spacing: -0.015em;
+  }
+
+  /* The margin column exists only once there is room for it beside the prose. */
+  @media (min-width: 80rem) {
+    .article {
+      display: grid;
+      max-width: none;
+      grid-template-columns: 1fr min(var(--prose-max-width), 100%) 1fr;
+    }
+
+    /* Only the pieces this layout owns; the TOC places itself in track 3. */
+    .article > header,
+    .article > .prose {
+      grid-column: 2;
+    }
+  }
+</style>

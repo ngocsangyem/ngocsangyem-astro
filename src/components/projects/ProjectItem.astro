@@ -1,0 +1,61 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { name, description, url, icon } = project.data;
+const Tag = url ? 'a' : 'div';
+---
+
+<Tag class="item" href={url} rel={url ? 'noopener' : undefined}>
+  {icon && <img class="icon" src={`/icons/${icon}`} alt="" width="28" height="28" />}
+  <span class="text">
+    <span class="name">{name}</span>
+    <span class="description">{description}</span>
+  </span>
+</Tag>
+
+<style>
+  .item {
+    align-items: flex-start;
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    text-decoration: none;
+  }
+
+  .icon {
+    filter: grayscale(1);
+    flex: none;
+    transition: filter var(--dur-fast) var(--ease-out);
+  }
+
+  .item:hover .icon {
+    filter: grayscale(0);
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .name {
+    color: var(--color-ink);
+    font-weight: 500;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .item:hover .name {
+    color: var(--color-ink-deep);
+  }
+
+  .description {
+    color: var(--color-ink-light);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+</style>

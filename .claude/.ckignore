@@ -1,0 +1,4 @@
+# Build output and installed package types are inspected during verification.
+!dist
+!build
+!node_modules

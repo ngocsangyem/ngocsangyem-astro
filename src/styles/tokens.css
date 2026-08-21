@@ -1,0 +1,36 @@
+/* Canonical values from design-main.md. Font families are the one indirection:
+   the Fonts API owns --font-inter and friends, including size-adjusted
+   fallback faces, so redefining the families here would fight its cascade. */
+:root {
+  --color-paper: #ffffff;
+  --color-ink: #555555;
+  --color-ink-deep: #222222;
+  --color-ink-max: #000000;
+  --color-ink-light: #767676;
+  --color-chip: #88888822;
+  --color-accent: var(--color-ink-deep);
+  --color-focus: var(--color-ink-deep);
+}
+
+[data-theme='dark'] {
+  --color-paper: #050505;
+  --color-ink: #bbbbbb;
+  --color-ink-deep: #dddddd;
+  --color-ink-max: #ffffff;
+  --color-ink-light: #888888;
+}
+
+:root {
+  --font-display: var(--font-inter), system-ui, sans-serif;
+  --font-body: var(--font-display);
+  --font-mono: var(--font-dm-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-chip: var(--font-roboto-condensed), var(--font-body);
+
+  --prose-max-width: 65ch;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+
+  --radius-chip: 4px;
+}

@@ -1,0 +1,145 @@
+/* Layout constants the token block does not define live here. Chrome shares the
+   prose column's width so the nav, the content and the social row all sit on one
+   left edge. */
+:root {
+  --page-max-width: var(--prose-max-width);
+  --page-gutter: 1.5rem;
+  --header-height: 4rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd,
+ul,
+ol {
+  margin: 0;
+}
+
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+html {
+  color-scheme: light;
+  background-color: var(--color-paper);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-ink-deep);
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-ink-light);
+  text-underline-offset: 0.2em;
+  transition: opacity var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+a:hover {
+  color: var(--color-ink-deep);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Hairline, never a heavy bar. */
+hr {
+  border: 0;
+  border-top: 1px solid var(--color-ink-light);
+  opacity: 0.25;
+  margin: 3rem 0;
+}
+
+code,
+kbd,
+time {
+  font-family: var(--font-mono);
+}
+
+.page {
+  /* `ch` resolves against the element's own font-size, so every page container
+     holds the root size and sets type on its children instead. Without this the
+     nav and the social row each compute a different measure and their left edges
+     drift apart. */
+  font-size: 1rem;
+  margin-inline: auto;
+  /* Gutters sit outside the measure: border-box would otherwise eat them out of
+     the column, leaving chrome and prose on different left edges. */
+  max-width: calc(var(--page-max-width) + 2 * var(--page-gutter));
+  padding-inline: var(--page-gutter);
+}
+
+.prose-column {
+  margin-inline: auto;
+  max-width: var(--prose-max-width);
+}
+
+/* Article pages need room beside the column for the margin TOC. The prose stays
+   at 65ch and stays centred, so every left edge still lines up. */
+@media (min-width: 80rem) {
+  .page-wide {
+    max-width: calc(76rem + 2 * var(--page-gutter));
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

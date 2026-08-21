@@ -1,0 +1,105 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const entries = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+---
+
+{
+  entries.length > 1 && (
+    <>
+      {/* Wide viewports: the right margin, clear of the prose column. */}
+      <nav class="toc-margin" aria-label="On this page" data-pagefind-ignore>
+        <ol role="list">
+          {entries.map((heading) => (
+            <li class:list={[`depth-${heading.depth}`]}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      {/* Narrow viewports: inline, under the header. */}
+      <details class="toc-inline" data-pagefind-ignore>
+        <summary>On this page</summary>
+        <ol role="list">
+          {entries.map((heading) => (
+            <li class:list={[`depth-${heading.depth}`]}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </details>
+    </>
+  )
+}
+
+<style>
+  ol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .depth-3 {
+    padding-left: 0.9rem;
+  }
+
+  a {
+    color: var(--color-ink-light);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-ink-deep);
+  }
+
+  .toc-margin {
+    display: none;
+  }
+
+  .toc-inline {
+    border-left: 1px solid var(--color-ink-light);
+    margin-block: 2rem;
+    padding-left: 1rem;
+  }
+
+  .toc-inline summary {
+    color: var(--color-ink-light);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Wide enough for the prose column plus a margin column beside it. The
+     article grid in PostLayout owns the placement; sticky beats fixed here
+     because it scrolls away at the end of the article on its own. */
+  @media (min-width: 80rem) {
+    .toc-inline {
+      display: none;
+    }
+
+    .toc-margin {
+      align-self: start;
+      display: block;
+      grid-column: 3;
+      grid-row: 2;
+      max-height: 70vh;
+      min-width: 0;
+      overflow-y: auto;
+      padding-left: 2.5rem;
+      position: sticky;
+      top: 6rem;
+    }
+  }
+</style>

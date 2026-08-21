@@ -1,0 +1,9 @@
+[
+  {
+    "id": "ngocsangyem-dev",
+    "name": "ngocsangyem.dev",
+    "description": "This site. Astro MPA with no client framework runtime, vanilla CSS and TypeScript.",
+    "url": "https://github.com/ngocsangyem/ngocsangyem-astro",
+    "category": "Web"
+  }
+]

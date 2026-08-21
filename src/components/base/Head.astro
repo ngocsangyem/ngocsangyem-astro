@@ -1,0 +1,72 @@
+---
+import { Font } from 'astro:assets';
+import { SITE } from '../../config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = SITE.description } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+// One URL shape per page: the sitemap and the feed both omit the trailing
+// slash, and `trailingSlash: 'never'` was pinned so they could agree.
+const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, '');
+// Absolute: relative OG image URLs are ignored by most crawlers.
+const ogImage = new URL('/og-default.png', Astro.site).href;
+---
+
+{/* Blocking and first: paint must never happen on the wrong paper. */}
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var stored = null;
+    var drawn = null;
+    try {
+      stored = localStorage.getItem('theme');
+      drawn = sessionStorage.getItem('mark-drawn');
+    } catch (error) {
+      // Storage blocked (private mode, cookie policy). OS preference stands in.
+    }
+    var theme =
+      stored === 'light' || stored === 'dark'
+        ? stored
+        : window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+    root.dataset.theme = theme;
+    root.dataset.pfTheme = theme;
+    // Set before first paint, so only the first page of a visit animates the
+    // mark and later navigations render it already drawn.
+    if (drawn) root.dataset.markDrawn = 'true';
+    try {
+      sessionStorage.setItem('mark-drawn', '1');
+    } catch (error) {
+      // Storage blocked: the mark draws on each load, which is acceptable.
+    }
+  })();
+</script>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{pageTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="generator" content={Astro.generator} />
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:site_name" content={SITE.title} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content={ogImage} />
+
+{/* Preload only the faces that paint above the fold; the rest load on use. */}
+<Font cssVariable="--font-inter" preload={[{ weight: '400' }, { weight: '600' }]} />
+<Font cssVariable="--font-dm-mono" preload={[{ weight: '400' }]} />
+<Font cssVariable="--font-roboto-condensed" />

@@ -1,0 +1,52 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ProjectItem from './ProjectItem.astro';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+
+const { projects } = Astro.props;
+
+const byCategory = new Map<string, CollectionEntry<'projects'>[]>();
+for (const project of projects) {
+  const bucket = byCategory.get(project.data.category);
+  if (bucket) bucket.push(project);
+  else byCategory.set(project.data.category, [project]);
+}
+const categories = [...byCategory.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<div class="categories">
+  {categories.map(([category, items]) => (
+    <section>
+      <h2 class="category">{category}</h2>
+      <div class="grid">
+        {items.map((project) => <ProjectItem project={project} />)}
+      </div>
+    </section>
+  ))}
+</div>
+
+<style>
+  .categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .category {
+    color: var(--color-ink-light);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .grid {
+    display: grid;
+    gap: 0.5rem 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+</style>

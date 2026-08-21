@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config/site';
+---
+
+<BaseLayout title="About" description="About this site and how it is built.">
+  <div class="prose-column prose" data-enter-children>
+    <h1>About</h1>
+
+    {SITE.bio ? <p>{SITE.bio}</p> : null}
+
+    <p>
+      Notes on building things for the web, written by {SITE.author}. Mostly the
+      kind of thing worth writing down once so it does not have to be worked out
+      twice.
+    </p>
+
+    <p>
+      The site is a static Astro build with no client-side framework. Fonts are
+      self-hosted, code blocks are highlighted at build time, and there is no
+      analytics and no comment system. The
+      <a href={SITE.repository} rel="noopener">source is on GitHub</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 1.75rem;
+    margin-block: 1rem 2rem;
+  }
+
+  .prose p {
+    color: var(--color-ink);
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+  }
+</style>

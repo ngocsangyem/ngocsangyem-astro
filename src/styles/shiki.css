@@ -1,0 +1,18 @@
+/* Read off the build output of a real fence, not from docs:
+   Astro 7.2.4 emits class="astro-code astro-code-themes vitesse-light vitesse-dark"
+   with inline --shiki-light / --shiki-dark (+ -bg on the <pre>). The prefix is
+   --shiki-*, not --astro-code-*.
+
+   defaultColor: false leaves no baked colour, so light needs its own rule set
+   here, not just a dark override. !important beats the inline style attribute. */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+html[data-theme='dark'] .astro-code,
+html[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}

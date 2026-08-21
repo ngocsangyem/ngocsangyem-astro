@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectGrid from '../components/projects/ProjectGrid.astro';
+
+const projects = await getCollection('projects');
+---
+
+<BaseLayout title="Projects" description="Things I have built.">
+  <div class="prose-column" data-enter-children>
+    <h1>Projects</h1>
+    <ProjectGrid projects={projects} />
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 1.75rem;
+    margin-block: 1rem 3rem;
+  }
+</style>

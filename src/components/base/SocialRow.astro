@@ -1,0 +1,33 @@
+---
+import { SITE } from '../../config/site';
+---
+
+<section class="socials page" aria-label="Contact" data-pagefind-ignore>
+  <p>
+    Find me on{' '}
+    {SITE.socials.map((social, index) => (
+      <>
+        {index > 0 && <span aria-hidden="true"> · </span>}
+        <a href={social.href} rel="me noopener">{social.label}</a>
+      </>
+    ))}
+  </p>
+  {SITE.email && <p class="email">{SITE.email}</p>}
+</section>
+
+<style>
+  .socials {
+    color: var(--color-ink-light);
+    margin-block: 4rem 3rem;
+  }
+
+  .socials p {
+    font-size: 0.9375rem;
+  }
+
+  .socials .email {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+</style>

@@ -1,0 +1,25 @@
+---
+import { formatDate, toISODate } from '../../lib/dates';
+
+interface Props {
+  date: Date;
+  minutesRead?: number;
+}
+
+const { date, minutesRead } = Astro.props;
+---
+
+<p class="meta">
+  <time datetime={toISODate(date)}>{formatDate(date)}</time>
+  {minutesRead !== undefined && <span aria-hidden="true"> · </span>}
+  {minutesRead !== undefined && <span>{minutesRead} min read</span>}
+</p>
+
+<style>
+  .meta {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    margin-top: 0.6rem;
+  }
+</style>

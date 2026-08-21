@@ -1,0 +1,47 @@
+---
+import { slugifyTag, tagUrl, type Post } from '../../lib/posts';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+// Authored order, not the frequency sort a whole-site tag list wants.
+const tags = post.data.tags
+  .map((raw) => ({ slug: slugifyTag(raw), label: raw.trim() }))
+  .filter((tag) => tag.slug);
+---
+
+{
+  tags.length > 0 && (
+    <ul class="tags" role="list">
+      {tags.map((tag) => (
+        <li>
+          <a href={tagUrl(tag.slug)}>#{tag.label}</a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+  }
+
+  a {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-ink-deep);
+  }
+</style>

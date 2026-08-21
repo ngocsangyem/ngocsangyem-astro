@@ -1,0 +1,39 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostRows from '../../components/posts/PostRows.astro';
+import { getAllTags, getPostsByTag, getPublishedPosts } from '../../lib/posts';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublishedPosts();
+  return getAllTags(posts).map((tag) => ({
+    params: { tag: tag.slug },
+    props: { label: tag.label, posts: getPostsByTag(posts, tag.slug) },
+  }));
+}) satisfies GetStaticPaths;
+
+const { label, posts } = Astro.props;
+const count = posts.length;
+---
+
+<BaseLayout title={`#${label}`} description={`Posts tagged ${label}.`}>
+  <div class="prose-column" data-enter-children>
+    <h1>#{label}</h1>
+    <p class="count">{count} {count === 1 ? 'post' : 'posts'}</p>
+    <PostRows posts={posts} />
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 1.75rem;
+    margin-top: 1rem;
+  }
+
+  .count {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    margin-block: 0.5rem 2.5rem;
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+import Head from '../components/base/Head.astro';
+import Header from '../components/base/Header.astro';
+import SocialRow from '../components/base/SocialRow.astro';
+import Bamboo from '../components/identity/Bamboo.astro';
+import { SITE } from '../config/site';
+
+import '../styles/tokens.css';
+import '../styles/global.css';
+import '../styles/shiki.css';
+import '../styles/animations.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Widens the main container so an article can use the margin beside it. */
+  wide?: boolean;
+}
+
+const { title, description, wide = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <Head title={title} description={description} />
+  </head>
+  <body>
+    <Bamboo />
+    <Header />
+    <main class:list={['page', { 'page-wide': wide }]} data-pagefind-body>
+      <slot />
+    </main>
+    <SocialRow />
+  </body>
+</html>
