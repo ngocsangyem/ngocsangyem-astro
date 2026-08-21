@@ -65,7 +65,113 @@
   font-size: 0.8125rem;
   line-height: 1.6;
   overflow-x: auto;
-  padding: 1rem;
+  /* Line annotations paint edge to edge, so the horizontal inset lives on the
+     line rather than the block. */
+  padding: 1rem 0;
+}
+
+.prose pre code {
+  /* Grid, not block: each line becomes a row, which both stretches the line to
+     full width for annotations and swallows the newline text nodes between
+     lines. Blockifying the lines instead double-spaces the whole listing. */
+  display: grid;
+}
+
+.prose pre .line {
+  padding-inline: 1rem;
+}
+
+/* A titled block reads as one unit with its caption. */
+.code-figure {
+  margin: 0;
+}
+
+.code-figure .code-title {
+  background-color: var(--color-chip);
+  border-radius: var(--radius-chip) var(--radius-chip) 0 0;
+  color: var(--color-ink-light);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.45rem 1rem;
+}
+
+.code-figure pre {
+  border-radius: 0 0 var(--radius-chip) var(--radius-chip);
+  margin-top: 0;
+}
+
+/* Annotations. Backgrounds are token tints so they hold on either paper, and
+   the marker column carries the meaning for anyone who cannot see the tint. */
+.prose pre .line.highlighted {
+  background-color: var(--color-chip);
+  box-shadow: inset 2px 0 0 var(--color-ink-light);
+}
+
+.prose pre .line.diff {
+  box-shadow: inset 2px 0 0 currentColor;
+}
+
+.prose pre .line.diff.add {
+  background-color: color-mix(in srgb, var(--color-tip) 12%, transparent);
+  color: var(--color-tip);
+}
+
+.prose pre .line.diff.remove {
+  background-color: color-mix(in srgb, var(--color-caution) 12%, transparent);
+  color: var(--color-caution);
+  opacity: 0.75;
+}
+
+.prose pre .line.diff::before {
+  content: attr(data-diff-marker);
+  display: inline-block;
+  margin-left: -0.75rem;
+  width: 0.75rem;
+}
+
+.prose pre .line.diff.add::before {
+  content: '+';
+}
+
+.prose pre .line.diff.remove::before {
+  content: '-';
+}
+
+/* Error levels borrow the admonition hues, so a warning reads the same
+   everywhere on the site. */
+.prose pre .line.error {
+  background-color: color-mix(in srgb, var(--color-caution) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-caution);
+}
+
+.prose pre .line.warning {
+  background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-warning);
+}
+
+/* Focus dims everything else. Hovering the block restores it, so the rest of
+   the snippet is still readable when you want it. */
+.prose pre.has-focused .line:not(.focused) {
+  filter: blur(0.06rem);
+  opacity: 0.5;
+  transition: filter var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+}
+
+.prose pre.has-focused:hover .line:not(.focused) {
+  filter: none;
+  opacity: 1;
+}
+
+.prose pre .highlighted-word {
+  background-color: var(--color-chip);
+  border-radius: 2px;
+  padding: 0.1em 0.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prose pre.has-focused .line:not(.focused) {
+    transition-duration: var(--dur-fast);
+  }
 }
 
 .prose img {

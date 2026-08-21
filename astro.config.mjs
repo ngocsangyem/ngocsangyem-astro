@@ -2,10 +2,20 @@ import { defineConfig, fontProviders } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { satteri } from '@astrojs/markdown-satteri';
-import { transformerMetaHighlight, transformerNotationHighlight } from '@shikijs/transformers';
+import {
+  transformerMetaHighlight,
+  transformerMetaWordHighlight,
+  transformerNotationDiff,
+  transformerNotationErrorLevel,
+  transformerNotationFocus,
+  transformerNotationHighlight,
+  transformerNotationWordHighlight,
+} from '@shikijs/transformers';
+import { shikiCodeTitle } from './src/lib/shiki-code-title';
 import { mdastReadingTime } from './src/lib/mdast-reading-time';
 import { hastLinkChips } from './src/lib/hast-link-chips';
 import { hastAdmonitions } from './src/lib/hast-admonitions';
+import { hastCodeTitles } from './src/lib/hast-code-titles';
 import { hastTaskLists } from './src/lib/hast-task-lists';
 import { hastTables } from './src/lib/hast-tables';
 
@@ -18,13 +28,24 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       mdastPlugins: [mdastReadingTime],
-      hastPlugins: [hastAdmonitions, hastTaskLists, hastTables, hastLinkChips],
+      hastPlugins: [hastAdmonitions, hastCodeTitles, hastTaskLists, hastTables, hastLinkChips],
     }),
     shikiConfig: {
       themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
       // Emits both palettes as CSS vars so [data-theme] can switch them.
       defaultColor: false,
-      transformers: [transformerMetaHighlight(), transformerNotationHighlight()],
+      // All build-time: annotations become classes in the emitted HTML, so the
+      // page ships no script for any of this.
+      transformers: [
+        shikiCodeTitle(),
+        transformerMetaHighlight(),
+        transformerMetaWordHighlight(),
+        transformerNotationHighlight(),
+        transformerNotationWordHighlight(),
+        transformerNotationDiff(),
+        transformerNotationFocus(),
+        transformerNotationErrorLevel(),
+      ],
     },
   },
   fonts: [

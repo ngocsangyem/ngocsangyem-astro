@@ -96,6 +96,80 @@ $ pagefind --site dist
 Indexed 11 pages
 ```
 
+### Annotated code
+
+A fence can carry a filename, which becomes a caption above the block:
+
+```ts title="src/lib/theme.ts"
+export type Theme = 'light' | 'dark';
+
+export function currentTheme(): Theme {
+  return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+}
+```
+
+Line ranges after the language highlight specific lines. This one marks 2 and
+4 through 5 with `{2,4-5}`:
+
+```ts title="src/scripts/theme.ts" {2,4-5}
+function apply(theme: Theme): void {
+  document.documentElement.dataset.theme = theme;
+  try {
+    localStorage.setItem('theme', theme);
+    document.documentElement.dataset.pfTheme = theme;
+  } catch {
+    // Session-only when storage is blocked.
+  }
+}
+```
+
+Comment markers annotate without touching the fence line, so the same source
+works whether or not the renderer understands them. `// [!code ++]` and
+`// [!code --]` render a diff:
+
+```ts title="src/lib/posts.ts"
+export function getDescription(post: Post): string {
+  const declared = post.data.description; // [!code --]
+  const declared = post.data.description?.trim(); // [!code ++]
+  if (declared) return declared;
+  return firstParagraph(post.body ?? '') || SITE.description;
+}
+```
+
+`// [!code error]` and `// [!code warning]` mark a line by severity, using the
+same hues as the admonitions above:
+
+```ts
+const stored = localStorage.getItem('theme'); // [!code error]
+const theme = stored ?? 'light'; // [!code warning]
+const safe = readThemeGuarded();
+```
+
+`// [!code focus]` dims everything except the lines that matter. Hover the block
+to bring the rest back:
+
+```ts
+function findRoot(start: Node, getParent: (n: Node) => Node | undefined): Node {
+  let root = start;
+  let ancestor = getParent(root); // [!code focus]
+  while (ancestor !== undefined) { // [!code focus]
+    root = ancestor; // [!code focus]
+    ancestor = getParent(root); // [!code focus]
+  }
+  return root;
+}
+```
+
+Individual words can be marked with `// [!code word:pathLength]`, or by naming
+them in the fence meta as `/pathLength/`. The comment form is the safer of the
+two: a `title` containing slashes confuses the meta form, since it reads `/` as
+the delimiter around a word.
+
+```html title="src/components/identity/SangMark.astro"
+<!-- [!code word:pathLength] -->
+<path class="draw-path" pathLength="1" d="M20 12C17 8 10 9 9 14" />
+```
+
 ## Link chips
 
 An external link becomes a chip when a favicon for its hostname is committed to

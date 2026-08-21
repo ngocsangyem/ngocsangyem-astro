@@ -4,15 +4,25 @@
    --shiki-*, not --astro-code-*.
 
    defaultColor: false leaves no baked colour, so light needs its own rule set
-   here, not just a dark override. !important beats the inline style attribute. */
+   here, not just a dark override. !important beats the inline style attribute.
+
+   The block background belongs to the <pre> alone. Setting it on every span
+   would paint over line annotations, since a highlighted or diffed line is
+   itself a span. */
+.astro-code {
+  background-color: var(--shiki-light-bg);
+}
+
 .astro-code,
 .astro-code span {
   color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
+}
+
+html[data-theme='dark'] .astro-code {
+  background-color: var(--shiki-dark-bg) !important;
 }
 
 html[data-theme='dark'] .astro-code,
 html[data-theme='dark'] .astro-code span {
   color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg) !important;
 }

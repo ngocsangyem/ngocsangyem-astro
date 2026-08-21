@@ -47,6 +47,13 @@ Only `title` and `date` are required. Notes on the rest:
   exists. Add that file to opt a domain in; without it the link stays a plain
   underlined link, which is the intended fallback. A `www.` host also matches the
   bare domain's icon.
+- Code fences take a `title="path/to/file.ts"` for a caption, a line range such
+  as `{2,4-5}` to highlight lines, and comment markers for the rest:
+  `// [!code ++]` and `// [!code --]` for a diff, `// [!code error]` or
+  `// [!code warning]` for severity, `// [!code focus]` to dim everything else,
+  and `// [!code word:term]` to mark a word. Prefer the comment form for words:
+  the `/term/` meta form reads slashes as delimiters, so a `title` containing a
+  path breaks it. All of it resolves at build time and ships no JavaScript.
 - Admonitions use GitHub alert syntax, so they render in the repository too:
   `> [!NOTE]` on its own line, then the body as further quote lines. The five
   types are NOTE, TIP, IMPORTANT, WARNING and CAUTION. A marker with no body, or
