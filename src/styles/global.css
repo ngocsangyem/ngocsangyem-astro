@@ -46,9 +46,12 @@ video {
   height: auto;
 }
 
+/* Paper lives on `html`, never on `body`. The ambient grove sits at z-index -1
+   inside the body, and a background on the body itself would paint over it. */
 html {
   color-scheme: light;
   background-color: var(--color-paper);
+  transition: background-color var(--dur-fast) var(--ease-out);
 }
 
 /* Anchor jumps ease instead of teleporting. Browser-native, so it costs no
@@ -65,13 +68,11 @@ html {
 }
 
 body {
-  background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.6;
   min-height: 100vh;
-  transition: background-color var(--dur-fast) var(--ease-out);
 }
 
 h1,

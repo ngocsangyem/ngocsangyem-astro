@@ -46,8 +46,29 @@
   --prose-max-width: 65ch;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 150ms;
   --dur-base: 240ms;
 
   --radius-chip: 4px;
+
+  /* Luỹ tre ambient layer. Opacity is the whole safety margin here: the grove
+     sits behind the page, so anything strong enough to notice while reading is
+     too strong. Ink only — the grove takes no hue. */
+  --grove-opacity: 0.075;
+  --grove-opacity-back: 0.045;
+  /* The margin each grove occupies. Wider than this and it reaches the column. */
+  --grove-width: 17rem;
+  /* Band kept clear of art, centred on the page. Sized off the measure so the
+     grove tracks the column rather than a hardcoded breakpoint. */
+  --grove-clear: calc(var(--prose-max-width) + 9rem);
+  /* How far the grove takes to fade out as it approaches the clear band. */
+  --grove-falloff: 7rem;
+}
+
+[data-theme='dark'] {
+  /* Near-black paper swallows a light stroke, so the grove is lifted to hold
+     the same apparent presence it has on white. */
+  --grove-opacity: 0.11;
+  --grove-opacity-back: 0.07;
 }

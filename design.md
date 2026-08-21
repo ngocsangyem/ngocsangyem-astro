@@ -72,15 +72,55 @@ no framework runtime on content pages.
   --prose-max-width: 65ch;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* grove sway only */
   --dur-fast: 150ms;  --dur-base: 240ms;
 
   --radius-chip: 4px;
+
+  /* Luỹ tre ambient layer (added 2026-08-22). Opacity is the whole safety
+     margin: the grove sits behind the page, so anything strong enough to
+     notice while reading is too strong. Ink only — the grove takes no hue. */
+  --grove-opacity:      0.075;
+  --grove-opacity-back: 0.045;
+  --grove-width:  17rem;                              /* margin each grove fills */
+  --grove-clear:  calc(var(--prose-max-width) + 9rem); /* band kept clear of art */
+  --grove-falloff: 7rem;                              /* mask fade into the band */
+}
+[data-theme="dark"] {
+  /* Near-black paper swallows a light stroke, so the grove is lifted to hold
+     the same apparent presence it has on white. */
+  --grove-opacity:      0.11;
+  --grove-opacity-back: 0.07;
 }
 ```
 
 ## Identity (own work — fills the slots antfu's excluded artwork left)
 - **Personal mark** · hand-drawn "Sang" as an SVG path, stroke-animated on load (`stroke-dasharray`/`stroke-dashoffset` draw-in, `--ease-out`, ~1.2s, once per visit). v1 path is designed by Hallmark; swap for the author's real handwriting later — the slot + animation spec are the contract, the path is replaceable.
-- **Ambient margin ornament** · **generative bamboo branch** — Hallmark-designed, greyscale ink at low opacity, drifting in the page margins *outside* the 65ch column. Supplies asymmetry without breaking the centred layout. Decorative only: `aria-hidden`, no pointer events, hidden when the viewport can't fit it beside the column.
+- **Ambient layer · luỹ tre** (expanded 2026-08-22 from a static single-margin
+  sprig at ≥100rem). A Vietnamese bamboo hedge: the dense picket planted at a
+  village edge. Two groves, one per page margin, generated at build time from a
+  seeded PRNG in `src/lib/grove.ts` and emitted as inline SVG — no client
+  script, no measurement, no layout shift. Decorative in the strict sense:
+  `aria-hidden`, inert to the pointer, and masked out of the reading column.
+  - **What carries the read**, in order, and none of it is optional. *Verticality
+    in numbers* — culms stand plumb and bow only across the top third (the
+    deflection exponent is 3.4; at 2.4 the same curve reads as windswept grass,
+    which is how the first pass failed). *Node rings* — ~10 per culm, internodes
+    lengthening upward. *The arch*. *Small drooping lanceolate leaves* in fans of
+    2–4 off the topmost nodes; oversized or rounded leaves read as plum, not
+    bamboo. *Three depth planes* — stroke and opacity step back into haze.
+  - **Motion** · `grove-rise`, a base-to-tip stroke draw, back plane first,
+    every culm settled by ~8s; then `grove-sway` and a leaf `fan-lag`, bounded
+    as the motion stance requires. Each culm's sway starts as its own draw ends,
+    which both prevents a bend-before-it-exists pop and desynchronises the grove
+    without a random negative delay.
+  - **Column protection** · a horizontal `mask-image`, not a clip: the grove
+    thins into the margin like haze. The clear band is derived from
+    `--prose-max-width`, so it tracks the measure instead of guessing at
+    breakpoints. Below 64rem the layer is `display: none`.
+  - **Excluded on article pages.** There the margin is the TOC's, and a reading
+    surface should hold still. The grove belongs to pages a reader passes
+    through: home, `/posts`, `/projects`, `/about`, `/tags/*`, 404.
 - Both stay neutral (ink greys) — identity comes from line quality, not colour.
 
 ## Signature moves (from antfu DNA — these travel)
@@ -109,14 +149,30 @@ no framework runtime on content pages.
 ## Motion stance
 - No motion library, no ClientRouter — real MPA navigation.
 - One reveal primitive: `slide-enter` — fade-up (translateY(10px)→0 + opacity), staggered 90ms per child block, applied to prose children on page enter (pure CSS animation).
-- Mark draw-in (see ## Identity) is the only other entrance animation.
+- Two entrance animations besides it: the mark draw-in and the grove rise (both under ## Identity).
+- **One ambient animation, and only one** (amended 2026-08-22 at the author's
+  request, replacing "mark draw-in is the only other entrance animation"): the
+  grove sway. It is the sole perpetual motion anywhere on the site and it is
+  bounded so it reads as presence rather than movement — amplitude under 1°,
+  period 13–22s, opacity ≤0.11, and strictly outside the reading column. Those
+  four bounds are the licence; a perpetual animation that breaks any of them is
+  not sanctioned by this clause. Nothing else on the site may loop.
 - Everything else: opacity/colour transitions at `--dur-fast`. Animate `transform` + `opacity` only — never `transition: all`.
-- `prefers-reduced-motion` · slide-enter and mark draw-in collapse to a ≤150ms opacity crossfade.
+- `prefers-reduced-motion` · slide-enter and mark draw-in collapse to a ≤150ms opacity crossfade; the grove stops entirely — no rise, no sway, simply already present.
 
 ## Notes (do NOT carry over from sources)
 - antfu's signature artwork (the "af" logo, plum-branch art, Bad Script annotations) is excluded — our slots are filled by ## Identity instead. Never imitate the plum branch; the bamboo must read as its own work.
+  - What *was* taken from that source, deliberately and at technique level only
+    (2026-08-22): an ambient art layer spanning the full page rather than a
+    margin sprig; a slow draw measured in seconds, not milliseconds; and a
+    stagger driven by a per-element custom property. The geometry, the motion
+    values, and the plant are ours. A branch armature is the wrong silhouette
+    for this site regardless — a luỹ tre is a picket, not a bough.
 - Cactus DNA contributes ONLY the Pagefind-modal search pattern; its mono-everywhere type, chromatic accent hue-swap, and masthead-stack nav do not apply.
 - Never ship sample/lorem copy — the home greeting is real first-person text.
+- **Paper belongs on `html`, never on `body`.** The grove sits at `z-index: -1`
+  inside the body, and a background on the body itself paints over it. This is a
+  load-bearing constraint, not a style preference.
 
 ## Exports
 `tokens.css` (in this project) becomes the source of truth once a build exists.

@@ -16,9 +16,15 @@ interface Props {
   description?: string;
   /** Widens the main container so an article can use the margin beside it. */
   wide?: boolean;
+  /**
+   * The ambient bamboo grove. On by default: it is the page's atmosphere, not a
+   * per-page decision. Articles switch it off, because there the margin belongs
+   * to the TOC and a reader is staying a while.
+   */
+  grove?: boolean;
 }
 
-const { title, description, wide = false } = Astro.props;
+const { title, description, wide = false, grove = true } = Astro.props;
 ---
 
 <!doctype html>
@@ -27,7 +33,7 @@ const { title, description, wide = false } = Astro.props;
     <Head title={title} description={description} />
   </head>
   <body>
-    <Bamboo />
+    {grove && <Bamboo />}
     <Header />
     <main class:list={['page', { 'page-wide': wide }]} data-pagefind-body>
       <slot />
