@@ -1,0 +1,187 @@
+---
+title: "Markdown fundamentals"
+date: 2026-08-22
+tags: ["markdown", "reference"]
+description: "Every Markdown feature this blog renders, in one page: admonitions, syntax highlighting, link chips, tables, footnotes and the rest."
+---
+
+Everything below is rendered by this site's own pipeline, so this page doubles as
+a reference and as a test. If something here looks wrong, the bug is real.
+
+## Text
+
+Ordinary paragraphs carry *emphasis*, **strong emphasis**, ***both at once***,
+~~strikethrough~~, `inline code`, and [an internal link](/posts).
+
+Line breaks inside a paragraph are collapsed, so a sentence
+split across source lines
+reads as one line.
+
+## Admonitions
+
+Written as GitHub alerts, so a post reads correctly in the repository too. Five
+types exist, and they stay greyscale on purpose: this site delegates colour to
+content, and a coloured callout would put an accent into the page furniture.
+
+> [!NOTE]
+> Useful information a reader can skip without losing the thread.
+
+> [!TIP]
+> A shortcut worth knowing. `pathLength="1"` removes the step where you measure
+> an SVG path by hand.
+
+> [!IMPORTANT]
+> Something a reader must not miss. Admonitions can hold their own formatting,
+> including `code`, [links](/about) and lists:
+>
+> - first
+> - second
+
+> [!WARNING]
+> A trap with consequences. Touching `localStorage` throws in a browser set to
+> block all cookies, rather than returning null.
+
+> [!CAUTION]
+> The strongest form. Reserve it for something that loses data or breaks a build.
+
+A marker with no body stays an ordinary blockquote rather than rendering an empty
+label, and an unknown type such as `[!HINT]` is left alone too. Markers inside
+inline code or a fenced block are never touched, which is why this page can talk
+about the syntax without triggering it.
+
+## Code
+
+Fenced blocks are highlighted at build time with Shiki, using `vitesse-light`
+and `vitesse-dark` switched by the theme toggle rather than by your operating
+system's setting.
+
+```ts
+type Theme = 'light' | 'dark';
+
+function apply(theme: Theme): void {
+  const root = document.documentElement;
+  root.dataset.theme = theme;
+  try {
+    localStorage.setItem('theme', theme);
+  } catch {
+    // Preference is session-only when storage is blocked.
+  }
+}
+```
+
+The language label matters. Here is the same idea in three others:
+
+```css
+.admonition {
+  border-left: 2px solid var(--color-ink-light);
+  padding-left: 1rem;
+}
+```
+
+```bash
+npm run build && npm run preview
+```
+
+```json
+{
+  "name": "ngocsangyem-blog",
+  "type": "module"
+}
+```
+
+A block with no language set stays monospaced and unhighlighted:
+
+```
+$ pagefind --site dist
+Indexed 11 pages
+```
+
+## Link chips
+
+An external link becomes a chip when a favicon for its hostname is committed to
+the repository. The [Astro documentation](https://docs.astro.build/en/guides/syntax-highlighting/)
+and [Playwright](https://playwright.dev) both have one, so they render as chips
+with the brand mark supplying the only colour on the page.
+
+A link to a host with no committed icon, such as
+[MDN](https://developer.mozilla.org/en-US/docs/Web/API/DOMException), stays a
+plain underlined link. That is deliberate: a chip with an empty icon slot reads
+as a broken image, and fetching favicons at runtime would break this site's
+no-external-requests rule.
+
+## Headings
+
+Headings at depth two and three build the table of contents. On a wide screen it
+collapses to a menu icon in the right margin and expands while you read.
+
+### A third-level heading
+
+Depth three is indented in the contents list.
+
+#### A fourth-level heading
+
+Depth four still renders, but stays out of the contents.
+
+## Lists
+
+Unordered lists nest:
+
+- a first item
+- a second item
+  - a nested item
+  - another nested item
+- a third item
+
+Ordered lists count:
+
+1. first
+2. second
+3. third
+
+Task lists render checkboxes, disabled since a static page has nothing to submit:
+
+- [x] Ship the content layer
+- [x] Ship the article experience
+- [ ] Write more posts
+
+## Tables
+
+| Feature | Syntax | Notes |
+| --- | --- | --- |
+| Admonition | `> [!NOTE]` | Five types |
+| Code | Fenced block | Shiki, dual theme |
+| Chip | Any external link | Needs a committed favicon |
+
+A wide table scrolls inside its own container rather than pushing the page
+sideways, and that container is focusable so the scroll works from the keyboard.
+
+## Quotes and rules
+
+A blockquote without a marker stays an ordinary quote:
+
+> The best way to learn something is to try to explain it.
+
+Horizontal rules are hairlines, never heavy bars:
+
+---
+
+## Footnotes
+
+Footnotes collect at the end of the article[^why] and link both ways[^back].
+
+[^why]: This is a footnote. The number links down here, and the arrow returns you
+    to where you were reading.
+
+[^back]: A second one, to show they stack in order.
+
+## Images
+
+Images sit inside the prose column and never exceed it:
+
+![The site's own social card, plain type on paper](/og-default.png)
+
+## MDX
+
+This file is `.mdx`, so it can also hold components and expressions. The value
+below is computed at build time: {2 ** 10}. Plain `.md` posts render everything
+above identically, minus this section.

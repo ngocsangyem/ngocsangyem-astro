@@ -1,6 +1,7 @@
 ---
 import Head from '../components/base/Head.astro';
 import Header from '../components/base/Header.astro';
+import CdUpLink from '../components/base/CdUpLink.astro';
 import SocialRow from '../components/base/SocialRow.astro';
 import Bamboo from '../components/identity/Bamboo.astro';
 import { SITE } from '../config/site';
@@ -31,6 +32,7 @@ const { title, description, wide = false } = Astro.props;
     <main class:list={['page', { 'page-wide': wide }]} data-pagefind-body>
       <slot />
     </main>
+    <CdUpLink />
     <SocialRow />
   </body>
 </html>

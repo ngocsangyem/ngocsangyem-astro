@@ -6,14 +6,30 @@ interface Props {
 }
 
 const { headings } = Astro.props;
-const entries = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+const entries = headings.filter(
+  (heading) =>
+    heading.depth >= 2 &&
+    heading.depth <= 3 &&
+    // The footnotes section generates its own heading and a visible one, which
+    // would list "Footnotes" twice.
+    heading.slug !== 'footnote-label',
+);
 ---
 
 {
   entries.length > 1 && (
     <>
-      {/* Wide viewports: the right margin, clear of the prose column. */}
+      {/*
+        Wide viewports: collapsed to an icon in the right margin. The list is
+        revealed by CSS alone, either from the icon or from reading the article,
+        so an article still ships no scripts.
+      */}
       <nav class="toc-margin" aria-label="On this page" data-pagefind-ignore>
+        <span class="toc-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M4 7h16M4 12h16M4 17h10" />
+          </svg>
+        </span>
         <ol role="list">
           {entries.map((heading) => (
             <li class:list={[`depth-${heading.depth}`]}>
@@ -81,10 +97,10 @@ const entries = headings.filter((heading) => heading.depth >= 2 && heading.depth
     margin-bottom: 0.75rem;
   }
 
-  /* Wide enough for the prose column plus a margin column beside it. The
-     article grid in PostLayout owns the placement; sticky beats fixed here
-     because it scrolls away at the end of the article on its own. */
-  @media (min-width: 80rem) {
+  /* Wide enough for the prose column plus a margin column beside it, and only
+     where a pointer can hover. A wide touch screen keeps the inline list,
+     because a hover-only reveal would be unreachable there. */
+  @media (min-width: 80rem) and (hover: hover) {
     .toc-inline {
       display: none;
     }
@@ -96,10 +112,59 @@ const entries = headings.filter((heading) => heading.depth >= 2 && heading.depth
       grid-row: 2;
       max-height: 70vh;
       min-width: 0;
+      /* Without this the cap just clips a long list off-screen. */
       overflow-y: auto;
       padding-left: 2.5rem;
       position: sticky;
       top: 6rem;
+    }
+
+    .toc-icon {
+      color: var(--color-ink-light);
+      display: block;
+      transition: opacity var(--dur-fast) var(--ease-out);
+    }
+
+    .toc-margin ol {
+      opacity: 0;
+      /* Kept out of the pointer path while hidden so it cannot be clicked or
+         tabbed into by accident. */
+      pointer-events: none;
+      transform: translateY(-0.35rem);
+      /* Compositor-only properties, so revealing the list never triggers
+         layout. Both are listed explicitly rather than using `all`. */
+      transition:
+        opacity var(--dur-base) var(--ease-out),
+        transform var(--dur-base) var(--ease-out);
+    }
+
+    /* Reading the article, pointing at the icon, or reaching a link by keyboard
+       all reveal the list. */
+    :global(.article:hover) .toc-margin ol,
+    .toc-margin:hover ol,
+    .toc-margin:focus-within ol {
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+    }
+
+    :global(.article:hover) .toc-icon,
+    .toc-margin:hover .toc-icon,
+    .toc-margin:focus-within .toc-icon {
+      opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toc-margin ol,
+      .toc-icon {
+        transition-duration: var(--dur-fast);
+      }
+
+      /* Crossfade only: the slide is the part that reads as motion. */
+      .toc-margin ol {
+        transform: none;
+        transition-property: opacity;
+      }
     }
   }
 </style>

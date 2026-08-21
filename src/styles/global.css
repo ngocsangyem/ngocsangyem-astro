@@ -51,6 +51,15 @@ html {
   background-color: var(--color-paper);
 }
 
+/* Anchor jumps ease instead of teleporting. Browser-native, so it costs no
+   JavaScript and runs off the main thread; opted into rather than out of, so a
+   reduced-motion preference keeps the instant jump. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 [data-theme='dark'] {
   color-scheme: dark;
 }

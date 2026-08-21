@@ -2,8 +2,12 @@ import { defineConfig, fontProviders } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { satteri } from '@astrojs/markdown-satteri';
+import { transformerMetaHighlight, transformerNotationHighlight } from '@shikijs/transformers';
 import { mdastReadingTime } from './src/lib/mdast-reading-time';
 import { hastLinkChips } from './src/lib/hast-link-chips';
+import { hastAdmonitions } from './src/lib/hast-admonitions';
+import { hastTaskLists } from './src/lib/hast-task-lists';
+import { hastTables } from './src/lib/hast-tables';
 
 export default defineConfig({
   site: 'https://ngocsangyem.dev',
@@ -14,12 +18,13 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       mdastPlugins: [mdastReadingTime],
-      hastPlugins: [hastLinkChips],
+      hastPlugins: [hastAdmonitions, hastTaskLists, hastTables, hastLinkChips],
     }),
     shikiConfig: {
       themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
       // Emits both palettes as CSS vars so [data-theme] can switch them.
       defaultColor: false,
+      transformers: [transformerMetaHighlight(), transformerNotationHighlight()],
     },
   },
   fonts: [

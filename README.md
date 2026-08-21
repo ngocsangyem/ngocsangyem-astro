@@ -1,7 +1,7 @@
 # ngocsangyem.dev
 
 Personal dev notes. Astro static build, no client-side framework, vanilla CSS and
-TypeScript. The design system is locked by [`design-main.md`](./design-main.md);
+TypeScript. The design system is locked by [`DESIGN.md`](./DESIGN.md);
 `src/styles/tokens.css` is the emitted source of truth for its token values.
 
 ## Setup
@@ -39,10 +39,21 @@ Only `title` and `date` are required. Notes on the rest:
 - `draft: true` keeps a post out of every list, tag page, the feed, the sitemap
   and the search index. There is no scheduled publishing: a future `date`
   publishes immediately.
+- `toc: false` suppresses the table of contents on a post that would otherwise
+  get one. By default it appears whenever a post has two or more headings at
+  depth 2 or 3, and is absent otherwise, so most posts need nothing here.
 - Reading time is computed at build time. Nothing to fill in.
 - External links in prose become link chips when `public/favicons/<hostname>.svg`
   exists. Add that file to opt a domain in; without it the link stays a plain
-  underlined link, which is the intended fallback.
+  underlined link, which is the intended fallback. A `www.` host also matches the
+  bare domain's icon.
+- Admonitions use GitHub alert syntax, so they render in the repository too:
+  `> [!NOTE]` on its own line, then the body as further quote lines. The five
+  types are NOTE, TIP, IMPORTANT, WARNING and CAUTION. A marker with no body, or
+  an unknown type, stays an ordinary blockquote.
+
+See `src/content/posts/markdown-fundamentals.mdx` for a page that exercises every
+supported feature; it doubles as a rendering test.
 
 ## Search
 

@@ -13,11 +13,10 @@ const hasMore = posts.length > recent.length;
 <BaseLayout>
   {/* Rows carry their own stagger, so the wrapper must not add a second one. */}
   <div class="prose-column">
-    {/* The masthead is a link, so the page still needs a top-level heading. */}
-    <h1 class="visually-hidden">{SITE.title}</h1>
-    {SITE.greeting && <p class="greeting" data-enter>{SITE.greeting}</p>}
+    <h1 data-enter>Hello World!</h1>
+    {SITE.greeting && <p class="greeting" data-enter style="--enter-stage: 1">{SITE.greeting}</p>}
 
-    <section data-enter>
+    <section data-enter style="--enter-stage: 2">
       <h2 class="heading">Recent</h2>
       <PostRows posts={recent} />
       {hasMore && (
@@ -30,12 +29,18 @@ const hasMore = posts.length > recent.length;
 </BaseLayout>
 
 <style>
+  h1 {
+    font-size: 1.875rem;
+    letter-spacing: -0.015em;
+    margin-block: 1.5rem 0;
+  }
+
   .greeting {
     color: var(--color-ink);
-    font-size: 1.125rem;
-    line-height: 1.7;
-    margin-block: 1.5rem 3.5rem;
-    max-width: 44ch;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    margin-block: 1rem 3.5rem;
+    max-width: 52ch;
   }
 
   .heading {

@@ -1,4 +1,4 @@
-/* Canonical values from design-main.md. Font families are the one indirection:
+/* Canonical values from DESIGN.md. Font families are the one indirection:
    the Fonts API owns --font-inter and friends, including size-adjusted
    fallback faces, so redefining the families here would fight its cascade. */
 :root {
@@ -10,6 +10,16 @@
   --color-chip: #88888822;
   --color-accent: var(--color-ink-deep);
   --color-focus: var(--color-ink-deep);
+
+  /* Semantic status hues, admonitions only. These are content semantics rather
+     than a brand accent: chrome stays greyscale, so the neutral-accent rule
+     still holds. Each sits in the same luminance band as the ink token it
+     replaces (5.2:1 to 6.4:1 on paper), so only hue is added, never weight. */
+  --color-note:      #2b6cb0;
+  --color-tip:       #2f7a55;
+  --color-important: #6b46c1;
+  --color-warning:   #8a5a00;
+  --color-caution:   #b03636;
 }
 
 [data-theme='dark'] {
@@ -18,6 +28,13 @@
   --color-ink-deep: #dddddd;
   --color-ink-max: #ffffff;
   --color-ink-light: #888888;
+
+  /* Lifted for the near-black paper; same 8.6:1 to 10.6:1 band as dark ink. */
+  --color-note:      #8fbce6;
+  --color-tip:       #87c9a6;
+  --color-important: #bda6ee;
+  --color-warning:   #dcae5e;
+  --color-caution:   #e79191;
 }
 
 :root {

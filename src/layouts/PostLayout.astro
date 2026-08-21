@@ -27,7 +27,7 @@ const { post, headings, minutesRead } = Astro.props;
       <TagList post={post} />
     </header>
 
-    <Toc headings={headings} />
+    {post.data.toc && <Toc headings={headings} />}
 
     <div class="prose">
       <slot />

@@ -12,6 +12,8 @@ const posts = defineCollection({
     tags: z.array(z.string()).default([]),
     description: z.string().optional(),
     draft: z.boolean().default(false),
+    /** Suppresses the table of contents on a post that would otherwise get one. */
+    toc: z.boolean().default(true),
   }),
 });
 

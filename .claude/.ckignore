@@ -1,4 +1,5 @@
-# Build output and installed package types are inspected during verification.
+# Build output, package types, and code that references a "target" identifier.
 !dist
 !build
 !node_modules
+!target

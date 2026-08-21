@@ -1,98 +1,128 @@
-# Design — ngocsangyem blog
+# Design — ngocsangyem blog (main · locked)
 
-<!-- Hallmark · studied: yes · DNA-source: url (+ browser vision pass)
-     source-url: https://astro-cactus.chriswilliams.dev/ · extracted: 2026-08-21
-     vision pass: 2026-08-21 (home light+dark, post detail) — rhythm verified
-     STATUS: reference-only since 2026-08-21. The locked system is now
-     ./design-main.md — Hallmark runs read that file, not this one. Only the
-     Pagefind-modal search pattern from this DNA carries over. -->
-
-Reference file (Astro Cactus DNA). Superseded by ./design-main.md.
+## Intent
+Personal dev notes, written in English. One author, one voice. Simple,
+developer-friendly, calm. Built with Astro as a true MPA — no client router,
+no framework runtime on content pages.
 
 ## System
-- Genre · editorial (personal blog / digital-garden voice)
-- Macrostructure · Long Document (Catalogue/Index lean — date-indexed post lists in one centred ~48rem column)
-- Theme · studied-DNA (source: astro-cactus.chriswilliams.dev)
-- Axes · dual paper (light >85 / dark <30) / mono display / accent hue-swaps per theme (warm-red ↔ emerald)
-- Type · single family, mono-only on purpose — system mono stack, no webfont. Hierarchy via size (2xl titles), weight (semibold), and colour — never via a second face.
-- Chrome · compact masthead-stack nav (N1a/N6 hybrid, vision-verified): brand row on top (logo + wordmark in accent-2), link row directly beneath it separated by vertical hairline dividers; search trigger + theme toggle pinned right; oversized logo hangs into the left margin on ≥sm, greyscale-until-hover · Ft1 minimal footer (copyright left, text links right, hairline dividers)
+- Genre · editorial (personal site / notes voice)
+- Macrostructure · Long Document; home = index-first (1–2 line greeting + recent posts), listing pages = Catalogue/Index with ghost-year numeral chapters
+- Theme · studied-DNA base: antfu.me (structure + tokens), with own identity filling the signature slots (see ## Identity)
+- Axes · dual paper (light >85 / dark <30) / neutral-grotesque display / **accent NEUTRAL — chroma delegated to content** (favicons in link-chips, syntax tokens). This is the strongest signature; never add a chromatic accent.
+- Type · one workhorse grotesque — **Inter** for display + body, hierarchy by size and weight only; **DM Mono** for dates, read-times, email, inline code labels; **Roboto Condensed** only inside link-chips. Self-hosted woff2, latin subset (content is English).
+- Chrome · N9 edge-aligned minimal nav: transparent header, hand-drawn "Sang" mark top-left, right-aligned row of ≤4 text links (Posts · Projects · About) + search icon + theme toggle · footer: none — pages end with a "Find me on" social row (GitHub, LinkedIn) + DM Mono email line inside the prose column
+- Column · single centred prose column, `--prose-max-width: 65ch`, `line-height: 1.75`
 
-## Rhythm (vision-verified)
-- Density · medium-generous: one deep breath after the masthead (~7rem, `mb-28`), then even ~4rem gaps between sections (`mt-16`), airy 1rem-spaced list rows. Not luxury-sparse — a readable working rhythm.
-- Heading-to-body · short mono heading + medium body (letter/index voice, never long declarative headlines).
-- Asymmetry · centred symmetric column; the one asymmetric excursion is the post-page TOC floating in the right margin (≥xl), collapsible "▼ Table of Contents".
-- Accent discipline (observed) · accent goes ONLY to: nav links, *linked* section titles (plain section titles stay ink), heading `#` anchor markers, and the tag `#links`. Everything else is greyscale ink.
+## Content model
+- **One writing collection: `posts`** — the "notes" ARE the posts; no separate notes/TIL collection. Cheap to write: title + date + tags is enough frontmatter.
+- Collections: `posts`, `projects` (data collection), plus an `about` page.
+- URLs · collection-prefixed: `/posts/[slug]`, `/posts` (full index), `/projects`, `/about`, `/tags/[tag]`.
+- Format · **MDX for all content** (plain-Markdown files still work unchanged; MDX keeps the door open for embedded demos/components).
+- Home · greeting (real first-person, 1–2 lines — never sample copy) + recent posts list, link to `/posts` for the rest.
+- `/posts` · rows grouped by year under ghost-year numerals; row = DM Mono muted date + title, opacity-step hover.
+- `/projects` · antfu-style grid grouped by category: icon + name + one-line description, greyscale-until-hover.
 
-## Provenance
-Extracted from `https://astro-cactus.chriswilliams.dev/` on 2026-08-21 as a
-public reference for the user's own blog. Authorization basis: source is the
-demo of Astro Cactus, an MIT-licensed open-source theme (github.com/chrismwilliams/astro-cactus)
-— reuse is explicitly licensed. Tokens are exact (extracted from source CSS).
-Fonts are exact (system mono stack — the source loads no webfont). Rhythm is
-vision-verified: 2026-08-21 browser pass over rendered pages (home in both
-themes + post detail) — the usual URL-mode rhythm blind spot no longer applies.
-
-## Tokens (canonical · `tokens.css` is the source of truth)
+## Tokens (canonical — emit as `tokens.css` when a build exists)
 ```css
 :root {
   /* light (default) */
-  --color-paper:      oklch(98.48% 0 0);
-  --color-paper-2:    oklch(26.99% 0.0096 235.05 / 5%);  /* tinted note-cards: ink at 5% */
-  --color-ink:        oklch(26.99% 0.0096 235.05);
-  --color-ink-2:      oklch(44.6% 0.03 256.802);          /* muted — dates, footer */
-  --color-rule:       oklch(92% 0.004 286.32);
-  --color-accent:     oklch(55.27% 0.195 19.06);          /* warm red — nav, linked titles */
-  --color-accent-ink: oklch(18.15% 0 0);                  /* headings */
-  --color-link:       oklch(55.44% 0.0431 185.69);        /* teal — hover underline colour */
-  --color-focus:      oklch(55.27% 0.195 19.06);
+  --color-paper:     #ffffff;
+  --color-ink:       #555555;   /* body prose — never pure black on white */
+  --color-ink-deep:  #222222;   /* headings, active nav */
+  --color-ink-max:   #000000;   /* rare emphasis */
+  --color-ink-light: #767676;   /* dates, read-times, inactive labels — contrast floor for muted text (amended 2026-08-21 from #888888: 4.54:1 on white meets AA; dark-mode value unchanged) */
+  --color-chip:      #88888822; /* magic-link chip fill — works on both papers by design */
+  --color-accent:    var(--color-ink-deep); /* NO chromatic accent — content carries colour */
+  --color-focus:     var(--color-ink-deep);
+
+  /* Semantic status hues — ADMONITIONS ONLY (added 2026-08-22 at the author's
+     request). Content semantics, not a brand accent: chrome stays greyscale, so
+     the neutral-accent axis above still holds. Each value sits in the same
+     luminance band as the ink token it stands in for (5.2:1–6.4:1 on white), so
+     an admonition gains hue without gaining weight. Only the label and the left
+     hairline take the hue; body text stays --color-ink. */
+  --color-note:      #2b6cb0;   /* 5.42:1 on white */
+  --color-tip:       #2f7a55;   /* 5.20:1 */
+  --color-important: #6b46c1;   /* 6.42:1 */
+  --color-warning:   #8a5a00;   /* 5.93:1 */
+  --color-caution:   #b03636;   /* 6.13:1 */
 }
 [data-theme="dark"] {
-  --color-paper:      oklch(23.64% 0.0045 248);
-  --color-paper-2:    oklch(83.54% 0 264 / 5%);
-  --color-ink:        oklch(83.54% 0 264);
-  --color-ink-2:      oklch(70.7% 0.022 261.325);
-  --color-rule:       oklch(37% 0.013 285.805);
-  --color-accent:     oklch(70.91% 0.1415 163.7);         /* emerald — the hue swap is the signature */
-  --color-accent-ink: oklch(94.66% 0 0);
-  --color-link:       oklch(70.44% 0.1133 349);           /* pink */
-  --color-focus:      oklch(70.91% 0.1415 163.7);
+  --color-paper:     #050505;   /* true near-black, not charcoal */
+  --color-ink:       #bbbbbb;
+  --color-ink-deep:  #dddddd;
+  --color-ink-max:   #ffffff;
+  --color-ink-light: #888888;
+  /* --color-chip unchanged */
+
+  /* Lifted for the near-black paper; 8.6:1–10.6:1, matching dark ink's 10.6:1 */
+  --color-note:      #8fbce6;
+  --color-tip:       #87c9a6;
+  --color-important: #bda6ee;
+  --color-warning:   #dcae5e;
+  --color-caution:   #e79191;
 }
 :root {
-  --font-display: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --font-display: "Inter", system-ui, sans-serif;   /* same family as body */
   --font-body:    var(--font-display);
-  --font-mono:    var(--font-display);
+  --font-mono:    "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-chip:    "Roboto Condensed", var(--font-body); /* link-chips ONLY */
 
-  /* base size 0.875rem (14px); titles at --text-2xl semibold */
-  /* 4-pt spacing scale, named: --space-3xs … --space-4xl. See tokens.css. */
+  --prose-max-width: 65ch;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 180ms;  --dur-base: 240ms;  --dur-slow: 320ms;
+  --dur-fast: 150ms;  --dur-base: 240ms;
 
-  --radius-card: 6px;  --radius-pill: 9999px;  --radius-input: 6px;
+  --radius-chip: 4px;
 }
 ```
 
-## CTA voice
-- No buttons. Actions are text links: underlined, `text-underline-offset: 2px`; hover thickens the underline to 2px and recolours it `--color-link`.
-- Post rows · two-col grid: fixed-width muted mono date, then underlined title.
-- Notes/asides · tinted card (`--color-paper-2`), `--radius-card`, compact padding.
+## Identity (own work — fills the slots antfu's excluded artwork left)
+- **Personal mark** · hand-drawn "Sang" as an SVG path, stroke-animated on load (`stroke-dasharray`/`stroke-dashoffset` draw-in, `--ease-out`, ~1.2s, once per visit). v1 path is designed by Hallmark; swap for the author's real handwriting later — the slot + animation spec are the contract, the path is replaceable.
+- **Ambient margin ornament** · **generative bamboo branch** — Hallmark-designed, greyscale ink at low opacity, drifting in the page margins *outside* the 65ch column. Supplies asymmetry without breaking the centred layout. Decorative only: `aria-hidden`, no pointer events, hidden when the viewport can't fit it beside the column.
+- Both stay neutral (ink greys) — identity comes from line quality, not colour.
 
-## Article voice (vision-verified, post pages)
-- Post header · title, then a muted meta row `date / N min read`, plus an optional "Updated: <date>" pill — accent-tinted fill (accent at ~10%), accent text, `--radius-pill`ish small radius.
-- Tag row · small `#tag` links, underlined, muted until hover.
-- Headings · prefixed with a `#` anchor marker in accent; heading text stays ink.
-- Horizontal rules · dashed/dotted hairlines (`--color-rule`), never solid heavy bars.
-- TOC · floats in the right margin outside the 48rem column on wide viewports; collapses inline below it.
+## Signature moves (from antfu DNA — these travel)
+- **Content-delegated colour** · chrome is greyscale; all chroma comes from content.
+- **Magic-link chips** · inline links in running prose as small rounded chips: translucent grey fill (`--color-chip`), tiny brand favicon, condensed label (`--font-chip`), `translateY(3px)` optical alignment, `--radius-chip`.
+- **Ghost-year chapters** · post lists grouped by year with a huge outlined numeral watermarked behind the first rows of each group.
+- **Display-size tab strip** on listing pages when a page has sibling views: active in `--color-ink-deep`, inactive at `--color-ink-light` minimum (not paler), no underline/pill chrome.
+
+## CTA voice
+- No buttons anywhere. Actions are prose links (underlined) or magic-link chips.
+- Hover language is opacity-step (op50 → op100) and underline — never scale/lift.
+
+## Article voice (post pages)
+- Header · title (Inter, size/weight hierarchy), then a muted DM Mono meta row `date · N min read`.
+- Tags · small `#tag` links in the meta area, muted until hover; `/tags/[tag]` lists matching posts in the standard row style.
+- TOC · floats in the right margin outside the 65ch column on wide viewports (≥xl); collapses inline below the header on narrow ones. **Optional per post** (`toc: false`) and, on wide viewports, **collapsed to a menu icon at rest**: the list fades in while the pointer is over the article or the icon, and on keyboard focus (amended 2026-08-22 at the author's request).
+- Code blocks · Shiki (Astro built-in), dual theme **`vitesse-light` / `vitesse-dark`** switched with `[data-theme]`.
+- Horizontal rules · thin hairlines in muted ink, never heavy bars.
+- Admonitions · GitHub alert syntax (`> [!NOTE]`), five types: note, tip, important, warning, caution. Type is carried by a small icon, a DM Mono uppercase label, and a left hairline, all in that type's semantic hue (see the status tokens). Body text stays `--color-ink`, so the hue marks the block without colouring the prose. This is the one sanctioned exception to the greyscale rule and is scoped to admonitions; chrome carries no hue.
+
+## Features
+- Tags + tag pages · RSS (`@astrojs/rss`) · dark/light toggle (`[data-theme]`, respects `prefers-color-scheme`, persisted) · TOC.
+- **Search · Pagefind, Cactus-pattern**: `pagefind --site dist` as a postbuild step; `@pagefind/default-ui` inside a modal dialog opened from the nav search icon and a `/` (or `Cmd+K`) shortcut. Style the UI with the tokens above — no Pagefind default chrome colours.
+- No comments in v1. No analytics decided — add deliberately if ever.
 
 ## Motion stance
-- Silent — no motion library, no scroll reveals. The only animation is the theme-toggle icon swap (scale + opacity) and search-modal appear.
-- Animate `transform` and `opacity` only, named easings; reduced-motion fallback · ≤150 ms opacity crossfade.
+- No motion library, no ClientRouter — real MPA navigation.
+- One reveal primitive: `slide-enter` — fade-up (translateY(10px)→0 + opacity), staggered 90ms per child block, applied to prose children on page enter (pure CSS animation).
+- Mark draw-in (see ## Identity) is the only other entrance animation.
+- Everything else: opacity/colour transitions at `--dur-fast`. Animate `transform` + `opacity` only — never `transition: all`.
+- `prefers-reduced-motion` · slide-enter and mark draw-in collapse to a ≤150ms opacity crossfade.
 
-## Notes (do NOT carry over from the source)
-- `transition: all` on the theme-toggle icons — scope transitions to `transform, opacity`.
-- Placeholder copy energy ("Hello World!", lorem titles) — the H5 Letter hero wants a real first-person greeting; never ship the sample text.
+## Notes (do NOT carry over from sources)
+- antfu's signature artwork (the "af" logo, plum-branch art, Bad Script annotations) is excluded — our slots are filled by ## Identity instead. Never imitate the plum branch; the bamboo must read as its own work.
+- Cactus DNA contributes ONLY the Pagefind-modal search pattern; its mono-everywhere type, chromatic accent hue-swap, and masthead-stack nav do not apply.
+- Never ship sample/lorem copy — the home greeting is real first-person text.
 
 ## Exports
-`tokens.css` (in this project) is the source of truth once a build exists. For
-Tailwind v4 `@theme`, DTCG `tokens.json`, or shadcn/ui CSS variables, ask
-*"extend design.md with Tailwind exports"* — Hallmark will append them.
+`tokens.css` (in this project) becomes the source of truth once a build exists.
+It now exists at `src/styles/tokens.css` and carries the token values above
+verbatim, with one sanctioned indirection: the font families reference the
+Fonts-API variables (`--font-display: var(--font-inter), system-ui, sans-serif`)
+so Astro's size-adjusted fallback faces stay in play.
+For Tailwind v4 `@theme` or DTCG `tokens.json`, ask *"extend design-main.md
+with exports"*.

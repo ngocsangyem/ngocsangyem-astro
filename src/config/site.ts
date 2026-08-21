@@ -30,9 +30,9 @@ export const SITE = {
    * block entirely while this is empty; the design forbids stand-in copy.
    */
   greeting:
-    "I'm Sang. These are my development notes: things I work out while building " +
-    "for the web, written down so I don't have to work them out twice.",
-  /** Author's own bio for /about. The page falls back to facts about the site. */
-  bio: '' as string,
+    "Hey! I’m a software engineer who enjoys turning ideas into thoughtful digital experiences. " +
+    'I care about writing good code, building things that last, and constantly finding better ways to solve problems.  ' +
+    'This blog is where I document what I learn along the way, from frontend engineering and code quality to tools, workflows, and the craft of building software. ' +
+    'Think of it as a collection of things I’ve learned, built, broken, and figured out along the way.',
   repository: 'https://github.com/ngocsangyem/ngocsangyem-astro',
 } as const;

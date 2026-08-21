@@ -1,38 +1,142 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE } from '../config/site';
+
+import '../styles/prose.css';
 ---
 
-<BaseLayout title="About" description="About this site and how it is built.">
-  <div class="prose-column prose" data-enter-children>
-    <h1>About</h1>
-
-    {SITE.bio ? <p>{SITE.bio}</p> : null}
+<BaseLayout title="About" description="Sang, a software engineer writing about building software.">
+  {/* The prose blocks stagger themselves; a wrapper reveal would compound. */}
+  <div class="prose-column prose">
+    <h1>Hey, I’m Sang.</h1>
 
     <p>
-      Notes on building things for the web, written by {SITE.author}. Mostly the
-      kind of thing worth writing down once so it does not have to be worked out
-      twice.
+      I’m a software engineer who enjoys turning ideas into thoughtful digital
+      experiences.
     </p>
 
     <p>
-      The site is a static Astro build with no client-side framework. Fonts are
-      self-hosted, code blocks are highlighted at build time, and there is no
-      analytics and no comment system. The
-      <a href={SITE.repository} rel="noopener">source is on GitHub</a>.
+      I started writing code when I was in high school, mostly out of curiosity.
+      What began as a fascination with how things work eventually became something
+      I genuinely enjoy doing every day: building products, solving problems,
+      learning new tools, and occasionally wondering why something worked
+      perfectly yesterday but not today.
     </p>
+
+    <p>
+      My work spans software engineering, with a particular interest in
+      JavaScript, TypeScript, and modern web development. But over time, I’ve
+      learned that good software is rarely just about the code. It’s about
+      understanding the problem, making thoughtful decisions, communicating
+      clearly, and working with people who care about the outcome.
+    </p>
+
+    <p>
+      I’m particularly interested in the things that make software better beyond
+      simply “making it work”: architecture, maintainability, performance,
+      developer experience, code quality, and the small decisions that make a
+      codebase easier to live with six months from now.
+    </p>
+
+    <h2>Why this blog?</h2>
+
+    <p>
+      I’ve always believed that one of the best ways to learn something is to try
+      to explain it.
+    </p>
+
+    <p>This blog is my place to do exactly that.</p>
+
+    <p>
+      I write about things I encounter while building software: software
+      engineering, JavaScript and TypeScript, architecture, code reviews,
+      development workflows, tools, and the occasional rabbit hole I find myself
+      falling into.
+    </p>
+
+    <p>
+      Some posts are things I’ve figured out. Some are things I’m still figuring
+      out. And some are simply ideas I found interesting enough to write down.
+    </p>
+
+    <p>
+      I don’t want this to be another collection of tutorials that tells you
+      exactly what to type. Instead, I’d rather document the <em>why</em> behind
+      the things I learn: the decisions, trade-offs, mistakes, and lessons that
+      come with actually building software.
+    </p>
+
+    <h2>Building, learning, sharing</h2>
+
+    <p>
+      I enjoy working on products where engineering is more than just
+      implementation.
+    </p>
+
+    <p>
+      There is something satisfying about taking a vague idea, breaking it down
+      into smaller problems, exploring different approaches, and eventually
+      seeing it become something real. I enjoy that process just as much when
+      working with a team as I do when building something on my own.
+    </p>
+
+    <p>I’m also a strong believer in knowledge sharing.</p>
+
+    <p>
+      A good code review is not just about finding bugs. A good technical
+      discussion is not about proving who is right. And a good team is not simply
+      a group of people who can write code.
+    </p>
+
+    <p>
+      For me, engineering is a collaborative craft. We learn from each other,
+      challenge our assumptions, catch problems earlier, and gradually make both
+      the product and ourselves better.
+    </p>
+
+    <p>
+      That mindset is something I try to bring into the way I work, and something
+      I hope to reflect in what I write here.
+    </p>
+
+    <h2>Beyond code</h2>
+
+    <p>
+      Programming is a big part of what I do, but it isn’t everything I’m
+      interested in.
+    </p>
+
+    <p>
+      I enjoy photography, design, exploring new places, and discovering the
+      little details that make an experience memorable. I’m naturally curious
+      about how things are made, whether that means software, visual experiences,
+      products, or brands.
+    </p>
+
+    <p>Maybe that’s also why I enjoy software engineering so much.</p>
+
+    <p>
+      It sits somewhere between logic, creativity, and problem-solving, where the
+      things we build are ultimately experienced by real people.
+    </p>
+
+    <p>
+      So, this is a small corner of the internet where I keep track of that
+      journey.
+    </p>
+
+    <p>
+      Things I’ve learned. Things I’m building. Things I’m still trying to
+      understand.
+    </p>
+
+    <p>If any of them are useful to you, even better.</p>
   </div>
 </BaseLayout>
 
 <style>
   h1 {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
+    letter-spacing: -0.015em;
     margin-block: 1rem 2rem;
-  }
-
-  .prose p {
-    color: var(--color-ink);
-    line-height: 1.75;
-    margin-bottom: 1.25rem;
   }
 </style>
