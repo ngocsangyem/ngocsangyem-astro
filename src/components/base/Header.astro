@@ -1,14 +1,14 @@
 ---
 import { SITE } from '../../config/site';
 import NavLink from './NavLink.astro';
-import SangMark from '../identity/SangMark.astro';
+import Signature from '../identity/Signature.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import SearchModal from '../search/SearchModal.astro';
 ---
 
 <header class="site-header page" data-pagefind-ignore>
   <a class="mark-link" href="/" aria-label={`${SITE.author}, home`}>
-    <SangMark />
+    <Signature />
   </a>
 
   <nav aria-label="Main">
