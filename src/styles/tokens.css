@@ -2,7 +2,7 @@
    the Fonts API owns --font-inter and friends, including size-adjusted
    fallback faces, so redefining the families here would fight its cascade. */
 :root {
-  --color-paper: #ffffff;
+  --color-paper: #fafafa;
   --color-ink: #555555;
   --color-ink-deep: #222222;
   --color-ink-max: #000000;
@@ -23,7 +23,7 @@
 }
 
 [data-theme='dark'] {
-  --color-paper: #050505;
+  --color-paper: #0d0d0d;
   --color-ink: #bbbbbb;
   --color-ink-deep: #dddddd;
   --color-ink-max: #ffffff;
@@ -46,29 +46,33 @@
   --prose-max-width: 65ch;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 150ms;
   --dur-base: 240ms;
 
   --radius-chip: 4px;
 
-  /* Luỹ tre ambient layer. Opacity is the whole safety margin here: the grove
-     sits behind the page, so anything strong enough to notice while reading is
-     too strong. Ink only — the grove takes no hue. */
-  --grove-opacity: 0.075;
-  --grove-opacity-back: 0.045;
-  /* The margin each grove occupies. Wider than this and it reaches the column. */
-  --grove-width: 17rem;
-  /* Band kept clear of art, centred on the page. Sized off the measure so the
-     grove tracks the column rather than a hardcoded breakpoint. */
-  --grove-clear: calc(var(--prose-max-width) + 9rem);
-  /* How far the grove takes to fade out as it approaches the clear band. */
-  --grove-falloff: 7rem;
+  /* Luỹ tre ambient layer. The grove covers the full width — including behind
+     the reading column, where the frosted content container blurs it out — so
+     its color sits a short step off the paper: a soft sage line on the
+     off-white, never strong enough to compete with running text. Depth is two
+     planes: a pen-weight ink in front, a blurred mass behind it. Both carry
+     their own alpha, because the canvas multiplies per-culm depth on top. */
+  --grove-ink: rgba(58, 66, 54, 0.56);
+  --grove-haze: rgba(96, 112, 92, 0.42);
+  --grove-haze-blur: 8px;
+
+  /* The frosted content container over the grove. Translucent paper plus blur:
+     bamboo under the column melts into depth, text stays fully readable. */
+  --glass-bg: rgba(250, 250, 250, 0.6);
+  --glass-blur: 12px;
 }
 
 [data-theme='dark'] {
-  /* Near-black paper swallows a light stroke, so the grove is lifted to hold
-     the same apparent presence it has on white. */
-  --grove-opacity: 0.11;
-  --grove-opacity-back: 0.07;
+  /* Moonlit sketch on near-black: the pen turns pale so the line still reads,
+     while the mass behind it stays a deep moss — the only place in the site
+     where the dark theme inverts a value instead of dimming it. */
+  --grove-ink: rgba(198, 216, 196, 0.5);
+  --grove-haze: rgba(66, 104, 76, 0.46);
+
+  --glass-bg: rgba(13, 13, 13, 0.6);
 }

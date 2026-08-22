@@ -3,7 +3,7 @@ import Head from '../components/base/Head.astro';
 import Header from '../components/base/Header.astro';
 import CdUpLink from '../components/base/CdUpLink.astro';
 import SocialRow from '../components/base/SocialRow.astro';
-import Bamboo from '../components/identity/Bamboo.astro';
+import BambooLines from '../components/identity/BambooLines.astro';
 import { SITE } from '../config/site';
 
 import '../styles/tokens.css';
@@ -33,9 +33,9 @@ const { title, description, wide = false, grove = true } = Astro.props;
     <Head title={title} description={description} />
   </head>
   <body>
-    {grove && <Bamboo />}
+    {grove && <BambooLines />}
     <Header />
-    <main class:list={['page', { 'page-wide': wide }]} data-pagefind-body>
+    <main class:list={['page', { 'page-wide': wide, 'page-glass': grove }]} data-pagefind-body>
       <slot />
     </main>
     <CdUpLink />

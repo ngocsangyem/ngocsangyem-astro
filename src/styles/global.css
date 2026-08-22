@@ -130,6 +130,21 @@ time {
   padding-inline: var(--page-gutter);
 }
 
+/* The frosted layer of the luỹ tre stack, applied only on pages that show the
+   grove. Bamboo passing directly under the column blurs into depth; culms in
+   the margins, outside this box, stay crisp. Scoped rather than on `.page`
+   itself because backdrop-filter also makes the element a containing block for
+   fixed descendants — article pages (no grove) must not inherit that. */
+.page-glass {
+  position: relative;
+  z-index: 2;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
 .prose-column {
   margin-inline: auto;
   max-width: var(--prose-max-width);

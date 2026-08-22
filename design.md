@@ -27,7 +27,7 @@ no framework runtime on content pages.
 ```css
 :root {
   /* light (default) */
-  --color-paper:     #ffffff;
+  --color-paper:     #fafafa;   /* off-white (amended 2026-08-22 from #ffffff with the grove redesign: the grove's sage line art needs a paper a half-step off pure white to sit in, and running ink keeps AA with room to spare) */
   --color-ink:       #555555;   /* body prose — never pure black on white */
   --color-ink-deep:  #222222;   /* headings, active nav */
   --color-ink-max:   #000000;   /* rare emphasis */
@@ -49,7 +49,7 @@ no framework runtime on content pages.
   --color-caution:   #b03636;   /* 6.13:1 */
 }
 [data-theme="dark"] {
-  --color-paper:     #050505;   /* true near-black, not charcoal */
+  --color-paper:     #0d0d0d;   /* deep near-black (amended 2026-08-22 from #050505: lifted one step so the grove's moss haze has a value to read against) */
   --color-ink:       #bbbbbb;
   --color-ink-deep:  #dddddd;
   --color-ink-max:   #ffffff;
@@ -72,55 +72,121 @@ no framework runtime on content pages.
   --prose-max-width: 65ch;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* grove sway only */
   --dur-fast: 150ms;  --dur-base: 240ms;
 
   --radius-chip: 4px;
 
-  /* Luỹ tre ambient layer (added 2026-08-22). Opacity is the whole safety
-     margin: the grove sits behind the page, so anything strong enough to
-     notice while reading is too strong. Ink only — the grove takes no hue. */
-  --grove-opacity:      0.075;
-  --grove-opacity-back: 0.045;
-  --grove-width:  17rem;                              /* margin each grove fills */
-  --grove-clear:  calc(var(--prose-max-width) + 9rem); /* band kept clear of art */
-  --grove-falloff: 7rem;                              /* mask fade into the band */
+  /* Luỹ tre ambient layer (redesigned 2026-08-22: full-width pen-and-ink
+     line art on two canvases behind a frosted content container, replacing
+     first the masked margin line-art and then the flat silhouettes). This is
+     the ONE sanctioned exception to "chrome takes no hue", and it is scoped to
+     the grove: a desaturated leaf-green a few points from grey, never a
+     chromatic accent. Depth is two planes, each carrying its own alpha —
+     `ink` is the drawing, `haze` is the same grove restated as wide soft
+     strokes on a CSS-blurred canvas behind it. */
+  --grove-ink:        rgba(58, 66, 54, 0.56);
+  --grove-haze:       rgba(96, 112, 92, 0.42);
+  --grove-haze-blur:  8px;
+  /* The frosted content container over the grove: translucent paper + blur.
+     Bamboo under the column melts into depth; text stays fully readable. */
+  --glass-bg:   rgba(250, 250, 250, 0.6);
+  --glass-blur: 12px;
 }
 [data-theme="dark"] {
-  /* Near-black paper swallows a light stroke, so the grove is lifted to hold
-     the same apparent presence it has on white. */
-  --grove-opacity:      0.11;
-  --grove-opacity-back: 0.07;
+  /* Moonlit sketch on near-black: the pen turns pale so the line still reads,
+     while the mass behind it stays a deep moss. The only place in the site
+     where the dark theme inverts a value instead of dimming it. */
+  --grove-ink:  rgba(198, 216, 196, 0.5);
+  --grove-haze: rgba(66, 104, 76, 0.46);
+  --glass-bg:   rgba(13, 13, 13, 0.6);
 }
 ```
 
 ## Identity (own work — fills the slots antfu's excluded artwork left)
 - **Personal mark** · hand-drawn "Sang" as an SVG path, stroke-animated on load (`stroke-dasharray`/`stroke-dashoffset` draw-in, `--ease-out`, ~1.2s, once per visit). v1 path is designed by Hallmark; swap for the author's real handwriting later — the slot + animation spec are the contract, the path is replaceable.
-- **Ambient layer · luỹ tre** (expanded 2026-08-22 from a static single-margin
-  sprig at ≥100rem). A Vietnamese bamboo hedge: the dense picket planted at a
-  village edge. Two groves, one per page margin, generated at build time from a
-  seeded PRNG in `src/lib/grove.ts` and emitted as inline SVG — no client
-  script, no measurement, no layout shift. Decorative in the strict sense:
-  `aria-hidden`, inert to the pointer, and masked out of the reading column.
-  - **What carries the read**, in order, and none of it is optional. *Verticality
-    in numbers* — culms stand plumb and bow only across the top third (the
-    deflection exponent is 3.4; at 2.4 the same curve reads as windswept grass,
-    which is how the first pass failed). *Node rings* — ~10 per culm, internodes
-    lengthening upward. *The arch*. *Small drooping lanceolate leaves* in fans of
-    2–4 off the topmost nodes; oversized or rounded leaves read as plum, not
-    bamboo. *Three depth planes* — stroke and opacity step back into haze.
-  - **Motion** · `grove-rise`, a base-to-tip stroke draw, back plane first,
-    every culm settled by ~8s; then `grove-sway` and a leaf `fan-lag`, bounded
-    as the motion stance requires. Each culm's sway starts as its own draw ends,
-    which both prevents a bend-before-it-exists pop and desynchronises the grove
-    without a random negative delay.
-  - **Column protection** · a horizontal `mask-image`, not a clip: the grove
-    thins into the margin like haze. The clear band is derived from
-    `--prose-max-width`, so it tracks the measure instead of guessing at
-    breakpoints. Below 64rem the layer is `display: none`.
+- **Ambient layer · luỹ tre** (redesigned 2026-08-22; the masked margin
+  line-art before it read as a wireframe mesh, and the flat silhouettes that
+  replaced it read as wallpaper — a hedge has contours). A Vietnamese bamboo
+  hedge: the dense picket planted at a village edge, drawn as **pen-and-ink
+  line art** — every mark a stroked polyline of uniform weight, nothing
+  filled — from a seeded PRNG in `src/lib/bamboo-lines.ts`, painted onto two
+  canvases by `src/components/identity/BambooLines.astro`. Decorative in the
+  strict sense: `aria-hidden` and inert to the pointer.
+  - **Two planes, one grove, and the glass between them and the reading.** The
+    grove spans the FULL viewport width, reading column included. Behind
+    everything sits `.bamboo` at `z-index: -1`, holding `canvas.bamboo-haze`
+    (the same grove restated as wide soft strokes, blurred in CSS by
+    `--grove-haze-blur`, overhanging the frame by `HAZE_PAD` so the blur never
+    fades into a vignette) and `canvas.bamboo-ink` (the drawing). Over them the
+    content container wears frosted glass (`.page-glass`: translucent
+    `--glass-bg` + `backdrop-filter: blur(--glass-blur)`, `z-index: 2`), so
+    bamboo passing under the text blurs into depth while staying 100% readable,
+    and the culms in the margins render crisp. No mask, no keep-out band, no
+    viewport cutoff: the layer works at every width because the glass, not
+    geometry, protects the reading.
+  - **What carries the read.** None of it is optional.
+    1. *A culm is a tube, not a line* — its two outlines walked along one
+       centreline at ±half-diameter, front plane 2.4–3.3% of the drawing unit
+       across, tapering by a third toward the tip.
+    2. *The node is drawn* — two lines across the culm about 5px apart,
+       overshooting the tube by a sixth, with a local swelling in the diameter
+       carrying the ring between them. **The collar is the joint**; a plain gap
+       reads as a break in the pen stroke at this weight.
+    3. *Internode spacing is "slow-fast-slow"* — short at the foot, longest a
+       little past mid-culm, **shortest of all at the tip**. Spacing that
+       simply widens upward is the most common way a drawing of bamboo goes
+       wrong.
+    4. *Culms stand plumb and lean as one* — a steady splay away from the
+       middle of the frame, so the grove fans; plus a whisper of bow. Never a
+       wobble.
+    5. *Leaves are narrow lanceolate blades with a midrib*, strung along a twig
+       that arcs out of a node concave-down — steep as it leaves the culm,
+       flattening as it reaches. Blades lift toward the sky before fanning
+       either side of the twig: left to follow the tangent they hang sideways
+       and read as willow. Oversized or rounded blades read as plum.
+    6. *Size answers to the narrow side of the frame*, length to the height.
+       `drawingUnit()` is `min(height, width × 0.78)` — scale girth off the
+       height alone and a phone gets a 27px culm across a 375px screen.
+    7. *Depth is two planes and opacity* — never a second colour and never a
+       heavier outline. Most front-plane culms leave through the top of the
+       frame: a hedge whose every tip is visible is a row of plants in pots.
+  - **Motion is the page-load moment, then stillness.** Every culm rises out
+    of its own foot as a **partial trace of its own outlines** — real
+    elongation, not a scale transform, so the drawing never stretches — and
+    each leaf cluster unfurls just after the tip clears its node. The whole
+    grove settles inside a hard budget (`SETTLE_MS`, 1.9s), after which the
+    canvases are painted once more and never again: no running loop, no idle
+    CPU or GPU. Timing rides on the geometry as fractions of that budget, and
+    every stroke's window is clamped to close inside its own stalk's — a mark
+    still mid-draw when the grove settles would stay half-finished for good.
+    The rate is **smoothstep, not ease-out**: a culm that shoots up and brakes
+    reads as a UI transition, where growth is the slow part being long. With
+    `prefers-reduced-motion` the hedge is simply already grown — the settled
+    frame is exactly `t = 1`.
+  - **Repaint, never redraw.** A theme flip repaints the settled frame in the
+    new ink (the canvases read their own `color`, so tokens stay the single
+    owner). A new frame re-cuts the canvases and paints settled, never replaying
+    the entrance — and **re-cutting is not regrowing**: the geometry is rebuilt
+    only on a change of width or a change of height too large to be browser
+    chrome, because a phone's address bar moves the height on every scroll and a
+    grove regrown each time would reshuffle under the reader's thumb. A
+    height-only change just re-anchors the drawing at the floor, so the grove
+    keeps its feet down and the top of the frame reveals a little more or less
+    of it. Watched by a `ResizeObserver` on the layer (which catches chrome and
+    scrollbars, neither of them window resizes) *and* a window `resize` listener
+    (which catches a move to a display of a different pixel ratio, which
+    resizes no box at all), both debounced into one idempotent handler.
+  - **Marks are bucketed by pen weight** so a frame goes down in ~90 paths
+    rather than ~6000 — which is also truer, since strokes inside one path
+    composite once instead of stacking into a darker blot wherever a leaf
+    crosses a culm. Measured cost: ~0.5ms a frame for both planes.
   - **Excluded on article pages.** There the margin is the TOC's, and a reading
     surface should hold still. The grove belongs to pages a reader passes
-    through: home, `/posts`, `/projects`, `/about`, `/tags/*`, 404.
+    through: home, `/posts`, `/projects`, `/about`, `/tags/*`, 404. The glass
+    travels with the grove (`page-glass` is set only when the grove renders),
+    both because it is meaningless over bare paper and because
+    `backdrop-filter` makes the container a containing block for fixed
+    descendants — article-page floats must not inherit that.
 - Both stay neutral (ink greys) — identity comes from line quality, not colour.
 
 ## Signature moves (from antfu DNA — these travel)
@@ -150,15 +216,13 @@ no framework runtime on content pages.
 - No motion library, no ClientRouter — real MPA navigation.
 - One reveal primitive: `slide-enter` — fade-up (translateY(10px)→0 + opacity), staggered 90ms per child block, applied to prose children on page enter (pure CSS animation).
 - Two entrance animations besides it: the mark draw-in and the grove rise (both under ## Identity).
-- **One ambient animation, and only one** (amended 2026-08-22 at the author's
-  request, replacing "mark draw-in is the only other entrance animation"): the
-  grove sway. It is the sole perpetual motion anywhere on the site and it is
-  bounded so it reads as presence rather than movement — amplitude under 1°,
-  period 13–22s, opacity ≤0.11, and strictly outside the reading column. Those
-  four bounds are the licence; a perpetual animation that breaks any of them is
-  not sanctioned by this clause. Nothing else on the site may loop.
+- **No perpetual motion anywhere** (amended 2026-08-22 with the grove
+  redesign, retiring the sway clause): the grove's growth is an entrance
+  animation with a hard 2-second budget, its canvases painted one last time
+  when it ends, and after it the grove is a static
+  background. Nothing on the site may loop.
 - Everything else: opacity/colour transitions at `--dur-fast`. Animate `transform` + `opacity` only — never `transition: all`.
-- `prefers-reduced-motion` · slide-enter and mark draw-in collapse to a ≤150ms opacity crossfade; the grove stops entirely — no rise, no sway, simply already present.
+- `prefers-reduced-motion` · slide-enter and mark draw-in collapse to a ≤150ms opacity crossfade; the grove does not rise — it is painted once, already grown.
 
 ## Notes (do NOT carry over from sources)
 - antfu's signature artwork (the "af" logo, plum-branch art, Bad Script annotations) is excluded — our slots are filled by ## Identity instead. Never imitate the plum branch; the bamboo must read as its own work.
@@ -173,6 +237,23 @@ no framework runtime on content pages.
 - **Paper belongs on `html`, never on `body`.** The grove sits at `z-index: -1`
   inside the body, and a background on the body itself paints over it. This is a
   load-bearing constraint, not a style preference.
+
+## References
+Botanical sources behind the luỹ tre geometry (added 2026-08-22). The artwork is
+our own generative work; these fixed its proportions and its growth order.
+- Internode rhythm along the culm — short at the foot, longest mid-culm,
+  shortest at the tip; an S-shaped cumulative curve, "slow-fast-slow":
+  <https://link.springer.com/article/10.1007/s11676-012-0281-1> and
+  <https://www.guaduabamboo.com/bamboo-culm-sections/> (Guadua angustifolia runs
+  roughly 22cm at the base, 34–36cm through the middle, 14cm at the top).
+- Culm diameter, wall thickness and taper, and how each varies with height:
+  <https://pmc.ncbi.nlm.nih.gov/articles/PMC11175016/> (Moso: 9.7–17.5m tall,
+  5.1–17.2cm across, internodes 2.9–46.4cm).
+- Growth: a shoot reaches full height *and* full diameter in one season by
+  elongating internodes from the base upward, with up to ~40 elongating at once;
+  it never thickens again, only lignifies. Culm sheaths protect the young shoot:
+  <https://biologyinsights.com/what-is-a-bamboo-culm-anatomy-structure-and-growth/>
+  and <https://www.sciencedirect.com/science/article/pii/S0926669023011937>.
 
 ## Exports
 `tokens.css` (in this project) becomes the source of truth once a build exists.
