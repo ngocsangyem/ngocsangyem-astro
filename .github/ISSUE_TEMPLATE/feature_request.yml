@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest something the site should do or a post it should cover.
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem
+      description: What is awkward or missing today. Describe the situation, not the fix.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+      description: The change you would make, and what it would look like when it works.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Writing and markdown
+        - Reading experience (layout, type, themes)
+        - Search
+        - Posts, tags or the feed
+        - Projects
+        - Build, CI or deploy
+        - Something else
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      description: >
+        Two rules shape most of this repository, and a proposal that breaks
+        either one needs a reason. See the README section "How it works".
+      options:
+        - label: This needs no client-side JavaScript beyond the four scripts already allowed, or I have said below why it does.
+        - label: This needs no request to a third-party origin at runtime.
+        - label: I have checked whether DESIGN.md already rules on this. It is the locked design authority.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+    validations:
+      required: false

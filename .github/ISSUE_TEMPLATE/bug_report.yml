@@ -1,0 +1,65 @@
+name: Bug report
+description: Something on the site renders or behaves incorrectly.
+labels: ['bug']
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The route or the file. A URL is fine.
+      placeholder: /posts/markdown-fundamentals
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you see it
+      description: >
+        Search only works against a built site, so a search bug seen in
+        `npm run dev` is expected rather than a bug. Building first tells the
+        two apart.
+      options:
+        - The live site
+        - npm run build && npm run preview
+        - npm run dev
+    validations:
+      required: true
+
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      options:
+        - Light
+        - Dark
+        - Both
+        - Not theme related
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Safari 18, macOS 15
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: >
+        Console errors, a screenshot, or the output of `npm run audit:dist` if
+        the problem looks like a stray script or a missing asset.
+    validations:
+      required: false
