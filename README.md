@@ -32,7 +32,7 @@ is the emitted source of truth for its token values.
 ```
 src/
   components/
-    base/         header, nav, head, theme toggle, social row, cd-up link
+    base/         header, nav, head, theme toggle, social row, cd-up and to-top links
     identity/     the signature and the bamboo grove
     posts/        rows, meta, tag list, table of contents
     projects/     grid and item
@@ -134,6 +134,13 @@ content schema rejects a remote project icon instead of fetching it.
 No framework runtime on content pages. Anything that can be resolved during the
 build is resolved during the build, which is why the markdown features above are
 plugins rather than components.
+
+The back-to-top anchor follows the same rule at runtime: it is revealed by a
+sticky rail that starts one viewport down, not by a scroll listener, because a
+fourth inline script would break the count `audit:dist` asserts. If you ever need
+to change how it appears, read the comment in `ToTopLink.astro` first. The two
+offsets in it are load-bearing and a plausible-looking simplification stops it
+sticking.
 
 `DESIGN.md` is the locked design authority, and the comments in it record why
 each value is what it is. Change `DESIGN.md` first when a token needs to move,

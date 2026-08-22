@@ -11,7 +11,7 @@ no framework runtime on content pages.
 - Theme · studied-DNA base: antfu.me (structure + tokens), with own identity filling the signature slots (see ## Identity)
 - Axes · dual paper (light >85 / dark <30) / neutral-grotesque display / **accent NEUTRAL — chroma delegated to content** (favicons in link-chips, syntax tokens). This is the strongest signature; never add a chromatic accent.
 - Type · one workhorse grotesque — **Inter** for display + body, hierarchy by size and weight only; **DM Mono** for dates, read-times, email, inline code labels; **Roboto Condensed** only inside link-chips. Self-hosted woff2, latin subset (content is English).
-- Chrome · N9 edge-aligned minimal nav: transparent header, hand-drawn "Sang" mark top-left, right-aligned row of ≤4 text links (Posts · Projects · About) + search icon + theme toggle · footer: none — pages end with a "Find me on" social row (GitHub, LinkedIn) + DM Mono email line inside the prose column
+- Chrome · N9 edge-aligned minimal nav: frosted-glass header — the same `--glass-bg` + `backdrop-filter` panel as the content container, `border-radius: 0.5rem`, a `0.5rem` gap above and below so header and content read as two cards rather than one seam — hand-drawn "Sang" mark top-left, right-aligned row of ≤4 text links (Posts · Projects · About) + search icon + theme toggle · footer: none — pages end with a "Find me on" social row (GitHub, LinkedIn) + DM Mono email line inside the prose column · one floating control: an icon-only back-to-top anchor in the bottom-right gutter, on the same glass, revealed by scrolling and never by script
 - Column · single centred prose column, `--prose-max-width: 65ch`, `line-height: 1.75`
 
 ## Content model
@@ -123,7 +123,11 @@ no framework runtime on content pages.
     bamboo passing under the text blurs into depth while staying 100% readable,
     and the culms in the margins render crisp. No mask, no keep-out band, no
     viewport cutoff: the layer works at every width because the glass, not
-    geometry, protects the reading.
+    geometry, protects the reading. The header and the back-to-top anchor wear
+    the same glass, and unlike `.page-glass` they carry it on every page:
+    `--glass-bg` is the paper colour at 0.6 alpha, so where no grove renders it
+    composites to bare paper and the blur has nothing to act on, which makes a
+    per-page condition pointless for them.
   - **What carries the read.** None of it is optional.
     1. *A culm is a tube, not a line* — its two outlines walked along one
        centreline at ±half-diameter, front plane 2.4–3.3% of the drawing unit

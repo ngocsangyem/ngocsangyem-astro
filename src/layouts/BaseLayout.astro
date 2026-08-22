@@ -3,6 +3,7 @@ import Head from '../components/base/Head.astro';
 import Header from '../components/base/Header.astro';
 import CdUpLink from '../components/base/CdUpLink.astro';
 import SocialRow from '../components/base/SocialRow.astro';
+import ToTopLink from '../components/base/ToTopLink.astro';
 import BambooLines from '../components/identity/BambooLines.astro';
 import { SITE } from '../config/site';
 
@@ -40,5 +41,8 @@ const { title, description, wide = false, grove = true } = Astro.props;
     </main>
     <CdUpLink />
     <SocialRow />
+    {/* Last in the DOM so it lands last in the tab order, after the page's own
+        links, rather than interrupting them from a fixed corner. */}
+    <ToTopLink />
   </body>
 </html>

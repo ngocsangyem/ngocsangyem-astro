@@ -15,6 +15,13 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* The containing block the back-to-top rail measures against. It has to be
+     `html` rather than `body`: the social row's bottom margin collapses out
+     through `body`, leaving that box short of the real document bottom, which
+     would let the anchor drift upward over the last stretch of scrolling.
+     Safe for the three absolutely positioned descendants in the site, since
+     none of them resolve offsets against the initial containing block. */
+  position: relative;
 }
 
 body,
@@ -130,17 +137,31 @@ time {
   padding-inline: var(--page-gutter);
 }
 
-/* The frosted layer of the luỹ tre stack, applied only on pages that show the
-   grove. Bamboo passing directly under the column blurs into depth; culms in
-   the margins, outside this box, stay crisp. Scoped rather than on `.page`
-   itself because backdrop-filter also makes the element a containing block for
-   fixed descendants — article pages (no grove) must not inherit that. */
-.page-glass {
+/* The frosted layer of the luỹ tre stack. Bamboo passing directly under a glass
+   panel blurs into depth; culms in the margins, outside it, stay crisp.
+
+   `.page-glass` is set only on pages that show the grove, and stays off `.page`
+   itself, because backdrop-filter also makes the element a containing block for
+   fixed descendants — article pages (no grove) must not inherit that.
+
+   The header carries the same treatment unconditionally, and needs neither
+   guard. `--glass-bg` is the paper colour at 0.6 alpha, so on a groveless page
+   it composites to bare paper and blurring uniform paper changes nothing; and
+   the header holds no fixed descendant, since the search overlay is a native
+   `dialog` that renders in the top layer regardless of its ancestors. */
+.page-glass,
+.site-header {
   position: relative;
   z-index: 2;
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
+  border-radius: 0.5rem;
+}
+
+/* Only the reading column needs room inside the glass. The header sets its own
+   height from --header-height instead. */
+.page-glass {
   padding-top: 1rem;
   padding-bottom: 1rem;
 }

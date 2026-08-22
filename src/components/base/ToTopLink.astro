@@ -1,0 +1,74 @@
+---
+/* A link, not a button: the design allows no buttons, and a jump to `#top` is
+   navigation anyway. `scroll-behavior: smooth` on `html` already carries the
+   travel, and it is declared under `prefers-reduced-motion: no-preference`, so
+   a reader who asked for less motion gets an instant jump for free. */
+---
+
+<div class="to-top-rail" data-pagefind-ignore>
+  <a class="to-top" href="#top" aria-label="Back to top" title="Back to top">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19.5v-15" />
+      <path d="M5.5 11L12 4.5 18.5 11" />
+    </svg>
+  </a>
+</div>
+
+<style>
+  /* The reveal, with no script.
+
+     Two moving parts, and both are load-bearing. The rail is out of flow and
+     starts one viewport down, which caps how far the anchor can be lifted: a
+     sticky element may not be shifted outside its containing block. The anchor
+     sits at the rail's far end, because `bottom` only ever shifts an element
+     upward, so an anchor starting at the rail's top would have nothing to hold
+     and would simply scroll away.
+
+     Together they put the anchor's clamped position at one viewport plus its own
+     height, just under the fold, wherever the document ends. It surfaces after
+     roughly 40px of scrolling and then stays pinned, on a short page and a long
+     one alike.
+
+     Two alternatives were rejected. `animation-timeline: scroll()` reads better
+     but stable Firefox does not implement it, which would leave the anchor
+     permanently visible there. A scroll listener would be a fourth inline
+     script, and `npm run audit:dist` asserts three. */
+  .to-top-rail {
+    position: absolute;
+    top: 100vh;
+    bottom: 0;
+    right: var(--page-gutter);
+    width: 2.5rem;
+    /* Above the frosted page panel, which sits at z-index 2. */
+    z-index: 3;
+    /* The rail spans nearly the whole document, so it must never swallow a
+       click meant for the text underneath it. */
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .to-top {
+    position: sticky;
+    bottom: 1rem;
+    align-items: center;
+    /* Same frosted treatment as the header and the page panel, because over the
+       grove a bare icon has nothing to hold it. */
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border-radius: 0.5rem;
+    color: var(--color-ink-light);
+    display: flex;
+    height: 2.5rem;
+    justify-content: center;
+    pointer-events: auto;
+    transition: color var(--dur-fast) var(--ease-out);
+    width: 2.5rem;
+  }
+
+  .to-top:hover {
+    color: var(--color-ink-deep);
+  }
+</style>
