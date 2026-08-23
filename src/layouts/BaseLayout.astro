@@ -1,15 +1,15 @@
 ---
-import Head from '../components/base/Head.astro';
-import Header from '../components/base/Header.astro';
-import CdUpLink from '../components/base/CdUpLink.astro';
-import SocialRow from '../components/base/SocialRow.astro';
-import ToTopLink from '../components/base/ToTopLink.astro';
-import { SITE } from '../config/site';
+import Head from "../components/base/Head.astro";
+import Header from "../components/base/Header.astro";
+import CdUpLink from "../components/base/CdUpLink.astro";
+import SocialRow from "../components/base/SocialRow.astro";
+import ToTopLink from "../components/base/ToTopLink.astro";
+import { SITE } from "../config/site";
 
-import '../styles/tokens.css';
-import '../styles/global.css';
-import '../styles/shiki.css';
-import '../styles/animations.css';
+import "../styles/tokens.css";
+import "../styles/global.css";
+import "../styles/shiki.css";
+import "../styles/animations.css";
 
 interface Props {
   title?: string;
@@ -28,13 +28,18 @@ const { title, description, wide = false } = Astro.props;
   </head>
   <body>
     <Header />
-    <main class:list={['page', { 'page-wide': wide }]} data-pagefind-body>
+    <main
+      class:list={["page page-glass", { "page-wide": wide }]}
+      data-pagefind-body
+    >
       <slot />
     </main>
     <CdUpLink />
     <SocialRow />
-    {/* Last in the DOM so it lands last in the tab order, after the page's own
-        links, rather than interrupting them from a fixed corner. */}
+    {
+      /* Last in the DOM so it lands last in the tab order, after the page's own
+        links, rather than interrupting them from a fixed corner. */
+    }
     <ToTopLink />
   </body>
 </html>

@@ -176,3 +176,20 @@ time {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+.page-glass,
+.site-header {
+  position: relative;
+  z-index: 2;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: 0.5rem;
+}
+
+/* Only the reading column needs room inside the glass. The header sets its own
+   height from --header-height instead. */
+.page-glass {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
