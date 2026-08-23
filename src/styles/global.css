@@ -5,6 +5,21 @@
   --page-max-width: var(--prose-max-width);
   --page-gutter: 1.5rem;
   --header-height: 4rem;
+
+  /* Shared layout scale. These stay beside the page-level constants rather
+     than the canonical visual tokens because they describe reusable geometry,
+     not new design decisions. */
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 3.5rem;
+  --space-10: 4rem;
+  --border-hairline: 1px;
+  --control-size: 2.5rem;
 }
 
 *,
@@ -49,8 +64,8 @@ img,
 svg,
 video {
   display: block;
-  max-width: 100%;
-  height: auto;
+  max-inline-size: 100%;
+  block-size: auto;
 }
 
 /* Paper lives on `html`, never on `body`, so a full-height page and a short one
@@ -91,7 +106,7 @@ h4 {
   font-weight: 600;
   line-height: 1.25;
   text-wrap: balance;
-  margin-top: 0;
+  margin-block-start: 0;
 }
 
 a {
@@ -114,9 +129,9 @@ a:hover {
 /* Hairline, never a heavy bar. */
 hr {
   border: 0;
-  border-top: 1px solid var(--color-ink-light);
+  border-block-start: var(--border-hairline) solid var(--color-ink-light);
   opacity: 0.25;
-  margin: 3rem 0;
+  margin-block: var(--space-8);
 }
 
 code,
@@ -134,27 +149,27 @@ time {
   margin-inline: auto;
   /* Gutters sit outside the measure: border-box would otherwise eat them out of
      the column, leaving chrome and prose on different left edges. */
-  max-width: calc(var(--page-max-width) + 2 * var(--page-gutter));
+  max-inline-size: calc(var(--page-max-width) + 2 * var(--page-gutter));
   padding-inline: var(--page-gutter);
 }
 
 .prose-column {
   margin-inline: auto;
-  max-width: var(--prose-max-width);
+  max-inline-size: var(--prose-max-width);
 }
 
 /* Article pages need room beside the column for the margin TOC. The prose stays
    at 65ch and stays centred, so every left edge still lines up. */
 @media (min-width: 80rem) {
   .page-wide {
-    max-width: calc(76rem + 2 * var(--page-gutter));
+    max-inline-size: calc(76rem + 2 * var(--page-gutter));
   }
 }
 
 .visually-hidden {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  inline-size: 1px;
+  block-size: 1px;
   margin: -1px;
   padding: 0;
   overflow: hidden;

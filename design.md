@@ -95,6 +95,26 @@ no framework runtime on content pages.
 }
 ```
 
+## CSS authoring rules
+
+- **Default to logical properties for layout that follows document flow.** Use
+  `margin-block`/`margin-inline`, `padding-block`/`padding-inline`, logical
+  borders, `inset-*`, `inline-size`/`block-size`, and start/end alignment in
+  preference to top/right/bottom/left or width/height equivalents. This keeps
+  the layout correct for right-to-left and alternate writing modes.
+- Keep a physical property only when the geometry is deliberately physical,
+  such as a viewport-bound effect, an intrinsically square asset, a clipping
+  technique, or a visual animation. Add a brief nearby comment when that
+  distinction is not self-evident.
+- **Use CSS custom properties for design values that recur or vary by theme or
+  component state.** Name them by role, not their literal value; reuse an
+  existing token before adding one. Keep canonical colours, typography, motion,
+  and radii in `src/styles/tokens.css`; keep shared page-layout values in
+  `src/styles/global.css`; scope component-only variables to that component.
+- Do not create a token for a one-off value or use variables to obscure a value
+  whose meaning is clearer inline. Tokens express stable design roles, not a
+  complete inventory of numbers.
+
 ## Identity (own work — fills the slots antfu's excluded artwork left)
 - **Personal mark** · hand-drawn "Sang" as an SVG path, stroke-animated on load (`stroke-dasharray`/`stroke-dashoffset` draw-in, `--ease-out`, ~1.2s, once per visit). v1 path is designed by Hallmark; swap for the author's real handwriting later — the slot + animation spec are the contract, the path is replaceable.
 - The mark stays neutral (ink greys) — identity comes from line quality, not colour.

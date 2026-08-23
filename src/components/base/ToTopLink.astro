@@ -35,10 +35,9 @@
      script, and `npm run audit:dist` asserts three. */
   .to-top-rail {
     position: absolute;
-    top: 100vh;
-    bottom: 0;
-    right: var(--page-gutter);
-    width: 2.5rem;
+    inset-block: 100vh 0;
+    inset-inline-end: var(--page-gutter);
+    inline-size: var(--control-size);
     z-index: 3;
     /* The rail spans nearly the whole document, so it must never swallow a
        click meant for the text underneath it. */
@@ -50,7 +49,7 @@
 
   .to-top {
     position: sticky;
-    bottom: 1rem;
+    inset-block-end: var(--space-4);
     align-items: center;
     /* Frosted, because this is sticky: page text scrolls under the icon, and a
        bare glyph over running text has nothing to hold it. */
@@ -60,11 +59,11 @@
     border-radius: 0.5rem;
     color: var(--color-ink-light);
     display: flex;
-    height: 2.5rem;
+    block-size: var(--control-size);
     justify-content: center;
     pointer-events: auto;
     transition: color var(--dur-fast) var(--ease-out);
-    width: 2.5rem;
+    inline-size: var(--control-size);
   }
 
   .to-top:hover {

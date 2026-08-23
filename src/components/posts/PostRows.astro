@@ -40,7 +40,7 @@ const stageOf = new Map(
   .groups {
     display: flex;
     flex-direction: column;
-    gap: 3.5rem;
+    gap: var(--space-9);
   }
 
   .group {
@@ -49,7 +49,7 @@ const stageOf = new Map(
        it behind the page background. */
     isolation: isolate;
     /* Room for the numeral, whose lower half sits behind the first rows. */
-    padding-top: 2.75rem;
+    padding-block-start: 2.75rem;
     /* Clip rather than hide: the numeral runs wider than the column on purpose. */
     overflow: clip;
   }
@@ -60,12 +60,12 @@ const stageOf = new Map(
     font-family: var(--font-display);
     font-size: 5.5rem;
     font-weight: 700;
-    left: -0.04em;
+    inset-inline-start: -0.04em;
     line-height: 0.85;
     opacity: 0.5;
     pointer-events: none;
     position: absolute;
-    top: 0;
+    inset-block-start: 0;
     -webkit-text-stroke: 1px var(--color-ink-light);
     user-select: none;
     z-index: -1;
@@ -78,7 +78,7 @@ const stageOf = new Map(
 
   @media (min-width: 48rem) {
     .group {
-      padding-top: 3.5rem;
+      padding-block-start: var(--space-9);
     }
 
     .group::before {

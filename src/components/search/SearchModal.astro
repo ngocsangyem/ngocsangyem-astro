@@ -59,11 +59,11 @@ const isProd = import.meta.env.PROD;
     border-radius: var(--radius-chip);
     color: var(--color-ink);
     margin-inline: auto;
-    margin-top: 12vh;
-    max-height: 70vh;
-    max-width: min(38rem, calc(100vw - 2rem));
+    margin-block-start: 12vh;
+    max-block-size: 70vh;
+    max-inline-size: min(38rem, calc(100vw - var(--space-6)));
     padding: 0;
-    width: 100%;
+    inline-size: 100%;
 
     /* Pagefind's own dark rules key off [data-pf-theme]; defining the tokens on
        the dialog keeps site theme and OS theme independent. */
@@ -87,7 +87,7 @@ const isProd = import.meta.env.PROD;
   }
 
   .shell {
-    padding: 1rem;
+    padding: var(--space-4);
   }
 
   .status {
@@ -104,6 +104,6 @@ const isProd = import.meta.env.PROD;
   .ui {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-3);
   }
 </style>
