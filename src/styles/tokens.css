@@ -2,11 +2,18 @@
    the Fonts API owns --font-inter and friends, including size-adjusted
    fallback faces, so redefining the families here would fight its cascade. */
 :root {
-  --color-paper: #fafafa;
-  --color-ink: #555555;
-  --color-ink-deep: #222222;
+  /* Warm laid paper, sampled off the reference artwork. Every ink below
+     was re-solved against it to hold the contrast ratio it had on the old
+     off-white, so the paper got warmer and nothing got harder to read.
+     --color-ink-light is the one exception: it is a shade darker than a faithful
+     port would make it, because the value it was ported from missed AA for
+     normal text by a hair (4.35:1) and this is the moment to stop carrying
+     that. */
+  --color-paper: #d3cec4;
+  --color-ink: #3d3a35;
+  --color-ink-deep: #1b1813;
   --color-ink-max: #000000;
-  --color-ink-light: #767676;
+  --color-ink-light: #5c5853;
   --color-chip: #88888822;
   --color-accent: var(--color-ink-deep);
   --color-focus: var(--color-ink-deep);
@@ -14,27 +21,27 @@
   /* Semantic status hues, admonitions only. These are content semantics rather
      than a brand accent: chrome stays greyscale, so the neutral-accent rule
      still holds. Each sits in the same luminance band as the ink token it
-     replaces (5.2:1 to 6.4:1 on paper), so only hue is added, never weight. */
-  --color-note:      #2b6cb0;
-  --color-tip:       #2f7a55;
-  --color-important: #6b46c1;
-  --color-warning:   #8a5a00;
-  --color-caution:   #b03636;
+     replaces (5.0:1 to 6.1:1 on paper), so only hue is added, never weight. */
+  --color-note:      #205183;
+  --color-tip:       #235c40;
+  --color-important: #4d338b;
+  --color-warning:   #654200;
+  --color-caution:   #812828;
 }
 
 [data-theme='dark'] {
-  --color-paper: #0d0d0d;
-  --color-ink: #bbbbbb;
-  --color-ink-deep: #dddddd;
+  --color-paper: #1a2023;
+  --color-ink: #c8cbcb;
+  --color-ink-deep: #edf0f0;
   --color-ink-max: #ffffff;
-  --color-ink-light: #888888;
+  --color-ink-light: #929595;
 
-  /* Lifted for the near-black paper; same 8.6:1 to 10.6:1 band as dark ink. */
-  --color-note:      #8fbce6;
-  --color-tip:       #87c9a6;
-  --color-important: #bda6ee;
-  --color-warning:   #dcae5e;
-  --color-caution:   #e79191;
+  /* Lifted for the near-black paper; same 8.2:1 to 10.1:1 band as dark ink. */
+  --color-note:      #a7cbeb;
+  --color-tip:       #a3d6bb;
+  --color-important: #cab8f1;
+  --color-warning:   #e4bf81;
+  --color-caution:   #eba5a5;
 }
 
 :root {
@@ -51,28 +58,14 @@
 
   --radius-chip: 4px;
 
-  /* Luỹ tre ambient layer. The grove covers the full width — including behind
-     the reading column, where the frosted content container blurs it out — so
-     its color sits a short step off the paper: a soft sage line on the
-     off-white, never strong enough to compete with running text. Depth is two
-     planes: a pen-weight ink in front, a blurred mass behind it. Both carry
-     their own alpha, because the canvas multiplies per-culm depth on top. */
-  --grove-ink: rgba(58, 66, 54, 0.56);
-  --grove-haze: rgba(96, 112, 92, 0.42);
-  --grove-haze-blur: 8px;
-
-  /* The frosted content container over the grove. Translucent paper plus blur:
-     bamboo under the column melts into depth, text stays fully readable. */
-  --glass-bg: rgba(250, 250, 250, 0.6);
+  /* The frosted panel behind the sticky back-to-top control. Paper at 0.6 plus
+     a blur, so page text scrolling under the icon reads as depth instead of
+     colliding with it. Both themes set this to their own paper colour exactly,
+     so the panel is invisible wherever nothing passes behind it. */
+  --glass-bg: rgba(211, 206, 196, 0.6);
   --glass-blur: 12px;
 }
 
 [data-theme='dark'] {
-  /* Moonlit sketch on near-black: the pen turns pale so the line still reads,
-     while the mass behind it stays a deep moss — the only place in the site
-     where the dark theme inverts a value instead of dimming it. */
-  --grove-ink: rgba(198, 216, 196, 0.5);
-  --grove-haze: rgba(66, 104, 76, 0.46);
-
-  --glass-bg: rgba(13, 13, 13, 0.6);
+  --glass-bg: rgba(26, 32, 35, 0.6);
 }

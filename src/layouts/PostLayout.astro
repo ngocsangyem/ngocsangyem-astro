@@ -17,9 +17,7 @@ interface Props {
 const { post, headings, minutesRead } = Astro.props;
 ---
 
-{/* No grove on an article: the margin is the TOC's, and a reading surface should
-    hold still. The ornament belongs to the pages a reader passes through. */}
-<BaseLayout title={post.data.title} description={getDescription(post)} wide grove={false}>
+<BaseLayout title={post.data.title} description={getDescription(post)} wide>
   {/* Prose blocks stagger themselves, so the wrapper stays still: nesting
       two reveals multiplies their opacity mid-animation. */}
   <article class="article">

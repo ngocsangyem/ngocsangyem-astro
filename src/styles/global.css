@@ -53,8 +53,8 @@ video {
   height: auto;
 }
 
-/* Paper lives on `html`, never on `body`. The ambient grove sits at z-index -1
-   inside the body, and a background on the body itself would paint over it. */
+/* Paper lives on `html`, never on `body`, so a full-height page and a short one
+   are the same colour to the bottom of the viewport. */
 html {
   color-scheme: light;
   background-color: var(--color-paper);
@@ -91,6 +91,7 @@ h4 {
   font-weight: 600;
   line-height: 1.25;
   text-wrap: balance;
+  margin-top: 0;
 }
 
 a {
@@ -135,35 +136,6 @@ time {
      the column, leaving chrome and prose on different left edges. */
   max-width: calc(var(--page-max-width) + 2 * var(--page-gutter));
   padding-inline: var(--page-gutter);
-}
-
-/* The frosted layer of the luỹ tre stack. Bamboo passing directly under a glass
-   panel blurs into depth; culms in the margins, outside it, stay crisp.
-
-   `.page-glass` is set only on pages that show the grove, and stays off `.page`
-   itself, because backdrop-filter also makes the element a containing block for
-   fixed descendants — article pages (no grove) must not inherit that.
-
-   The header carries the same treatment unconditionally, and needs neither
-   guard. `--glass-bg` is the paper colour at 0.6 alpha, so on a groveless page
-   it composites to bare paper and blurring uniform paper changes nothing; and
-   the header holds no fixed descendant, since the search overlay is a native
-   `dialog` that renders in the top layer regardless of its ancestors. */
-.page-glass,
-.site-header {
-  position: relative;
-  z-index: 2;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
-  border-radius: 0.5rem;
-}
-
-/* Only the reading column needs room inside the glass. The header sets its own
-   height from --header-height instead. */
-.page-glass {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
 }
 
 .prose-column {

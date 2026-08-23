@@ -19,18 +19,13 @@ import SearchModal from "../search/SearchModal.astro";
 </header>
 
 <style>
-  /* The frosted panel itself comes from `.site-header` in global.css, beside
-     `.page-glass`, so the two glass surfaces cannot drift apart. */
   .site-header {
     align-items: center;
     display: flex;
     justify-content: space-between;
     min-height: var(--header-height);
-    /* Without this the header panel and the page panel touch, and their rounded
-       corners leave four notches of unblurred grove at the seam. */
     margin-block-end: 0.5rem;
     margin-block-start: 0.5rem;
-    border-radius: 6.25rem;
   }
 
   .mark-link {

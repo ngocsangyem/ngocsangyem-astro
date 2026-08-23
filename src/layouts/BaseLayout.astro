@@ -4,7 +4,6 @@ import Header from '../components/base/Header.astro';
 import CdUpLink from '../components/base/CdUpLink.astro';
 import SocialRow from '../components/base/SocialRow.astro';
 import ToTopLink from '../components/base/ToTopLink.astro';
-import BambooLines from '../components/identity/BambooLines.astro';
 import { SITE } from '../config/site';
 
 import '../styles/tokens.css';
@@ -17,15 +16,9 @@ interface Props {
   description?: string;
   /** Widens the main container so an article can use the margin beside it. */
   wide?: boolean;
-  /**
-   * The ambient bamboo grove. On by default: it is the page's atmosphere, not a
-   * per-page decision. Articles switch it off, because there the margin belongs
-   * to the TOC and a reader is staying a while.
-   */
-  grove?: boolean;
 }
 
-const { title, description, wide = false, grove = true } = Astro.props;
+const { title, description, wide = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -34,9 +27,8 @@ const { title, description, wide = false, grove = true } = Astro.props;
     <Head title={title} description={description} />
   </head>
   <body>
-    {grove && <BambooLines />}
     <Header />
-    <main class:list={['page', { 'page-wide': wide, 'page-glass': grove }]} data-pagefind-body>
+    <main class:list={['page', { 'page-wide': wide }]} data-pagefind-body>
       <slot />
     </main>
     <CdUpLink />

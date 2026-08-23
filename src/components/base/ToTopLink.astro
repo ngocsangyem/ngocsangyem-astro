@@ -39,7 +39,6 @@
     bottom: 0;
     right: var(--page-gutter);
     width: 2.5rem;
-    /* Above the frosted page panel, which sits at z-index 2. */
     z-index: 3;
     /* The rail spans nearly the whole document, so it must never swallow a
        click meant for the text underneath it. */
@@ -53,8 +52,8 @@
     position: sticky;
     bottom: 1rem;
     align-items: center;
-    /* Same frosted treatment as the header and the page panel, because over the
-       grove a bare icon has nothing to hold it. */
+    /* Frosted, because this is sticky: page text scrolls under the icon, and a
+       bare glyph over running text has nothing to hold it. */
     background: var(--glass-bg);
     -webkit-backdrop-filter: blur(var(--glass-blur));
     backdrop-filter: blur(var(--glass-blur));
