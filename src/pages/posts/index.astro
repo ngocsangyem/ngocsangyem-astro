@@ -1,12 +1,16 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostRows from '../../components/posts/PostRows.astro';
-import { getPublishedPosts } from '../../lib/posts';
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostRows from "../../components/posts/PostRows.astro";
+import { getPublishedPosts } from "../../lib/posts";
 
 const posts = await getPublishedPosts();
 ---
 
-<BaseLayout title="Posts" description="Notes on building things for the web.">
+<BaseLayout
+  background
+  title="Posts"
+  description="Notes on building things for the web."
+>
   <div class="prose-column" data-enter-children>
     <h1>Posts</h1>
     <PostRows posts={posts} grouped />

@@ -6,7 +6,7 @@ import ProjectGrid from '../components/projects/ProjectGrid.astro';
 const projects = await getCollection('projects');
 ---
 
-<BaseLayout title="Projects" description="Things I have built.">
+<BaseLayout background title="Projects" description="Things I have built.">
   <div class="prose-column" data-enter-children>
     <h1>Projects</h1>
     <ProjectGrid projects={projects} />

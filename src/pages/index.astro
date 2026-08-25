@@ -1,8 +1,8 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import PostRows from '../components/posts/PostRows.astro';
-import { SITE } from '../config/site';
-import { getPublishedPosts } from '../lib/posts';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PostRows from "../components/posts/PostRows.astro";
+import { SITE } from "../config/site";
+import { getPublishedPosts } from "../lib/posts";
 
 const RECENT_COUNT = 6;
 const posts = await getPublishedPosts();
@@ -10,20 +10,30 @@ const recent = posts.slice(0, RECENT_COUNT);
 const hasMore = posts.length > recent.length;
 ---
 
-<BaseLayout>
-  {/* Rows carry their own stagger, so the wrapper must not add a second one. */}
+<BaseLayout background>
+  {
+    /* Rows carry their own stagger, so the wrapper must not add a second one. */
+  }
   <div class="prose-column">
     <h1 data-enter>Hello World!</h1>
-    {SITE.greeting && <p class="greeting" data-enter style="--enter-stage: 1">{SITE.greeting}</p>}
+    {
+      SITE.greeting && (
+        <p class="greeting" data-enter style="--enter-stage: 1">
+          {SITE.greeting}
+        </p>
+      )
+    }
 
     <section data-enter style="--enter-stage: 2">
       <h2 class="heading">Recent</h2>
       <PostRows posts={recent} />
-      {hasMore && (
-        <p class="more">
-          <a href="/posts">All posts</a>
-        </p>
-      )}
+      {
+        hasMore && (
+          <p class="more">
+            <a href="/posts">All posts</a>
+          </p>
+        )
+      }
     </section>
   </div>
 </BaseLayout>

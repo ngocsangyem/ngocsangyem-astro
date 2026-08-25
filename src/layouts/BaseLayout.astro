@@ -4,6 +4,7 @@ import Header from "../components/base/Header.astro";
 import CdUpLink from "../components/base/CdUpLink.astro";
 import SocialRow from "../components/base/SocialRow.astro";
 import ToTopLink from "../components/base/ToTopLink.astro";
+import BambooBackground from "./BambooBackground.astro";
 import { SITE } from "../config/site";
 
 import "../styles/tokens.css";
@@ -16,9 +17,11 @@ interface Props {
   description?: string;
   /** Widens the main container so an article can use the margin beside it. */
   wide?: boolean;
+  /** Paints the bamboo grove behind the page instead of flat paper. */
+  background?: boolean;
 }
 
-const { title, description, wide = false } = Astro.props;
+const { title, description, wide = false, background = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -27,6 +30,11 @@ const { title, description, wide = false } = Astro.props;
     <Head title={title} description={description} />
   </head>
   <body>
+    {
+      /* `auto` tracks the `data-theme` the head script stamps on <html>, so the
+       grove follows the toggle without a second source of truth. */
+    }
+    {background && <BambooBackground wind={false} animate fixed theme="auto" />}
     <Header />
     <main
       class:list={["page page-glass", { "page-wide": wide }]}
