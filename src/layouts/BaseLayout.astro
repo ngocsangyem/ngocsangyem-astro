@@ -34,7 +34,7 @@ const { title, description, wide = false, background = false } = Astro.props;
       /* `auto` tracks the `data-theme` the head script stamps on <html>, so the
        grove follows the toggle without a second source of truth. */
     }
-    {background && <BambooBackground wind={false} animate fixed theme="auto" />}
+    {background && <BambooBackground wind={0.55} animate once fixed theme="auto" />}
     <Header />
     <main
       class:list={["page page-glass", { "page-wide": wide }]}

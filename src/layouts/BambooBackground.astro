@@ -32,6 +32,15 @@ export interface Props {
     /** Grow in on load, or show the finished grove straight away. */
     animate?: boolean;
     /**
+     * Draw the grove once per visit. On every later page of the same session it
+     * appears already finished.
+     *
+     * On a multi-page site the reveal is not a first-run flourish, it is
+     * something the reader sits through on every navigation. By the fifth page
+     * it has stopped being a welcome and become a wait.
+     */
+    once?: boolean;
+    /**
      * How the grove appears.
      *  `ink`  each stroke lands as a drop of ink and bleeds out to fill its shape.
      *  `grow` culms shoot up from the root, leaves open afterwards.
@@ -77,6 +86,7 @@ const {
     density = "normal",
     wind = true,
     animate = true,
+    once = false,
     reveal = "ink",
     wipeSrc = "/bamboo-ink-wipe.webp",
     bleed = 0.5,
@@ -102,6 +112,7 @@ const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
     data-density={density}
     data-wind={windAmount}
     data-animate={animate ? "1" : "0"}
+    data-once={once ? "1" : "0"}
     data-reveal={reveal}
     data-bleed={bleed}
     data-wipe-src={wipeSrc}
@@ -132,8 +143,13 @@ const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
         overflow: hidden;
         pointer-events: none;
         user-select: none;
+        /* The ink repaints instantly on a theme swap, so a slow paper fade would
+           leave the two visibly out of step. Matching the site's own swap
+           duration keeps the mismatch under the threshold where it reads as a
+           crossfade of two separate things. */
         background: var(--paper, var(--paper-light, #d3cec4));
-        transition: background-color 0.4s ease;
+        transition: background-color var(--dur-fast, 150ms)
+            var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
     }
     :global(html[data-theme="dark"]) .bamboo-canvas,
     :global(html[data-color-scheme="dark"]) .bamboo-canvas,
@@ -157,23 +173,110 @@ const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
         z-index: -1;
     }
 
+    /* The grove is painted in one synchronous pass whenever it is not growing
+       in (repeat visit, resize, reduced motion). Without this it would simply
+       appear between two frames. Opacity only: a background that scales or
+       slides on arrival announces itself, and this one should just be there.
+       Kept for reduced motion too, where a fade is the gentler option, not the
+       motion being removed. */
     .bamboo-canvas :global(.bb-depth) {
         position: absolute;
         inset: 0;
         transform-origin: 50% 100%;
+        opacity: 0;
+        transition: opacity 600ms
+            var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+    }
+    .bamboo-canvas[data-bamboo-painted] :global(.bb-depth) {
+        opacity: 1;
     }
     /* skewX shifts x with height and leaves y alone, so the roots stay pinned to
-     the ground. rotate would see-saw the whole frame. */
+     the ground. rotate would see-saw the whole frame.
+
+     The waveform is a slow fundamental plus a second and third harmonic, each
+     phase-shifted, sampled to 16 stops and normalised so the peak still lands
+     exactly on `--sk`. A single sine ping-ponging with `alternate` reads as a
+     metronome once you have watched it for a minute; the harmonics make the
+     lean one way linger and the pull back arrive sooner, which is what a breeze
+     does. 0% and 100% are the same value, so the loop has no seam.
+
+     `linear` between stops on purpose: the curve is already in the numbers, and
+     easing each segment would ease a waveform that has its own velocity.
+
+     One animation on one element, not a second one on the canvas inside: the
+     scratch canvas is added part-way through the reveal and would start its own
+     animation at a different time, drifting out of phase with its own layer. */
     .bamboo-canvas :global(.bb-depth.bb-sway) {
-        animation: bb-sway var(--sd) ease-in-out var(--dly) infinite alternate;
+        animation: bb-sway var(--sd) linear var(--dly) infinite;
     }
     @keyframes bb-sway {
-        from {
+        0% {
+            transform: skewX(calc(var(--sk) * 0.237))
+                translateX(calc(var(--tx) * 0.237));
+        }
+        6.25% {
+            transform: skewX(calc(var(--sk) * 0.588))
+                translateX(calc(var(--tx) * 0.588));
+        }
+        12.5% {
+            transform: skewX(calc(var(--sk) * 0.663))
+                translateX(calc(var(--tx) * 0.663));
+        }
+        18.75% {
+            transform: skewX(calc(var(--sk) * 0.616))
+                translateX(calc(var(--tx) * 0.616));
+        }
+        25% {
+            transform: skewX(calc(var(--sk) * 0.605))
+                translateX(calc(var(--tx) * 0.605));
+        }
+        31.25% {
+            transform: skewX(calc(var(--sk) * 0.619))
+                translateX(calc(var(--tx) * 0.619));
+        }
+        37.5% {
+            transform: skewX(calc(var(--sk) * 0.531))
+                translateX(calc(var(--tx) * 0.531));
+        }
+        43.75% {
+            transform: skewX(calc(var(--sk) * 0.295))
+                translateX(calc(var(--tx) * 0.295));
+        }
+        50% {
+            transform: skewX(calc(var(--sk) * 0.01))
+                translateX(calc(var(--tx) * 0.01));
+        }
+        56.25% {
+            transform: skewX(calc(var(--sk) * -0.207))
+                translateX(calc(var(--tx) * -0.207));
+        }
+        62.5% {
+            transform: skewX(calc(var(--sk) * -0.37))
+                translateX(calc(var(--tx) * -0.37));
+        }
+        68.75% {
+            transform: skewX(calc(var(--sk) * -0.583))
+                translateX(calc(var(--tx) * -0.583));
+        }
+        75% {
+            transform: skewX(calc(var(--sk) * -0.852))
+                translateX(calc(var(--tx) * -0.852));
+        }
+        81.25% {
             transform: skewX(calc(var(--sk) * -1))
                 translateX(calc(var(--tx) * -1));
         }
-        to {
-            transform: skewX(var(--sk)) translateX(var(--tx));
+        87.5% {
+            transform: skewX(calc(var(--sk) * -0.824))
+                translateX(calc(var(--tx) * -0.824));
+        }
+        93.75% {
+            transform: skewX(calc(var(--sk) * -0.327))
+                translateX(calc(var(--tx) * -0.327));
+        }
+        100% {
+            transform: skewX(calc(var(--sk) * 0.237))
+                translateX(calc(var(--tx) * 0.237));
         }
     }
     .bamboo-canvas :global(canvas.bb-cover) {
@@ -219,9 +322,11 @@ const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
         sd: number;
         dly: number;
     }[] = [
-        { key: "far", sk: 0.22, tx: 1, sd: 11.0, dly: -3.1 },
-        { key: "mid", sk: 0.38, tx: 2, sd: 9.0, dly: -1.7 },
-        { key: "front", sk: 0.55, tx: 3, sd: 7.4, dly: 0.0 },
+        // Periods share no small common multiple, so the three layers drift
+        // through every relative phase instead of realigning every few cycles.
+        { key: "far", sk: 0.22, tx: 1, sd: 17.0, dly: -6.4 },
+        { key: "mid", sk: 0.38, tx: 2, sd: 13.0, dly: -3.1 },
+        { key: "front", sk: 0.55, tx: 3, sd: 11.0, dly: 0.0 },
     ];
     const DEPTH_OF: Record<LayerKey, DepthKey> = {
         far: "far",
@@ -671,6 +776,26 @@ const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
         punch(ctx, q);
     }
 
+    /**
+     * `once` mode: true from the second page of a visit onwards.
+     *
+     * The key is claimed on the FIRST call, not when the reveal finishes, so a
+     * reader who navigates away mid-draw still gets the finished grove next
+     * page rather than a second half-draw. sessionStorage, not localStorage:
+     * a visit tomorrow should be greeted again.
+     */
+    const DRAWN_KEY = "bamboo-drawn";
+    function alreadyDrawn(once?: string): boolean {
+        if (once !== "1") return false;
+        try {
+            const seen = sessionStorage.getItem(DRAWN_KEY) === "1";
+            sessionStorage.setItem(DRAWN_KEY, "1");
+            return seen;
+        } catch {
+            return false; // storage blocked: draw every time, which is only the old behaviour
+        }
+    }
+
     function detectTheme(): Theme {
         const r = document.documentElement;
         const a =
@@ -730,7 +855,7 @@ const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
             seed: ds.seed ? parseInt(ds.seed, 10) : (Math.random() * 1e9) | 0,
             density: (ds.density || "normal") as Density,
             wind: reduced ? 0 : parseFloat(ds.wind || "1") || 0,
-            animate: ds.animate === "1" && !reduced,
+            animate: ds.animate === "1" && !reduced && !alreadyDrawn(ds.once),
             // force to exactly two values: an unknown string must fall back to the
             // default rather than quietly sliding into the other branch
             reveal: (ds.reveal === "grow" || ds.reveal === "wipe"
@@ -1167,15 +1292,32 @@ const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
         const mq = matchMedia("(prefers-color-scheme: dark)");
         const mo = new MutationObserver(retheme);
 
+        /**
+         * Hand the layers over to the CSS fade.
+         *
+         * The transition needs a computed `opacity: 0` to start from, so the
+         * zero has to be flushed before the attribute lands. A forced reflow
+         * does that synchronously. Waiting a frame would do it too, but
+         * requestAnimationFrame is throttled to a standstill in a tab that
+         * boots hidden or at zero size, and the grove would sit at opacity 0
+         * with nothing scheduled to bring it back.
+         */
+        function reveal() {
+            for (const l of layers) void l.wrap.offsetWidth;
+            host.dataset.bambooPainted = "1";
+        }
+
         function boot() {
             if (cfg.reveal === "wipe" && cfg.animate) {
                 // load the sprite first; if it fails, show the finished grove
                 loadWipe(cfg.wipeSrc).then(() => {
                     rebuild(false);
+                    reveal();
                     kick();
                 });
             } else {
                 rebuild(!cfg.animate);
+                reveal();
             }
             io.observe(host);
             ro.observe(host);
