@@ -15,8 +15,14 @@ const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
 // One URL shape per page: the sitemap and the feed both omit the trailing
 // slash, and `trailingSlash: 'never'` was pinned so they could agree.
 const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, '');
-// Absolute: relative OG image URLs are ignored by most crawlers.
-const ogImage = new URL('/og-default.png', Astro.site).href;
+// Absolute: relative OG image URLs are ignored by most crawlers. A post gets the
+// card cut for it by `pages/og/[id].png.ts`; everything else gets the artwork
+// those cards are cut from.
+const ogImage = new URL(
+  post ? `/og/${post.id}.png` : '/og-default-dark.png',
+  Astro.site,
+).href;
+const ogImageAlt = post ? post.data.title : SITE.description;
 
 // Date only, no clock: the frontmatter carries no time of day, so a full
 // timestamp would assert midnight UTC as fact.
@@ -102,10 +108,17 @@ const structuredData = post
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={ogImage} />
+{/* Declared, not left to be discovered: some crawlers skip a card whose image
+    they would have to fetch and measure before rendering. */}
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
+<meta property="og:image:type" content="image/png" />
 <meta property="og:site_name" content={SITE.title} />
 <meta property="og:locale" content={SITE.lang} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={ogImageAlt} />
 
 {
   post && (

@@ -41,10 +41,10 @@ src/
   data/           projects.json
   layouts/        BaseLayout, PostLayout
   lib/            build-time logic, with unit tests
-  pages/          routes
+  pages/          routes, including og/[id].png for the per-post social cards
   scripts/        the two client scripts: theme, search
   styles/         tokens, global, prose, shiki, animations
-public/           favicons, robots.txt, OG image
+public/           favicons, robots.txt, OG card artwork (light and dark)
 scripts/          audit-dist.mjs
 vercel.json       security headers and asset caching
 ```
