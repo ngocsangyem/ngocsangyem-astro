@@ -1,9 +1,34 @@
 [
   {
+    "id": "meowkit",
+    "name": "MeowKit",
+    "description": "An agent workflow system for Claude Code: skills, plugins and the conventions that hold a long task together.",
+    "url": "https://github.com/ngocsangyem/MeowKit",
+    "category": "Developer tools",
+    "order": 0
+  },
+  {
+    "id": "reporeaper",
+    "name": "RepoReaper",
+    "description": "Batch archive or delete your own GitHub repositories, from a terminal UI, a CLI, or a local web UI.",
+    "url": "https://github.com/ngocsangyem/reporeaper",
+    "category": "Developer tools",
+    "order": 1
+  },
+  {
+    "id": "freedictionaryapi",
+    "name": "freedictionaryapi",
+    "description": "A dictionary API built on open Wiktionary data, covering more than 700,000 definitions.",
+    "url": "https://github.com/ngocsangyem/freedictionaryapi",
+    "category": "APIs",
+    "order": 2
+  },
+  {
     "id": "ngocsangyem-dev",
     "name": "ngocsangyem.dev",
     "description": "This site. Astro MPA with no client framework runtime, vanilla CSS and TypeScript.",
     "url": "https://github.com/ngocsangyem/ngocsangyem-astro",
-    "category": "Web"
+    "category": "Web",
+    "order": 3
   }
 ]

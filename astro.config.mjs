@@ -23,6 +23,9 @@ export default defineConfig({
   site: 'https://ngocsangyem.dev',
   // Pinned so canonical, RSS and sitemap URLs cannot disagree.
   trailingSlash: 'never',
+  // Markdown images carry no layout of their own, and without one Astro emits an
+  // empty srcset. Setting it here is what makes every post image responsive.
+  image: { layout: 'constrained' },
   integrations: [mdx(), sitemap()],
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   markdown: {

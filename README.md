@@ -37,15 +37,16 @@ src/
     posts/        rows, meta, tag list, table of contents
     projects/     grid and item
     search/       the Pagefind modal
-  content/posts/  the posts, flat
+  content/posts/  the posts: `slug.md`, or `slug/index.md` when it colocates images
   data/           projects.json
   layouts/        BaseLayout, PostLayout
   lib/            build-time logic, with unit tests
   pages/          routes
   scripts/        the two client scripts: theme, search
   styles/         tokens, global, prose, shiki, animations
-public/           favicons, robots.txt, OG image, _headers
+public/           favicons, robots.txt, OG image
 scripts/          audit-dist.mjs
+vercel.json       security headers and asset caching
 ```
 
 ## Setup

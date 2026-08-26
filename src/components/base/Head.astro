@@ -1,19 +1,59 @@
 ---
 import { Font } from 'astro:assets';
 import { SITE } from '../../config/site';
+import type { Post } from '../../lib/posts';
 
 interface Props {
   title?: string;
   description?: string;
+  /** Present on an article, which turns the page into an `article` for crawlers. */
+  post?: Post;
 }
 
-const { title, description = SITE.description } = Astro.props;
+const { title, description = SITE.description, post } = Astro.props;
 const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
 // One URL shape per page: the sitemap and the feed both omit the trailing
 // slash, and `trailingSlash: 'never'` was pinned so they could agree.
 const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, '');
 // Absolute: relative OG image URLs are ignored by most crawlers.
 const ogImage = new URL('/og-default.png', Astro.site).href;
+
+// Date only, no clock: the frontmatter carries no time of day, so a full
+// timestamp would assert midnight UTC as fact.
+const published = post ? post.data.date.toISOString().slice(0, 10) : undefined;
+
+/**
+ * One structured-data node per page, emitted as data rather than script. Posts
+ * describe themselves as a BlogPosting; the home page identifies the site. Every
+ * URL here reuses `canonical`, so structured data cannot disagree with the tag
+ * above it.
+ */
+const structuredData = post
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.data.title,
+      description,
+      url: canonical,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+      datePublished: published,
+      image: ogImage,
+      inLanguage: SITE.lang,
+      author: { '@type': 'Person', name: SITE.author, url: SITE.url },
+      publisher: { '@type': 'Person', name: SITE.author, url: SITE.url },
+      ...(post.data.tags.length > 0 ? { keywords: post.data.tags.join(', ') } : {}),
+    }
+  : Astro.url.pathname === '/'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE.title,
+        description: SITE.description,
+        url: SITE.url,
+        inLanguage: SITE.lang,
+        author: { '@type': 'Person', name: SITE.author, url: SITE.url },
+      }
+    : null;
 ---
 
 {/* Blocking and first: paint must never happen on the wrong paper. */}
@@ -57,14 +97,32 @@ const ogImage = new URL('/og-default.png', Astro.site).href;
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
 
-<meta property="og:type" content="website" />
+<meta property="og:type" content={post ? 'article' : 'website'} />
 <meta property="og:title" content={pageTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={ogImage} />
 <meta property="og:site_name" content={SITE.title} />
+<meta property="og:locale" content={SITE.lang} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content={ogImage} />
+
+{
+  post && (
+    <>
+      <meta property="article:published_time" content={published} />
+      <meta property="article:author" content={SITE.author} />
+      {post.data.tags.map((tag) => <meta property="article:tag" content={tag} />)}
+    </>
+  )
+}
+
+{/* Data, not behaviour: no executable script reaches the page from here. */}
+{
+  structuredData && (
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
+  )
+}
 
 {/* Preload only the faces that paint above the fold; the rest load on use. */}
 <Font cssVariable="--font-inter" preload={[{ weight: '400' }, { weight: '600' }]} />

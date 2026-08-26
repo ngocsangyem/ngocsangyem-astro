@@ -8,13 +8,20 @@ interface Props {
 
 const { projects } = Astro.props;
 
+// Ordered by `order`, then grouped. A Map keeps insertion order, so a category
+// takes its place from the highest-ranked project in it and the projects inside
+// keep that same ranking. Sorting the category names alphabetically instead
+// would hand the top slot to whichever heading starts with an early letter,
+// which is an accident rather than a decision.
+const ranked = [...projects].sort((a, b) => a.data.order - b.data.order);
+
 const byCategory = new Map<string, CollectionEntry<'projects'>[]>();
-for (const project of projects) {
+for (const project of ranked) {
   const bucket = byCategory.get(project.data.category);
   if (bucket) bucket.push(project);
   else byCategory.set(project.data.category, [project]);
 }
-const categories = [...byCategory.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+const categories = [...byCategory.entries()];
 ---
 
 <div class="categories">

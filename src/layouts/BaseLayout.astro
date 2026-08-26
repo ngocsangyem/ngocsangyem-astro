@@ -6,6 +6,7 @@ import SocialRow from "../components/base/SocialRow.astro";
 import ToTopLink from "../components/base/ToTopLink.astro";
 import BambooBackground from "./BambooBackground.astro";
 import { SITE } from "../config/site";
+import type { Post } from "../lib/posts";
 
 import "../styles/tokens.css";
 import "../styles/global.css";
@@ -19,15 +20,17 @@ interface Props {
   wide?: boolean;
   /** Paints the bamboo grove behind the page instead of flat paper. */
   background?: boolean;
+  /** Handed to the head so an article can describe itself as one. */
+  post?: Post;
 }
 
-const { title, description, wide = false, background = false } = Astro.props;
+const { title, description, wide = false, background = false, post } = Astro.props;
 ---
 
 <!doctype html>
 <html lang={SITE.lang}>
   <head>
-    <Head title={title} description={description} />
+    <Head title={title} description={description} post={post} />
   </head>
   <body>
     {

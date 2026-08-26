@@ -41,18 +41,18 @@ We declare `getTodo`, then call it, which creates an execution context. The
 first line inside runs immediately, so `Log me first` reaches the console right
 away. Call that 1ms.
 
-![The getTodo execution context with an empty memory column, global memory holding getTodo, and Log me first in the console](/posts/how-async-await-really-works/step-01.webp)
+![The getTodo execution context with an empty memory column, global memory holding getTodo, and Log me first in the console](./step-01.webp)
 
 Next line. `response` is declared, and until the right-hand side produces
 something it holds `undefined`.
 
-![The same context now showing response = undefined, with a response slot in its memory column](/posts/how-async-await-really-works/step-02.webp)
+![The same context now showing response = undefined, with a response slot in its memory column](./step-02.webp)
 
 `fetch` returns a promise object. Two parts of it matter here: a value slot,
 empty for now, which will hold whatever comes back, and a list of fulfilment
 handlers, empty until something subscribes.
 
-![The context with response = await fetch pointing at a promise object holding a value slot and an empty handler list](/posts/how-async-await-really-works/step-03.webp)
+![The context with response = await fetch pointing at a promise object holding a value slot and an empty handler list](./step-03.webp)
 
 Notice that nothing assigns that promise to a variable of ours. It sits in
 memory, held alive by the suspended function, and `response` will eventually
@@ -68,7 +68,7 @@ Meanwhile the browser has started work of its own. `fetch` hands the request to
 the browser's networking machinery, which sends an HTTP message to the server and
 keeps track of whether a response has arrived. At 1ms, it has not.
 
-![The browser box sending an HTTP GET to a server, its completion column reading not complete at 1ms](/posts/how-async-await-really-works/step-04.webp)
+![The browser box sending an HTTP GET to a server, its completion column reading not complete at 1ms](./step-04.webp)
 
 > [!NOTE]
 > The drawing labels that box `xhr`. `fetch` does not use `XMLHttpRequest`; it is
@@ -78,7 +78,7 @@ keeps track of whether a response has arrived. At 1ms, it has not.
 When the response does turn up, the browser already has somewhere to put it: the
 promise object sitting in memory.
 
-![The browser box gaining an on-complete column that will carry the response value](/posts/how-async-await-really-works/step-05.webp)
+![The browser box gaining an on-complete column that will carry the response value](./step-05.webp)
 
 ## Where await sends you
 
@@ -90,7 +90,7 @@ The next line of the async function is `const todo = await response.json()`, and
 it does not run either. Control has already gone, so the next thing to run is the
 line after the call in the outer script.
 
-![Two arrows leaving the context at each await, with Log me second printed in the console](/posts/how-async-await-really-works/step-06.webp)
+![Two arrows leaving the context at each await, with Log me second printed in the console](./step-06.webp)
 
 This is the whole point of the exercise. We want to start something slow, a
 request that might take a second, and keep running synchronous code while it is
@@ -103,7 +103,7 @@ in hand.
 Say the server answers 200ms later. The browser writes the response into the
 promise's value slot.
 
-![The browser receiving the response at 201ms, the value flowing into the promise object](/posts/how-async-await-really-works/step-07.webp)
+![The browser receiving the response at 201ms, the value flowing into the promise object](./step-07.webp)
 
 ## Why the resumption still waits
 
@@ -140,12 +140,12 @@ queued microtask
 Only once the queue reaches our continuation does `getTodo` come back, at exactly
 the line `await` left.
 
-![The continuation re-entering the context at the await fetch line](/posts/how-async-await-really-works/step-08.webp)
+![The continuation re-entering the context at the await fetch line](./step-08.webp)
 
 The awaited value is assigned to `response`, which is the assignment the first
 `await` skipped past.
 
-![The resolved value stored as response in the context memory column](/posts/how-async-await-really-works/step-09.webp)
+![The resolved value stored as response in the context memory column](./step-09.webp)
 
 ## The second await costs another trip
 
@@ -154,7 +154,7 @@ the body stream and returns another promise, so the second `await` suspends
 `getTodo` all over again and queues a second continuation. Only after that does
 `todo` hold a parsed object.
 
-![todo receiving the parsed object and being stored in the context memory](/posts/how-async-await-really-works/step-10.webp)
+![todo receiving the parsed object and being stored in the context memory](./step-10.webp)
 
 Two awaits in a row are two suspensions, not one. Reading a JSON body is never
 free, and it is a common surprise when someone counts round trips and comes up
@@ -163,7 +163,7 @@ one short.
 With `todo` finally populated, `console.log(todo)` runs and the third line
 appears.
 
-![The console showing all three lines, the todo object last](/posts/how-async-await-really-works/step-11.webp)
+![The console showing all three lines, the todo object last](./step-11.webp)
 
 ## What to keep
 

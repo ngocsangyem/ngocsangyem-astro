@@ -49,6 +49,7 @@ function isArticle(where) {
 }
 let htmlCount = 0;
 let inlineScriptCount = 0;
+let structuredDataCount = 0;
 
 async function walk(dir) {
   const out = [];
@@ -146,7 +147,23 @@ function auditHtml(file, html) {
 
   if (/<iframe[\s>]/i.test(html)) failures.push(`${where}: iframe present`);
 
-  const inlineOnPage = [...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>/gi)].length;
+  // Structured data is markup the crawler reads, not code the browser runs, so
+  // it stays outside the executable budget below. It still gets parsed here: a
+  // malformed ld+json block is invisible in the page and silent in the console.
+  for (const [, json] of html.matchAll(
+    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,
+  )) {
+    try {
+      JSON.parse(json);
+      structuredDataCount += 1;
+    } catch (error) {
+      failures.push(`${where}: unparseable ld+json (${error.message})`);
+    }
+  }
+
+  const inlineOnPage = [
+    ...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>/gi),
+  ].filter(([tag]) => !/type=["']application\/ld\+json["']/i.test(tag)).length;
   inlineScriptCount += inlineOnPage;
   const allowed = isArticle(where)
     ? ALLOWED_INLINE_SCRIPTS_PER_ARTICLE
@@ -194,7 +211,10 @@ for (const asset of localAssets) {
   }
 }
 
-console.log(`audited ${htmlCount} pages, ${inlineScriptCount} inline scripts, ${localAssets.size} local media refs`);
+console.log(
+  `audited ${htmlCount} pages, ${inlineScriptCount} inline scripts, ` +
+    `${structuredDataCount} ld+json blocks, ${localAssets.size} local media refs`,
+);
 
 if (failures.length) {
   console.error('\ndist audit failed:');

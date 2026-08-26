@@ -17,7 +17,7 @@ interface Props {
 const { post, headings, minutesRead } = Astro.props;
 ---
 
-<BaseLayout title={post.data.title} description={getDescription(post)} wide>
+<BaseLayout title={post.data.title} description={getDescription(post)} post={post} wide>
   {/* Prose blocks stagger themselves, so the wrapper stays still: nesting
       two reveals multiplies their opacity mid-animation. */}
   <article class="article">
