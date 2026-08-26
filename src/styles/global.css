@@ -260,3 +260,32 @@ time {
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
+
+/* Magic-link chip: the favicon is the only chroma on the page. Global rather
+   than prose-scoped because a chip is chrome -- rehype mints them inside posts,
+   and the home page writes them by hand. */
+.link-chip {
+  align-items: center;
+  background-color: var(--color-chip);
+  border-radius: var(--radius-chip);
+  display: inline-flex;
+  gap: 0.28em;
+  font-family: var(--font-chip);
+  font-size: 0.94em;
+  line-height: 1.2;
+  padding: 0.1em 0.32em 0.1em 0.28em;
+  text-decoration: none;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.link-chip:hover {
+  opacity: 0.7;
+}
+
+/* `img` for a rehype chip's committed favicon, `svg` for one written inline so
+   the mark can take its colour from the text around it. */
+.link-chip :is(img, svg) {
+  display: inline-block;
+  block-size: 0.95em;
+  inline-size: 0.95em;
+}

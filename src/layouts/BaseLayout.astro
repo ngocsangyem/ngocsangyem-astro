@@ -22,9 +22,21 @@ interface Props {
   background?: boolean;
   /** Handed to the head so an article can describe itself as one. */
   post?: Post;
+  /**
+   * `false` drops the footer contact line. For a page that already shows the
+   * same links itself, so they are not offered twice on one screen.
+   */
+  socials?: boolean;
 }
 
-const { title, description, wide = false, background = false, post } = Astro.props;
+const {
+  title,
+  description,
+  wide = false,
+  background = false,
+  post,
+  socials = true,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -48,7 +60,7 @@ const { title, description, wide = false, background = false, post } = Astro.pro
       <slot />
     </main>
     <CdUpLink />
-    <SocialRow />
+    {socials && <SocialRow />}
     {
       /* Last in the DOM so it lands last in the tab order, after the page's own
         links, rather than interrupting them from a fixed corner. */

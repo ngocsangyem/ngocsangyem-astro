@@ -6,7 +6,16 @@ export interface NavLink {
 export interface SiteSocial {
   label: string;
   href: string;
+  /**
+   * Which brand mark the chip variant draws. A social without one still renders
+   * in the plain row; only the chip needs a glyph, and a chip with a missing
+   * glyph would read as a broken image.
+   */
+  icon?: SocialIconName;
 }
+
+/** Brand marks SocialRow can draw. Extending this means adding the path too. */
+export type SocialIconName = 'github' | 'linkedin';
 
 /** Single source for head tags, header, RSS and the social row. */
 export const SITE = {
@@ -21,7 +30,8 @@ export const SITE = {
     { label: 'About', href: '/about' },
   ] satisfies NavLink[],
   socials: [
-    { label: 'GitHub', href: 'https://github.com/ngocsangyem' },
+    { label: 'GitHub', href: 'https://github.com/ngocsangyem', icon: 'github' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/ngocsangyem/', icon: 'linkedin' },
   ] satisfies SiteSocial[],
   /** Rendered in DM Mono under the social row. */
   email: 'nnsang24@gmail.com',

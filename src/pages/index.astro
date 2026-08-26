@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PostRows from "../components/posts/PostRows.astro";
+import SocialRow from "../components/base/SocialRow.astro";
 import { SITE } from "../config/site";
 import { getPublishedPosts } from "../lib/posts";
 
@@ -10,21 +11,28 @@ const recent = posts.slice(0, RECENT_COUNT);
 const hasMore = posts.length > recent.length;
 ---
 
-<BaseLayout background>
+{
+  /* The contact links belong to the introduction here, not to the foot of the
+     page, so the layout's own copy of them is switched off. */
+}
+<BaseLayout background socials={false}>
   {
     /* Rows carry their own stagger, so the wrapper must not add a second one. */
   }
   <div class="prose-column">
     <h1 data-enter>Hello World!</h1>
+    <div data-enter style="--enter-stage: 1">
+      <SocialRow variant="chips" />
+    </div>
     {
       SITE.greeting && (
-        <p class="greeting" data-enter style="--enter-stage: 1">
+        <p class="greeting" data-enter style="--enter-stage: 2">
           {SITE.greeting}
         </p>
       )
     }
 
-    <section data-enter style="--enter-stage: 2">
+    <section data-enter style="--enter-stage: 3">
       <h2 class="heading">Recent</h2>
       <PostRows posts={recent} />
       {
@@ -49,7 +57,9 @@ const hasMore = posts.length > recent.length;
     color: var(--color-ink);
     font-size: 1.0625rem;
     line-height: 1.75;
-    margin-block: 1rem 3.5rem;
+    /* The chip row sits between this and the title now, so the space above only
+       has to clear the chips rather than open the page. */
+    margin-block: 1.25rem 3.5rem;
     max-width: 52ch;
   }
 

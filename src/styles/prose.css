@@ -306,30 +306,10 @@
   scroll-margin-block-start: 5rem;
 }
 
-/* Magic-link chip: the favicon is the only chroma on the page. */
-.link-chip {
-  align-items: center;
-  background-color: var(--color-chip);
-  border-radius: var(--radius-chip);
-  display: inline-flex;
-  gap: 0.28em;
-  font-family: var(--font-chip);
-  font-size: 0.94em;
-  line-height: 1.2;
-  padding: 0.1em 0.32em 0.1em 0.28em;
-  text-decoration: none;
+/* The chip itself lives in global.css; running prose only needs it nudged onto
+   the text baseline, which a chip standing on its own must not be. */
+.prose .link-chip {
   transform: translateY(3px);
-  transition: opacity var(--dur-fast) var(--ease-out);
-}
-
-.link-chip:hover {
-  opacity: 0.7;
-}
-
-.link-chip img {
-  display: inline-block;
-  block-size: 0.95em;
-  inline-size: 0.95em;
 }
 
 /* Admonitions carry their type in a semantic hue on the label and the left
