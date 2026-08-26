@@ -1,1293 +1,1144 @@
 ---
 /**
- * BambooBackground.astro
+ * BambooCanvas.astro
  *
- * Nền tre Việt vẽ bằng WebGL — giấy điệp, mực than lá tre, bụi tre và cây măng.
- * Thuần trang trí: không nhận chuột, không nhận bàn phím, aria-hidden.
+ * A bamboo grove background drawn with Canvas 2D. No external assets, no build
+ * step, no masks, no blend modes. Transparency is native and the ink colour is
+ * just a fillStyle.
  *
- *   <div style="position:relative">
- *     <BambooBackground />
- *     <main>…</main>
+ * How the work is split:
+ *   - Drawing: Canvas 2D, each frame paints only what is new. Median 0.04 ms/frame.
+ *   - Wind: CSS skewX on the three depth layers, pure compositor.
+ *   - Once the grove has finished growing, no JavaScript runs at all.
+ *
+ *   <div style="position:relative;min-height:100vh">
+ *     <BambooCanvas />
+ *     <main>...</main>
  *   </div>
  *
- *   <BambooBackground fixed wind={false} />          // nền tĩnh hoàn toàn
- *   <BambooBackground fixed wind={0.4} density="sparse" />
+ *   <BambooCanvas fixed wind={false} density="sparse" />
+ *
+ * Grove geometry lives in `src/lib/bamboo-geometry.ts`; this file is only the
+ * drawing backend. compose() emits strokes, here they become brush stamps.
  */
 
 export interface Props {
-    /** Seed cố định để mọi lần dựng đều ra một bố cục. Bỏ trống = ngẫu nhiên mỗi lần tải. */
+    /** Fixed seed for a repeatable layout. Omit for a new one each load. */
     seed?: number;
-    /**
-     * Chuyển động theo gió. `false` tắt hẳn — không sinh trường chuyển động,
-     * không biên dịch phần gió vào shader, và vòng lặp dừng ngay khi mọc xong.
-     * `true` dùng mức mặc định, hoặc truyền số để chỉnh độ mạnh (0–2).
-     */
-    wind?: boolean | number;
-    /** Độ đậm của mực. */
-    ink?: number;
-    /** Số thân trong lũy. */
+    /** How many culms in the grove. */
     density?: "sparse" | "normal" | "dense";
-    /** Mọc dần từ gốc lên khi tải trang, hay hiện luôn lũy hoàn chỉnh. */
+    /** `false` turns wind off. `true` is the default level, or a number from 0 to 2. */
+    wind?: boolean | number;
+    /** Grow in on load, or show the finished grove straight away. */
     animate?: boolean;
-    /** Thời gian mọc, tính bằng giây. Video mẫu: ~3s. */
+    /**
+     * How the grove appears.
+     *  `ink`  each stroke lands as a drop of ink and bleeds out to fill its shape.
+     *  `grow` culms shoot up from the root, leaves open afterwards.
+     *  `wipe` a real rotating ink wash uncovers the whole frame. Needs a sprite
+     *         file; see `wipeSrc`.
+     */
+    reveal?: "ink" | "grow" | "wipe";
+    /**
+     * Sprite for `wipe` mode: a GREYSCALE image, 25 frames side by side, where
+     * grey level means coverage. Derived from codyhouse/ink-transition-effect,
+     * so check their licence before shipping this.
+     */
+    wipeSrc?: string;
+    /**
+     * Seconds for one drop of ink to bleed across its stroke.
+     * To slow the whole thing down widen `duration`, not this. A long bleed
+     * leaves many strokes spreading at once and doubles p95. Slow calligraphy
+     * lives in the pauses between strokes; each stroke itself stays decisive.
+     */
+    bleed?: number;
+    /** Seconds to grow. */
     duration?: number;
-    /** Cây măng ở gốc bụi, in vàng hoa hòe và đỏ sỏi son. */
+    /** A shoot at the foot of the clump, printed in gamboge and cinnabar. */
     shoot?: boolean;
-    /** 'auto' bám theo prefers-color-scheme và class/data-theme trên <html>. */
+    /** 'auto' follows prefers-color-scheme and class/data-theme on <html>. */
     theme?: "light" | "dark" | "auto";
-    /** Nền chế độ sáng, nét mực đen. */
     paperLight?: string;
-    /** Nền chế độ tối, nét mực trắng điệp. */
     paperDark?: string;
-    /** position:fixed thay vì absolute. */
+    inkLight?: string;
+    inkDark?: string;
+    /**
+     * Logical pixel budget for all three layers combined. Three full-screen
+     * canvases at 1920x1080 @dpr2 cost 95 MB, and Safari on iPhone kills the
+     * tab for it.
+     */
+    maxPixels?: number;
     fixed?: boolean;
     class?: string;
 }
 
 const {
     seed,
-    wind = true,
-    ink = 2.05,
     density = "normal",
+    wind = true,
     animate = true,
+    reveal = "ink",
+    wipeSrc = "/bamboo-ink-wipe.webp",
+    bleed = 0.5,
     duration = 3,
     shoot = true,
     theme = "auto",
     paperLight = "#d3cec4",
     paperDark = "#1a2023",
+    inkLight = "#191c1a",
+    inkDark = "#e8e6dc",
+    maxPixels = 4_000_000,
     fixed = false,
     class: className = "",
 } = Astro.props;
 
-const windAmount = wind === true ? 0.8 : wind === false ? 0 : wind;
+const windAmount = wind === true ? 1 : wind === false ? 0 : wind;
 ---
 
 <div
-    class:list={["bamboo-bg", fixed && "is-fixed", className]}
+    class:list={["bamboo-canvas", fixed && "is-fixed", className]}
+    data-bamboo-canvas
+    data-seed={seed ?? ""}
+    data-density={density}
+    data-wind={windAmount}
+    data-animate={animate ? "1" : "0"}
+    data-reveal={reveal}
+    data-bleed={bleed}
+    data-wipe-src={wipeSrc}
+    data-duration={duration}
+    data-shoot={shoot ? "1" : "0"}
+    data-theme-mode={theme}
+    data-paper-light={paperLight}
+    data-paper-dark={paperDark}
+    data-ink-light={inkLight}
+    data-ink-dark={inkDark}
+    data-max-pixels={maxPixels}
     aria-hidden="true"
-    style={`--bamboo-paper:${theme === "dark" ? paperDark : paperLight}`}
+    style={`--paper-light:${paperLight};--paper-dark:${paperDark}${theme === "auto" ? "" : `;--paper:${theme === "dark" ? paperDark : paperLight}`}`}
 >
-    <canvas
-        data-bamboo
-        data-seed={seed ?? ""}
-        data-wind={windAmount}
-        data-ink={ink}
-        data-density={density}
-        data-animate={animate ? "1" : "0"}
-        data-duration={duration}
-        data-shoot={shoot ? "1" : "0"}
-        data-theme-mode={theme}
-        data-paper-light={paperLight}
-        data-paper-dark={paperDark}></canvas>
 </div>
 
 <style>
-    .bamboo-bg {
+    /* The paper colour has to be right on the FIRST paint. The script that
+       decides it is a module, so it runs after parse; anything the build
+       hard-codes here is a full-viewport flash of the wrong paper until then.
+       So in `auto` mode CSS picks the colour, mirroring detectTheme()'s
+       precedence, off the `data-theme` a blocking head script stamps on <html>
+       before paint. The script's later `--paper` write lands on the same value
+       and wins the cascade for the rest of the session. */
+    .bamboo-canvas {
         position: absolute;
         inset: 0;
         overflow: hidden;
         pointer-events: none;
         user-select: none;
-        background: var(--bamboo-paper, #d3cec4);
-        transition: background-color 0.45s ease;
+        background: var(--paper, var(--paper-light, #d3cec4));
+        transition: background-color 0.4s ease;
     }
-    .bamboo-bg.is-fixed {
+    :global(html[data-theme="dark"]) .bamboo-canvas,
+    :global(html[data-color-scheme="dark"]) .bamboo-canvas,
+    :global(html.dark) .bamboo-canvas {
+        background: var(--paper, var(--paper-dark, #1a2023));
+    }
+    /* No explicit marker on <html> (JS off, or a host that never stamps one):
+       fall back to the OS preference, same as detectTheme() does. */
+    @media (prefers-color-scheme: dark) {
+        :global(
+                html:not([data-theme]):not([data-color-scheme]):not(.dark):not(
+                        .light
+                    )
+            )
+            .bamboo-canvas {
+            background: var(--paper, var(--paper-dark, #1a2023));
+        }
+    }
+    .bamboo-canvas.is-fixed {
         position: fixed;
         z-index: -1;
     }
-    .bamboo-bg canvas {
-        display: block;
+
+    .bamboo-canvas :global(.bb-depth) {
+        position: absolute;
+        inset: 0;
+        transform-origin: 50% 100%;
+    }
+    /* skewX shifts x with height and leaves y alone, so the roots stay pinned to
+     the ground. rotate would see-saw the whole frame. */
+    .bamboo-canvas :global(.bb-depth.bb-sway) {
+        animation: bb-sway var(--sd) ease-in-out var(--dly) infinite alternate;
+    }
+    @keyframes bb-sway {
+        from {
+            transform: skewX(calc(var(--sk) * -1))
+                translateX(calc(var(--tx) * -1));
+        }
+        to {
+            transform: skewX(var(--sk)) translateX(var(--tx));
+        }
+    }
+    .bamboo-canvas :global(canvas.bb-cover) {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
+    }
+    .bamboo-canvas :global(canvas) {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bamboo-canvas :global(.bb-depth.bb-sway) {
+            animation: none;
+        }
     }
 </style>
 
 <script>
-    type Stamp = {
-        x: number;
-        y: number;
-        r: number;
-        a: number;
-        t: number;
-        ch: "hoe" | "son" | null;
-    };
-    type Clump = {
-        x: number;
-        n: number;
-        w: number;
-        ink: number;
-        dry: number;
-        top: number;
-        lo: number;
-        hi: number;
-        leafBelow?: number;
-    };
+    import { compose, n1 } from "../lib/bamboo-geometry";
+    import type {
+        LayerKey,
+        Density,
+        PathStroke,
+        Stroke,
+    } from "../lib/bamboo-geometry";
+
     type Theme = "light" | "dark";
-    type CulmNode = {
-        y: number;
-        x: number;
-        w: number;
-        side: number;
-        t: number;
-    };
-    /** z: 0 lá, 1 cành, 2 thân — thân tô sau cùng để giữ độ cứng */
-    type Flex = {
-        x: number;
-        y: number;
-        r: number;
-        flex: number;
-        phase: number;
-        z: number;
-    };
+    type Reveal = "ink" | "grow" | "wipe";
+    type Tint = "ink" | "hoe" | "son";
+    type DepthKey = "far" | "mid" | "front";
 
-    const VS = `
-attribute vec2 aPos; varying vec2 vUv;
-void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.0,1.0); }`;
-
-    const FS = (wind: boolean) => `
-precision highp float;
-varying vec2 vUv;
-uniform sampler2D uInk, uBleed, uPig;${wind ? "\nuniform sampler2D uMotion;" : ""}
-uniform vec2  uTexel, uReg;
-uniform vec3  uPaper, uInkCol, uHoe, uSon, uHalo;
-uniform float uTime, uWind, uStrength, uAspect;
-
-float hash(vec2 p){ p = fract(p*vec2(123.34,345.45)); p += dot(p,p+34.345); return fract(p.x*p.y); }
-float vnoise(vec2 p){
-  vec2 i = floor(p), f = fract(p);
-  f = f*f*(3.0-2.0*f);
-  float a=hash(i), b=hash(i+vec2(1.0,0.0)), c=hash(i+vec2(0.0,1.0)), d=hash(i+vec2(1.0,1.0));
-  return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
-}
-float fbm(vec2 p){ float s=0.0,a=0.5; for(int i=0;i<4;i++){ s+=a*vnoise(p); p*=2.03; a*=0.5; } return s; }
-
-void main(){
-  vec2 uv = vUv;
-${
-    wind
-        ? `
-  // trường chuyển động: R = độ mềm (gốc cứng, lá mềm), G = pha riêng từng bộ phận
-  vec3 mt = texture2D(uMotion, vUv).rgb;
-  float flex = mt.r;
-  float ph   = mt.g * 6.2831853;
-
-  // gió nồm thổi thành sóng chạy ngang qua lũy, cộng một nhịp giật chậm
-  float g1   = sin(uTime*0.85 + ph + vUv.x*3.6 - vUv.y*1.1);
-  float g2   = sin(uTime*1.90 + ph*1.6 + vUv.x*8.0 + 1.3);
-  float gust = 0.70 + 0.30*sin(uTime*0.23 + vUv.x*1.4);
-  float amp  = uWind * flex * gust;
-  uv.x += (g1*0.0072 + g2*0.0026) * amp;
-  uv.y += (g2*0.0016) * amp;
-
-  // rung lá: tần số cao, luỹ thừa 2.5 dập tắt hoàn toàn ở thân
-  float soft2 = pow(flex, 2.5);
-  float fl = sin(uTime*4.3 + ph*3.1 + vUv.x*22.0 + vUv.y*14.0)
-           + 0.6*sin(uTime*6.7 + ph*5.3 + vUv.y*19.0);
-  uv.x += fl * 0.0016 * uWind * soft2 * gust;
-  uv.y += fl * 0.0011 * uWind * soft2;
-`
-        : ""
-}
-
-  float d = texture2D(uInk,   uv).r;
-  float b = texture2D(uBleed, uv).r;
-  float dm = mix(d, max(d, b*1.06), 0.16);
-
-  // biên nét sẫm lại — dấu hiệu dễ nhận nhất của mực trên giấy
-  float dxp = texture2D(uInk, uv+vec2(uTexel.x*1.6,0.0)).r;
-  float dxm = texture2D(uInk, uv-vec2(uTexel.x*1.6,0.0)).r;
-  float dyp = texture2D(uInk, uv+vec2(0.0,uTexel.y*1.6)).r;
-  float dym = texture2D(uInk, uv-vec2(0.0,uTexel.y*1.6)).r;
-  dm *= 1.0 + 1.30*length(vec2(dxp-dxm, dyp-dym));
-
-  vec2 np = uv*vec2(uAspect,1.0);   // theo mực, trôi theo gió
-  vec2 pp = vUv*vec2(uAspect,1.0);  // theo giấy, đứng yên
-  dm *= 0.86 + 0.30*fbm(np*185.0);
-
-  // quầng tách sắc — uHalo quyết định hướng lệch màu, nền tối thì đảo lại
-  float halo = max(b - d, 0.0) * 0.35;
-  vec3 dens = vec3(dm) + halo * uHalo;
-
-  // ván màu in trước, ván nét in sau — bao giờ cũng lệch một chút
-  vec3 pg = texture2D(uPig, uv + uReg).rgb;
-  float soft = 0.55 + 0.45*fbm(np*90.0);
-
-  // giấy điệp: hồ nếp trộn vỏ sò, quét bằng chổi lá thông.
-  // thớ giấy cộng thẳng vào nền để nền sáng hay tối đều nhìn thấy
-  float streak = vnoise(pp*vec2(2.6,300.0));
-  float tooth  = fbm(pp*6.0);
-  float fiber  = vnoise(pp*vec2(430.0,150.0));
-  vec3 paper = uPaper;
-  paper += (tooth-0.5)*0.032 + (streak-0.5)*0.026 + (fiber-0.5)*0.016;
-  paper += smoothstep(0.976, 1.0, hash(floor(pp*1100.0))) * vec3(0.075,0.068,0.050);
-
-  // hợp bằng phép mix theo độ phủ: nét có thể sẫm hơn HOẶC sáng hơn giấy
-  vec3 col = paper;
-  col = mix(col, uHoe, 1.0 - exp(-pg.r*soft*2.2));
-  col = mix(col, uSon, 1.0 - exp(-pg.g*soft*2.2));
-  col = mix(col, uInkCol, 1.0 - exp(-dens*uStrength));
-
-  col *= 1.0 - 0.14*pow(length((vUv-0.5)*vec2(uAspect,1.0))*1.05, 2.6);
-  gl_FragColor = vec4(col, 1.0);
-}`;
-
-    const DENSITY: Record<"sparse" | "normal" | "dense", Clump[]> = {
-        sparse: [
-            {
-                x: 0.52,
-                n: 3,
-                w: 0.034,
-                ink: 0.225,
-                dry: 0.46,
-                top: -0.06,
-                lo: -0.5,
-                hi: 1.0,
-            },
-            {
-                x: 0.86,
-                n: 2,
-                w: 0.024,
-                ink: 0.13,
-                dry: 0.54,
-                top: 0.08,
-                lo: -0.6,
-                hi: 0.9,
-            },
-            {
-                x: 0.085,
-                n: 1,
-                w: 0.028,
-                ink: 0.19,
-                dry: 0.5,
-                top: -0.12,
-                lo: -1.0,
-                hi: -0.55,
-                leafBelow: 0.26,
-            },
-        ],
-        normal: [
-            {
-                x: 0.455,
-                n: 4,
-                w: 0.037,
-                ink: 0.235,
-                dry: 0.44,
-                top: -0.1,
-                lo: -0.55,
-                hi: 1.0,
-            },
-            {
-                x: 0.815,
-                n: 3,
-                w: 0.026,
-                ink: 0.145,
-                dry: 0.52,
-                top: 0.02,
-                lo: -0.85,
-                hi: 0.95,
-            },
-            {
-                x: 0.975,
-                n: 2,
-                w: 0.016,
-                ink: 0.055,
-                dry: 0.66,
-                top: 0.26,
-                lo: 0.1,
-                hi: 1.0,
-            },
-            {
-                x: 0.075,
-                n: 2,
-                w: 0.031,
-                ink: 0.2,
-                dry: 0.48,
-                top: -0.14,
-                lo: -1.0,
-                hi: -0.1,
-                leafBelow: 0.26,
-            },
-        ],
-        dense: [
-            {
-                x: 0.3,
-                n: 4,
-                w: 0.036,
-                ink: 0.235,
-                dry: 0.44,
-                top: -0.12,
-                lo: -0.9,
-                hi: 0.8,
-            },
-            {
-                x: 0.66,
-                n: 4,
-                w: 0.03,
-                ink: 0.175,
-                dry: 0.48,
-                top: -0.04,
-                lo: -0.9,
-                hi: 1.0,
-            },
-            {
-                x: 0.93,
-                n: 3,
-                w: 0.02,
-                ink: 0.075,
-                dry: 0.62,
-                top: 0.18,
-                lo: -0.4,
-                hi: 1.0,
-            },
-            {
-                x: 0.055,
-                n: 2,
-                w: 0.03,
-                ink: 0.21,
-                dry: 0.48,
-                top: -0.16,
-                lo: -1.0,
-                hi: -0.2,
-                leafBelow: 0.22,
-            },
-        ],
+    /** Three depth layers. Culms and leaves of one clump sit on the SAME layer,
+     *  so they share a wind transform and never drift apart. */
+    const DEPTHS: {
+        key: DepthKey;
+        sk: number;
+        tx: number;
+        sd: number;
+        dly: number;
+    }[] = [
+        { key: "far", sk: 0.22, tx: 1, sd: 11.0, dly: -3.1 },
+        { key: "mid", sk: 0.38, tx: 2, sd: 9.0, dly: -1.7 },
+        { key: "front", sk: 0.55, tx: 3, sd: 7.4, dly: 0.0 },
+    ];
+    const DEPTH_OF: Record<LayerKey, DepthKey> = {
+        far: "far",
+        midCulm: "mid",
+        midLeaf: "mid",
+        frontCulm: "front",
+        frontLeaf: "front",
+        shootColor: "front",
+        shootLine: "front",
     };
 
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    /** Long strokes have to be cut into chunks, otherwise a whole culm segment
+     *  pops out at once and the growth looks jerky. */
+    const CHUNK = 0.045;
+    const NT = 256;
 
-    function mulberry32(a: number) {
-        return function () {
-            a |= 0;
-            a = (a + 0x6d2b79f5) | 0;
-            let t = Math.imul(a ^ (a >>> 15), 1 | a);
-            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-        };
-    }
+    type Piece =
+        | {
+              blob: true;
+              depth: DepthKey;
+              tint: Tint;
+              x: number;
+              y: number;
+              r: number;
+              alpha: number;
+              t: number;
+          }
+        | {
+              blob: false;
+              depth: DepthKey;
+              tint: Tint;
+              o: Float32Array;
+              alpha: number;
+              dry: number;
+              ang: number;
+              mx: number;
+              my: number;
+              R: number;
+              /** Bounding box in stroke-aligned space: [x0,y0,x1,y1] around (mx,my). */
+              qbox: readonly [number, number, number, number];
+              t: number;
+              /** Where the brush lands: the widest point on the stroke. */
+              ox: number;
+              oy: number;
+              /** Radius needed to cover the stroke, and radius of the first ink drop. */
+              maxR: number;
+              blotR: number;
+              /** Precomputed bleed rim, built LAZILY the first time a stroke is
+               *  drawn. Building all 647 up front is ~390k noise calls in one frame. */
+              rimSeed: number;
+              rx: Float32Array | null;
+              ry: Float32Array | null;
+              /** Bounding box, so the scratch layer only clears what is dirty. */
+              bx: number;
+              by: number;
+              bw: number;
+              bh: number;
+          };
 
-    function n1(x: number) {
-        const i = Math.floor(x),
-            f = x - i,
-            s = f * f * (3 - 2 * f);
-        const h = (k: number) => {
-            let t = Math.imul(k ^ 0x9e3779b9, 0x85ebca6b);
-            t ^= t >>> 13;
-            return ((t >>> 0) % 1000) / 1000;
-        };
-        return lerp(h(i), h(i + 1), s);
-    }
-
-    function hexToRgb(hex: string): [number, number, number] {
-        const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
-        if (!m) return [0.902, 0.863, 0.769];
-        return [
-            parseInt(m[1], 16) / 255,
-            parseInt(m[2], 16) / 255,
-            parseInt(m[3], 16) / 255,
-        ];
-    }
-
-    const SPR = 64;
-    function makeSprite(rgb: string) {
+    let noiseTile: HTMLCanvasElement | null = null;
+    /** Mean alpha of the noise tile, needed to know how much ink the punch removes. */
+    let noiseMean = 0.35;
+    /** Pink-noise tile, streaks along Y. Built once, shared by every instance. */
+    function getNoise(): HTMLCanvasElement {
+        if (noiseTile) return noiseTile;
         const c = document.createElement("canvas");
-        c.width = c.height = SPR;
-        const x = c.getContext("2d")!;
-        const g = x.createRadialGradient(
-            SPR / 2,
-            SPR / 2,
-            0,
-            SPR / 2,
-            SPR / 2,
-            SPR / 2,
-        );
-        g.addColorStop(0.0, `rgba(${rgb},1)`);
-        g.addColorStop(0.3, `rgba(${rgb},.72)`);
-        g.addColorStop(0.55, `rgba(${rgb},.34)`);
-        g.addColorStop(0.78, `rgba(${rgb},.10)`);
-        g.addColorStop(1.0, `rgba(${rgb},0)`);
-        x.fillStyle = g;
-        x.fillRect(0, 0, SPR, SPR);
+        c.width = c.height = NT;
+        const ctx = c.getContext("2d")!;
+        const img = ctx.createImageData(NT, NT);
+        const d = img.data;
+        for (let y = 0; y < NT; y++)
+            for (let x = 0; x < NT; x++) {
+                const v =
+                    n1(x * 1.7) * 0.55 +
+                    n1(x * 5.1 + 100) * 0.22 +
+                    n1(x * 0.3 + y * 0.06 + 7) * 0.45;
+                const a = Math.max(0, Math.min(1, (v - 0.52) * 3.2));
+                const i = (y * NT + x) * 4;
+                d[i] = d[i + 1] = d[i + 2] = 255;
+                d[i + 3] = Math.round(a * 255);
+            }
+        ctx.putImageData(img, 0, 0);
+        let sum = 0;
+        for (let i = 3; i < d.length; i += 4) sum += d[i];
+        noiseMean = sum / (255 * NT * NT);
+        noiseTile = c;
         return c;
     }
 
-    // sprite dùng chung cho mọi instance trên trang
-    let sprites: {
-        ink: HTMLCanvasElement;
-        hoe: HTMLCanvasElement;
-        son: HTMLCanvasElement;
-    } | null = null;
-    function getSprites() {
-        if (!sprites)
-            sprites = {
-                ink: makeSprite("255,255,255"),
-                hoe: makeSprite("255,0,0"),
-                son: makeSprite("0,255,0"),
-            };
-        return sprites;
+    function hexToRgb(hex: string): string {
+        const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
+        if (!m) return "25,28,26";
+        return `${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)}`;
     }
 
-    const INK = {
-        light: {
-            ink: [0.086, 0.098, 0.086],
-            hoe: [0.788, 0.576, 0.184],
-            son: [0.71, 0.251, 0.184],
-            halo: [0.22, 0.62, 1.15],
-        },
-        dark: {
-            ink: [0.91, 0.902, 0.863],
-            hoe: [0.863, 0.667, 0.298],
-            son: [0.831, 0.38, 0.302],
-            halo: [1.15, 0.62, 0.22],
-        },
-    } as const;
+    /** Centreline to tapered polygon, sampled over [t0, t1]. */
+    function outline(s: PathStroke, t0: number, t1: number, n: number) {
+        const p: { x: number; y: number; nx: number; ny: number; w: number }[] =
+            [];
+        for (let i = 0; i <= n; i++) {
+            const u = t0 + (t1 - t0) * (i / n);
+            const [x, y] = s.path(u);
+            const [x2, y2] = s.path(Math.min(1, u + 1e-3));
+            let tx = x2 - x,
+                ty = y2 - y;
+            const l = Math.hypot(tx, ty) || 1;
+            p.push({ x, y, nx: -ty / l, ny: tx / l, w: s.width(u) });
+        }
+        const o: number[] = [];
+        for (const q of p)
+            o.push(q.x + q.nx * q.w * 0.5, q.y + q.ny * q.w * 0.5);
+        for (let i = p.length - 1; i >= 0; i--)
+            o.push(
+                p[i].x - p[i].nx * p[i].w * 0.5,
+                p[i].y - p[i].ny * p[i].w * 0.5,
+            );
+        return { o: Float32Array.from(o), p };
+    }
 
-    /** Chế độ hiện hành: ưu tiên class/thuộc tính trên <html>, sau đó tới hệ điều hành. */
+    function build(
+        W: number,
+        H: number,
+        seed: number,
+        density: Density,
+        shoot: boolean,
+        reveal: Reveal,
+    ) {
+        const raw: Stroke[] = [];
+        compose({ W, H, seed, density, shoot, emit: (s) => raw.push(s) });
+        const out: Piece[] = [];
+
+        for (const s of raw) {
+            const depth = DEPTH_OF[s.layer] ?? "front";
+            if (s.kind === "mist") {
+                if (s.layer !== "shootColor") continue;
+                out.push({
+                    blob: true,
+                    depth,
+                    tint: s.pigment === "son" ? "son" : "hoe",
+                    x: s.x,
+                    y: s.y,
+                    r: s.r,
+                    alpha: Math.min(1, s.alpha * 3.0),
+                    t: s.t0,
+                });
+                continue;
+            }
+
+            const tint: Tint = s.layer === "shootColor" ? "hoe" : "ink";
+            const nSample = s.kind === "leaf" ? 14 : 20;
+
+            // direction, centre and reach of the noise tile come from the full stroke
+            const full = outline(s, 0, 1, nSample);
+            const fp = full.p;
+            const ang = Math.atan2(
+                fp[fp.length - 1].y - fp[0].y,
+                fp[fp.length - 1].x - fp[0].x,
+            );
+            const mid = fp[fp.length >> 1];
+            let x0 = Infinity,
+                y0 = Infinity,
+                x1 = -Infinity,
+                y1 = -Infinity;
+            for (let i = 0; i < full.o.length; i += 2) {
+                if (full.o[i] < x0) x0 = full.o[i];
+                if (full.o[i] > x1) x1 = full.o[i];
+                if (full.o[i + 1] < y0) y0 = full.o[i + 1];
+                if (full.o[i + 1] > y1) y1 = full.o[i + 1];
+            }
+            const R = Math.max(24, Math.max(x1 - x0, y1 - y0) * 0.75);
+            // Bounding box in stroke-aligned space. It lets the punch draw only the
+            // sliver of noise that covers the stroke instead of the full 2Rx2R square.
+            // For a 40 px culm, a 374x374 px tile would be about 14x wasted.
+            const ca = Math.cos(-(ang + Math.PI / 2)),
+                sa = Math.sin(-(ang + Math.PI / 2));
+            let qx0 = Infinity,
+                qy0 = Infinity,
+                qx1 = -Infinity,
+                qy1 = -Infinity;
+            for (let i = 0; i < full.o.length; i += 2) {
+                const dx = full.o[i] - mid.x,
+                    dy = full.o[i + 1] - mid.y;
+                const rx = dx * ca - dy * sa,
+                    ry = dx * sa + dy * ca;
+                if (rx < qx0) qx0 = rx;
+                if (rx > qx1) qx1 = rx;
+                if (ry < qy0) qy0 = ry;
+                if (ry > qy1) qy1 = ry;
+            }
+            const qpad = 2;
+            const qbox = [
+                qx0 - qpad,
+                qy0 - qpad,
+                qx1 + qpad,
+                qy1 + qpad,
+            ] as const;
+
+            if (reveal === "ink") {
+                // The brush lands at the WIDEST point on the stroke, where a writer
+                // presses down before pulling. On a leaf that is the belly, not the
+                // tip.
+                let bi = 0;
+                for (let i = 1; i < fp.length; i++)
+                    if (fp[i].w > fp[bi].w) bi = i;
+                const ox = fp[bi].x,
+                    oy = fp[bi].y;
+                let maxR = 0;
+                for (let i = 0; i < full.o.length; i += 2)
+                    maxR = Math.max(
+                        maxR,
+                        Math.hypot(full.o[i] - ox, full.o[i + 1] - oy),
+                    );
+                out.push({
+                    blob: false,
+                    depth,
+                    tint,
+                    o: full.o,
+                    alpha: Math.min(1, s.alpha(0.5) * 3.4),
+                    dry: 0.3 + 0.55 * s.dryness,
+                    ang,
+                    mx: mid.x,
+                    my: mid.y,
+                    R,
+                    qbox,
+                    ox,
+                    oy,
+                    blotR: Math.max(2.5, fp[bi].w * 0.55),
+                    bx: x0,
+                    by: y0,
+                    bw: x1 - x0,
+                    bh: y1 - y0,
+                    maxR: maxR / RIM_MIN,
+                    rimSeed: s.seed,
+                    rx: null,
+                    ry: null,
+                    // slight stagger: leaf clusters otherwise start almost together
+                    // and p95 spikes when they land in one frame
+                    t: s.t0 + (n1(s.seed * 3.7) - 0.5) * 0.14,
+                });
+                continue;
+            }
+
+            // 'grow' mode: cut long strokes into chunks so they grow smoothly
+            const segs = Math.max(1, Math.ceil(s.dur / CHUNK));
+            for (let k = 0; k < segs; k++) {
+                const a0 = k / segs,
+                    a1 = (k + 1) / segs;
+                const { o } = outline(
+                    s,
+                    a0,
+                    a1,
+                    Math.max(3, Math.round(nSample / segs) + 2),
+                );
+                out.push({
+                    blob: false,
+                    depth,
+                    tint,
+                    o,
+                    alpha: Math.min(1, s.alpha((a0 + a1) / 2) * 3.4),
+                    dry: 0.3 + 0.55 * s.dryness,
+                    ang,
+                    mx: mid.x,
+                    my: mid.y,
+                    R,
+                    qbox,
+                    ox: 0,
+                    oy: 0,
+                    maxR: 0,
+                    blotR: 0,
+                    rimSeed: 0,
+                    rx: null,
+                    ry: null,
+                    bx: 0,
+                    by: 0,
+                    bw: 0,
+                    bh: 0,
+                    t: s.t0 + s.dur * a0,
+                });
+            }
+        }
+        out.sort((a, b) => a.t - b.t);
+        return out;
+    }
+
+    /**
+     * Vertex count on the bleed rim has to follow the CIRCUMFERENCE, not sit at
+     * a constant. With 28 fixed vertices, a 200 px radius puts them 45 px apart,
+     * wider than a culm, so the rim cuts across the stroke as one straight
+     * diagonal that reads as a knife slash. Aim for one vertex per ~7 px of arc.
+     */
+
+    /**
+     * Real ink does not spread as a circle. Its edge is ragged, bulging in some
+     * places and falling short in others. That edge shape is the one thing worth
+     * taking from the mask-with-ink-footage approach. Two angular noise octaves
+     * generate it, precomputed so it costs nothing at runtime.
+     *
+     * maxR has to be widened by the smallest factor, otherwise the deepest
+     * notch never covers the stroke.
+     */
+    /** 256-entry sine table. Cheaper than Math.sin when called millions of times. */
+    const SIN = new Float32Array(256);
+    for (let i = 0; i < 256; i++) SIN[i] = Math.sin((i / 256) * Math.PI * 2);
+
+    /** Rim distortion at one angle. Four octaves: overall shape, lobes, teeth, speckled edge. */
+    function rimAt(th: number, seed: number): number {
+        return (
+            0.7 +
+            0.2 * n1(seed * 1.7 + th * 1.9) +
+            0.18 * n1(seed * 5.3 + th * 9.3) +
+            0.13 * n1(seed * 11.1 + th * 28.0) +
+            0.07 * n1(seed * 23.7 + th * 71.0) // speckle a few pixels across
+        );
+    }
+
+    /**
+     * Precompute the bleed rim as unit vectors.
+     *
+     * Calling four noise functions per vertex per frame ran to more than four
+     * million noise calls a second at 82 strokes bleeding, 220 vertices, 60 fps.
+     * A slower bleed makes it worse, since strokes sit at a large radius longer
+     * and so carry more vertices. Precomputed, a vertex costs two multiplies.
+     *
+     * maxR also has to be widened by the smallest factor, otherwise the deepest
+     * notch never covers the stroke.
+     */
+    /** Lower bound of rimAt, for widening maxR without building the rim yet. */
+    const RIM_MIN = 0.7;
+
+    function bakeRim(maxR: number, seed: number) {
+        const n = Math.max(
+            24,
+            Math.min(120, Math.round((maxR * 6.2832) / 4.5)),
+        );
+        const rx = new Float32Array(n);
+        const ry = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+            const th = (i / n) * Math.PI * 2;
+            const v = rimAt(th, seed);
+            rx[i] = Math.cos(th) * v;
+            ry[i] = Math.sin(th) * v;
+        }
+        return { rx, ry };
+    }
+
+    /** Bleed rim outline: a distorted-radius polygon instead of arc(). */
+    function rimPath(
+        ctx: CanvasRenderingContext2D,
+        x: number,
+        y: number,
+        r: number,
+        rx: Float32Array,
+        ry: Float32Array,
+        t: number,
+    ) {
+        const n = rx.length;
+        // small radius needs fewer vertices: one per ~4.5 px of arc is enough
+        const want = Math.max(24, Math.min(n, Math.round((r * 6.2832) / 9)));
+        const step = Math.max(1, Math.floor(n / want));
+        const ph = ((t * 2.6 * 256) / 6.2832) | 0;
+        ctx.beginPath();
+        for (let i = 0; i < n; i += step) {
+            // ink keeps creeping after it arrives; the scratch layer clears each frame so the rim can retreat
+            const rr = r * (1 + 0.045 * SIN[(ph + i * 5) & 255]);
+            const px = x + rx[i] * rr,
+                py = y + ry[i] * rr;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+    }
+
+    function trace(ctx: CanvasRenderingContext2D, o: Float32Array) {
+        ctx.beginPath();
+        ctx.moveTo(o[0], o[1]);
+        for (let i = 2; i < o.length; i += 2) ctx.lineTo(o[i], o[i + 1]);
+        ctx.closePath();
+    }
+
+    /** Fills the stroke shape only, no dry grain. The caller handles clipping. */
+    function fillShape(
+        ctx: CanvasRenderingContext2D,
+        q: Piece,
+        colors?: Record<Tint, string>,
+        k = 1,
+    ) {
+        if (q.blob) return;
+        if (colors) ctx.fillStyle = `rgb(${colors[q.tint]})`;
+        ctx.globalAlpha = q.alpha * k;
+        trace(ctx, q.o);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+
+    /**
+     * Dry-brush grain: clip to the stroke, then punch it out with a noise tile
+     * rotated along the stroke. The punch always stays inside the stroke's own
+     * shadow, so it never eats a hole into a neighbour.
+     */
+    function punch(ctx: CanvasRenderingContext2D, q: Piece) {
+        if (q.blob) return;
+        ctx.save();
+        trace(ctx, q.o);
+        ctx.clip();
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.globalAlpha = q.dry;
+        ctx.translate(q.mx, q.my);
+        ctx.rotate(q.ang + Math.PI / 2);
+        const [bx0, by0, bx1, by1] = q.qbox;
+        const k = 256 / (q.R * 2); // noise pixels per paper pixel
+        ctx.drawImage(
+            getNoise(),
+            (bx0 + q.R) * k,
+            (by0 + q.R) * k,
+            (bx1 - bx0) * k,
+            (by1 - by0) * k,
+            bx0,
+            by0,
+            bx1 - bx0,
+            by1 - by0,
+        );
+        ctx.restore();
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = "source-over";
+    }
+
+    function paintFull(
+        ctx: CanvasRenderingContext2D,
+        q: Piece,
+        colors?: Record<Tint, string>,
+    ) {
+        ctx.globalCompositeOperation = "source-over";
+        if (q.blob) {
+            const c = colors ? colors[q.tint] : "0,0,0";
+            const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.r);
+            g.addColorStop(0, `rgba(${c},${q.alpha.toFixed(3)})`);
+            g.addColorStop(0.6, `rgba(${c},${(q.alpha * 0.45).toFixed(3)})`);
+            g.addColorStop(1, `rgba(${c},0)`);
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(q.x, q.y, q.r, 0, Math.PI * 2);
+            ctx.fill();
+            return;
+        }
+        fillShape(ctx, q, colors);
+        punch(ctx, q);
+    }
+
     function detectTheme(): Theme {
-        const root = document.documentElement;
-        const attr =
-            root.getAttribute("data-theme") ||
-            root.getAttribute("data-color-scheme");
-        if (attr === "dark" || attr === "light") return attr;
-        if (root.classList.contains("dark")) return "dark";
-        if (root.classList.contains("light")) return "light";
+        const r = document.documentElement;
+        const a =
+            r.getAttribute("data-theme") || r.getAttribute("data-color-scheme");
+        if (a === "dark" || a === "light") return a;
+        if (r.classList.contains("dark")) return "dark";
+        if (r.classList.contains("light")) return "light";
         return matchMedia("(prefers-color-scheme: dark)").matches
             ? "dark"
             : "light";
     }
 
+    /** 25 frames, 16:9. The shipped image is GREYSCALE, which compresses far
+     *  better than alpha, converted to alpha once on load. */
+    const WIPE_FRAMES = 25;
+    let wipeSheet: HTMLCanvasElement | null = null;
+    let wipePending: Promise<HTMLCanvasElement | null> | null = null;
+
+    function loadWipe(src: string): Promise<HTMLCanvasElement | null> {
+        if (wipeSheet) return Promise.resolve(wipeSheet);
+        if (wipePending) return wipePending;
+        wipePending = new Promise((resolve) => {
+            if (!src) return resolve(null);
+            const img = new Image();
+            img.decoding = "async";
+            img.onload = () => {
+                const c = document.createElement("canvas");
+                c.width = img.naturalWidth;
+                c.height = img.naturalHeight;
+                const g = c.getContext("2d");
+                if (!g) return resolve(null);
+                g.drawImage(img, 0, 0);
+                const d = g.getImageData(0, 0, c.width, c.height);
+                const px = d.data;
+                for (let i = 0; i < px.length; i += 4) {
+                    px[i + 3] = px[i]; // grey level to alpha
+                    px[i] = px[i + 1] = px[i + 2] = 255;
+                }
+                g.putImageData(d, 0, 0);
+                wipeSheet = c;
+                resolve(c);
+            };
+            img.onerror = () => resolve(null); // missing file shows the grove directly rather than breaking
+            img.src = src;
+        });
+        return wipePending;
+    }
+
     const instances = new Set<{ destroy: () => void }>();
 
-    function init(cv: HTMLCanvasElement) {
-        cv.dataset.bambooReady = "1";
-
-        const ctx = cv.getContext("webgl", { alpha: false, antialias: false });
-        if (!ctx) return; // giấy điệp trơn vẫn là một cái nền tử tế
-        const gl: WebGLRenderingContext = ctx;
-
+    function init(host: HTMLElement) {
+        host.dataset.bambooReady = "1";
+        const ds = host.dataset;
         const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
         const cfg = {
-            seed: cv.dataset.seed
-                ? parseInt(cv.dataset.seed, 10)
-                : (Math.random() * 1e9) | 0,
-            wind: reduced ? 0 : parseFloat(cv.dataset.wind || "0.8") || 0,
-            ink: parseFloat(cv.dataset.ink || "2.05"),
-            density: (cv.dataset.density || "normal") as keyof typeof DENSITY,
-            animate: cv.dataset.animate === "1" && !reduced,
-            duration: parseFloat(cv.dataset.duration || "3"),
-            shoot: cv.dataset.shoot === "1",
-            themeMode: (cv.dataset.themeMode || "auto") as
-                "light" | "dark" | "auto",
-            paperLight: cv.dataset.paperLight || "#d3cec4",
-            paperDark: cv.dataset.paperDark || "#1a2023",
+            seed: ds.seed ? parseInt(ds.seed, 10) : (Math.random() * 1e9) | 0,
+            density: (ds.density || "normal") as Density,
+            wind: reduced ? 0 : parseFloat(ds.wind || "1") || 0,
+            animate: ds.animate === "1" && !reduced,
+            // force to exactly two values: an unknown string must fall back to the
+            // default rather than quietly sliding into the other branch
+            reveal: (ds.reveal === "grow" || ds.reveal === "wipe"
+                ? ds.reveal
+                : "ink") as Reveal,
+            wipeSrc: ds.wipeSrc || "",
+            bleed: Math.max(0.05, parseFloat(ds.bleed || "0.4")),
+            duration: Math.max(0.3, parseFloat(ds.duration || "7")),
+            shoot: ds.shoot === "1",
+            themeMode: (ds.themeMode || "auto") as "light" | "dark" | "auto",
+            paperLight: ds.paperLight || "#d3cec4",
+            paperDark: ds.paperDark || "#1a2023",
+            inkLight: hexToRgb(ds.inkLight || "#191c1a"),
+            inkDark: hexToRgb(ds.inkDark || "#e8e6dc"),
+            maxPixels: parseFloat(ds.maxPixels || "4000000"),
         };
 
-        /* ── chương trình ── */
-        const sh = (type: number, src: string) => {
-            const s = gl.createShader(type)!;
-            gl.shaderSource(s, src);
-            gl.compileShader(s);
-            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-                console.error(gl.getShaderInfoLog(s));
-            }
-            return s;
-        };
-        // prefers-reduced-motion cũng đi qua đây, nên nó cắt luôn phần gió khỏi shader
-        const windOn = cfg.wind > 0;
-
-        const prog = gl.createProgram()!;
-        gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
-        gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS(windOn)));
-        gl.linkProgram(prog);
-        gl.useProgram(prog);
-
-        const vbo = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(
-            gl.ARRAY_BUFFER,
-            new Float32Array([-1, -1, 3, -1, -1, 3]),
-            gl.STATIC_DRAW,
-        );
-        const aPos = gl.getAttribLocation(prog, "aPos");
-        gl.enableVertexAttribArray(aPos);
-        gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-
-        const U: Record<string, WebGLUniformLocation | null> = {};
-        for (const n of [
-            "uInk",
-            "uBleed",
-            "uPig",
-            "uMotion",
-            "uTexel",
-            "uReg",
-            "uPaper",
-            "uInkCol",
-            "uHoe",
-            "uSon",
-            "uHalo",
-            "uTime",
-            "uWind",
-            "uStrength",
-            "uAspect",
-        ])
-            U[n] = gl.getUniformLocation(prog, n);
-
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        const mkTex = (unit: number) => {
-            const t = gl.createTexture();
-            gl.activeTexture(gl.TEXTURE0 + unit);
-            gl.bindTexture(gl.TEXTURE_2D, t);
-            gl.texParameteri(
-                gl.TEXTURE_2D,
-                gl.TEXTURE_WRAP_S,
-                gl.CLAMP_TO_EDGE,
+        const layers = DEPTHS.map((d) => {
+            const wrap = document.createElement("div");
+            wrap.className = cfg.wind > 0 ? "bb-depth bb-sway" : "bb-depth";
+            wrap.style.setProperty(
+                "--sk",
+                `${(d.sk * cfg.wind).toFixed(3)}deg`,
             );
-            gl.texParameteri(
-                gl.TEXTURE_2D,
-                gl.TEXTURE_WRAP_T,
-                gl.CLAMP_TO_EDGE,
-            );
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            return t;
-        };
-        const texInk = mkTex(0),
-            texBleed = mkTex(1),
-            texPig = mkTex(2);
-        const texMotion = windOn ? mkTex(3) : null;
-        gl.uniform1i(U.uInk, 0);
-        gl.uniform1i(U.uBleed, 1);
-        gl.uniform1i(U.uPig, 2);
-        if (windOn) gl.uniform1i(U.uMotion, 3);
+            wrap.style.setProperty("--tx", `${(d.tx * cfg.wind).toFixed(2)}px`);
+            wrap.style.setProperty("--sd", `${d.sd}s`);
+            wrap.style.setProperty("--dly", `${d.dly}s`);
+            const cv = document.createElement("canvas");
+            wrap.appendChild(cv);
+            host.appendChild(wrap);
+            return {
+                key: d.key,
+                wrap,
+                cv,
+                ctx: cv.getContext("2d")!,
+                // scratch layer for strokes still bleeding; allocated on demand, released when done
+                tmp: null as HTMLCanvasElement | null,
+                tctx: null as CanvasRenderingContext2D | null,
+                // bounding box of last frame's painting, since clearing whole canvases every frame is wasteful
+                d0: 0,
+                d1: 0,
+                d2: 0,
+                d3: 0,
+                dirty: false,
+            };
+        });
+        const byKey = Object.fromEntries(
+            layers.map((l) => [l.key, l]),
+        ) as Record<DepthKey, (typeof layers)[number]>;
 
-        const wrap = cv.parentElement;
         let theme: Theme =
             cfg.themeMode === "auto" ? detectTheme() : cfg.themeMode;
-
-        function applyTheme() {
-            const hex = theme === "dark" ? cfg.paperDark : cfg.paperLight;
-            const p = hexToRgb(hex);
-            const T = INK[theme];
-            gl.useProgram(prog);
-            gl.uniform3f(U.uPaper, p[0], p[1], p[2]);
-            gl.uniform3f(U.uInkCol, T.ink[0], T.ink[1], T.ink[2]);
-            gl.uniform3f(U.uHoe, T.hoe[0], T.hoe[1], T.hoe[2]);
-            gl.uniform3f(U.uSon, T.son[0], T.son[1], T.son[2]);
-            gl.uniform3f(U.uHalo, T.halo[0], T.halo[1], T.halo[2]);
-            wrap?.style.setProperty("--bamboo-paper", hex);
-        }
-
-        const upload = (
-            unit: number,
-            tex: WebGLTexture | null,
-            src: HTMLCanvasElement,
-        ) => {
-            gl.activeTexture(gl.TEXTURE0 + unit);
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.texImage2D(
-                gl.TEXTURE_2D,
-                0,
-                gl.RGB,
-                gl.RGB,
-                gl.UNSIGNED_BYTE,
-                src,
-            );
-        };
-
-        /* ── lớp nét / loang / màu ── */
-        const inkC = document.createElement("canvas"),
-            ink = inkC.getContext("2d")!;
-        const bleC = document.createElement("canvas"),
-            ble = bleC.getContext("2d")!;
-        const pigC = document.createElement("canvas"),
-            pig = pigC.getContext("2d")!;
-        const mtnC = document.createElement("canvas"),
-            mtn = mtnC.getContext("2d")!;
-        const spr = getSprites();
-
+        let colors: Record<Tint, string>;
         let W = 0,
             H = 0;
-        let rnd = mulberry32(1);
-        let stamps: Stamp[] = [];
-        let motion: Flex[] = [];
-
-        // tắt gió: hàm rỗng, compose không sinh ra khối nào
-        const flexBlob = windOn
-            ? (
-                  x: number,
-                  y: number,
-                  r: number,
-                  flex: number,
-                  phase: number,
-                  z: number,
-              ) => motion.push({ x, y, r, flex, phase, z })
-            : (
-                  _x: number,
-                  _y: number,
-                  _r: number,
-                  _f: number,
-                  _p: number,
-                  _z: number,
-              ) => 0;
-
-        function paintMotion() {
-            const k = mtnC.width / W;
-            mtn.globalCompositeOperation = "source-over";
-            mtn.fillStyle = "rgb(0,128,0)"; // mặc định: cứng, pha giữa
-            mtn.fillRect(0, 0, mtnC.width, mtnC.height);
-            motion.sort((a, b) => a.z - b.z);
-            for (const b of motion) {
-                const R = Math.max(2, b.r * k),
-                    cx = b.x * k,
-                    cy = b.y * k;
-                const c =
-                    Math.round(Math.max(0, Math.min(1, b.flex)) * 255) +
-                    "," +
-                    Math.round(Math.max(0, Math.min(1, b.phase)) * 255) +
-                    ",0";
-                const g = mtn.createRadialGradient(cx, cy, 0, cx, cy, R);
-                g.addColorStop(0, `rgba(${c},0.95)`);
-                g.addColorStop(0.55, `rgba(${c},0.55)`);
-                g.addColorStop(1, `rgba(${c},0)`);
-                mtn.fillStyle = g;
-                mtn.fillRect(cx - R, cy - R, R * 2, R * 2);
-            }
-        }
-
-        /* ── bút ── */
-        function stroke(o: {
-            path: (t: number) => [number, number];
-            width: (t: number) => number;
-            alpha: (t: number) => number;
-            t0: number;
-            dur: number;
-            seed: number;
-            dryness?: number;
-        }) {
-            const dryness = o.dryness ?? 0.5;
-            const N = 160,
-                pts: [number, number][] = [],
-                cum = [0];
-            for (let i = 0; i <= N; i++) pts.push(o.path(i / N));
-            for (let i = 1; i <= N; i++)
-                cum.push(
-                    cum[i - 1] +
-                        Math.hypot(
-                            pts[i][0] - pts[i - 1][0],
-                            pts[i][1] - pts[i - 1][1],
-                        ),
-                );
-            const L = cum[N];
-            if (L < 1) return o.t0;
-
-            let seg = 0;
-            const at = (dist: number): [number, number, number] => {
-                if (cum[seg] > dist) seg = 0;
-                while (seg < N - 1 && cum[seg + 1] < dist) seg++;
-                const span = cum[seg + 1] - cum[seg] || 1;
-                const f = (dist - cum[seg]) / span;
-                return [
-                    (seg + f) / N,
-                    lerp(pts[seg][0], pts[seg + 1][0], f),
-                    lerp(pts[seg][1], pts[seg + 1][1], f),
-                ];
-            };
-
-            let d = 0;
-            while (d <= L) {
-                const [t, x, y] = at(d);
-                const w = o.width(t);
-                if (w > 0.35) {
-                    const nb = Math.max(1, Math.round(w / 4.4));
-                    const rb = Math.max(1.1, (w / nb) * 0.95);
-                    const base = o.alpha(t);
-                    const ahead = at(Math.min(L, d + 2));
-                    let tx = ahead[1] - x,
-                        ty = ahead[2] - y;
-                    const tl = Math.hypot(tx, ty) || 1;
-                    tx /= tl;
-                    ty /= tl;
-
-                    for (let i = 0; i < nb; i++) {
-                        const u = nb === 1 ? 0 : (i / (nb - 1)) * 2 - 1;
-                        // mỗi sợi lông là một vệt chạy dọc nét, đo bằng pixel trên giấy
-                        const load = n1(o.seed * 13.7 + i * 31.3 + d * 0.042);
-                        const dry = n1(o.seed * 5.1 + i * 17.9 + d * 0.155);
-                        const bias = n1(o.seed * 2.7 + i * 53.1);
-                        if (load * 0.7 + bias * 0.3 < dryness * 0.42) continue;
-                        const a =
-                            base * (0.3 + 1.15 * load) * (0.68 + 0.55 * dry);
-                        const wob =
-                            (n1(o.seed * 7.7 + i * 11.3 + d * 0.09) - 0.5) *
-                            rb *
-                            0.75;
-                        const spread = u * (w * 0.5 - rb * 0.5) + wob;
-                        stamps.push({
-                            x: x - ty * spread,
-                            y: y + tx * spread,
-                            r: rb,
-                            a: Math.min(a, 0.9),
-                            t: o.t0 + o.dur * (d / L),
-                            ch: null,
-                        });
-                    }
-                    d += Math.max(0.9, rb * 0.5);
-                } else d += 1.2;
-            }
-            return o.t0 + o.dur;
-        }
-
-        /* ── măng: ván màu in trước, ván nét in sau ── */
-        function mang(
-            x0: number,
-            yBase: number,
-            h: number,
-            hw: number,
-            t0: number,
-            tilt: number,
-        ) {
-            const tipX = x0 + tilt * hw * 0.55,
-                tipY = yBase - h;
-            const edge =
-                (s: number) =>
-                (t: number): [number, number] => {
-                    const y = lerp(yBase, tipY, t);
-                    const wdt = hw * Math.pow(1 - t, 0.72);
-                    const cx =
-                        lerp(x0, tipX, t) +
-                        Math.sin(t * 2.1) * hw * 0.12 * tilt;
-                    return [cx + s * wdt, y];
-                };
-
-            let t = t0;
-            const rows = 13;
-            for (let i = 0; i < rows; i++) {
-                const f = i / (rows - 1);
-                const y = lerp(yBase, tipY, f);
-                const wdt = hw * Math.pow(1 - f, 0.72) * 0.92;
-                const cx =
-                    lerp(x0, tipX, f) + Math.sin(f * 2.1) * hw * 0.12 * tilt;
-                const per = Math.max(1, Math.round(wdt / (hw * 0.3)));
-                for (let k = 0; k < per; k++) {
-                    const u = per === 1 ? 0 : (k / (per - 1)) * 2 - 1;
-                    stamps.push({
-                        x: cx + u * wdt * 0.7,
-                        y,
-                        r: Math.max(3, wdt * 0.62),
-                        a: 0.19,
-                        t: t + f * 0.2,
-                        ch: "hoe",
-                    });
-                }
-                if (f > 0.7)
-                    stamps.push({
-                        x: cx,
-                        y,
-                        r: Math.max(3, wdt * 0.85),
-                        a: 0.13,
-                        t: t + f * 0.2,
-                        ch: "son",
-                    });
-            }
-            t += 0.26;
-
-            const side = (s: number, seed: number) =>
-                stroke({
-                    path: edge(s),
-                    width: (tt) =>
-                        hw * 0.2 * Math.min(1, tt * 8) * Math.pow(1 - tt, 0.35),
-                    alpha: () => 0.34,
-                    t0: t,
-                    dur: 0.12,
-                    seed,
-                    dryness: 0.3,
-                });
-            t = side(-1, 911) + 0.03;
-            t = side(+1, 912) + 0.03;
-
-            for (let i = 0; i < 4; i++) {
-                const f = 0.14 + i * 0.19;
-                const L = edge(-1)(f),
-                    R = edge(1)(f);
-                const sag = hw * 0.3 * (1 - f);
-                t =
-                    stroke({
-                        path: (tt) => {
-                            const u = 1 - tt;
-                            const mxp = (L[0] + R[0]) / 2,
-                                myp = (L[1] + R[1]) / 2 + sag;
-                            return [
-                                u * u * L[0] +
-                                    2 * u * tt * mxp +
-                                    tt * tt * R[0],
-                                u * u * L[1] +
-                                    2 * u * tt * myp +
-                                    tt * tt * R[1],
-                            ];
-                        },
-                        width: () => hw * 0.14 * (1 - f * 0.4),
-                        alpha: () => 0.29,
-                        t0: t,
-                        dur: 0.05,
-                        seed: 920 + i,
-                        dryness: 0.35,
-                    }) + 0.015;
-            }
-            return t;
-        }
-
-        /* ── bụi tre ── */
-        function compose(seed: number) {
-            rnd = mulberry32(seed);
-            stamps = [];
-            motion = [];
-            const S = Math.min(W, H * 1.15);
-
-            for (let i = 0; i < 5; i++)
-                stamps.push({
-                    x: rnd() * W,
-                    y: H * (0.34 + rnd() * 0.5),
-                    r: S * (0.26 + rnd() * 0.22),
-                    a: 0.007 + rnd() * 0.006,
-                    t: 0.05 + i * 0.02,
-                    ch: null,
-                });
-
-            const bui = DENSITY[cfg.density] ?? DENSITY.normal;
-            const built: {
-                B: Clump;
-                bi: number;
-                j: number;
-                nodes: CulmNode[];
-                cw: number;
-                ik: number;
-                cph: number;
-            }[] = [];
-
-            bui.forEach((B, bi) => {
-                const xb = W * B.x;
-                for (let j = 0; j < B.n; j++) {
-                    const dir =
-                        lerp(B.lo, B.hi, B.n === 1 ? 0.5 : j / (B.n - 1)) +
-                        (rnd() - 0.5) * 0.28;
-                    const ik = B.ink * (0.74 + 0.52 * rnd());
-                    const cw = S * B.w * (0.78 + rnd() * 0.44);
-                    const yB = H * 1.06;
-                    const yT =
-                        H * (B.top + rnd() * 0.14) - Math.abs(dir) * H * 0.06;
-                    const x0 = xb + dir * S * 0.045 + (rnd() - 0.5) * S * 0.02;
-                    const arch = dir * S * (0.17 + rnd() * 0.15);
-                    const bend = (rnd() - 0.5) * S * 0.05,
-                        ph = rnd() * 6.28;
-                    const px = (yy: number) => {
-                        const f = (yB - yy) / (yB - yT);
-                        return (
-                            x0 +
-                            arch * Math.pow(Math.max(0, f), 1.8) +
-                            bend * Math.sin(f * 2.0 + ph)
-                        );
-                    };
-
-                    const cph = 0.18 + rnd() * 0.64; // pha riêng; tránh mép 0/1 cho khỏi lệch khi trộn
-                    for (let yy = yB; yy > yT; yy -= Math.max(6, cw * 0.6)) {
-                        const f = (yB - yy) / Math.max(1, yB - yT);
-                        flexBlob(
-                            px(yy),
-                            yy,
-                            cw * 1.0,
-                            0.05 + 0.5 * Math.pow(f, 1.7),
-                            cph,
-                            2,
-                        );
-                    }
-
-                    const segs = 4 + Math.floor(rnd() * 3);
-                    const nodes: CulmNode[] = [];
-                    const rate = H / 0.8; // px mỗi đơn vị thời gian mọc
-                    let tCur = 0.02 + rnd() * 0.2; // cả lũy nhú lên gần như cùng lúc
-                    let grown = 0;
-                    let y = yB;
-                    for (let s = 0; s < segs; s++) {
-                        const len = ((yB - yT) / segs) * (0.86 + rnd() * 0.3);
-                        const y1 = Math.max(yT, y - len);
-                        const f0 = 1 - (yB - y) / (yB - yT),
-                            f1 = 1 - (yB - y1) / (yB - yT);
-                        const w0 = cw * (0.6 + 0.4 * f0),
-                            w1 = cw * (0.6 + 0.4 * f1);
-                        const gap = cw * 0.28;
-                        const ya = y - gap,
-                            yb2 = y1 + gap * 0.4;
-                        const bow = (rnd() - 0.5) * cw * 0.3;
-
-                        const segLen = Math.max(1, ya - yb2);
-                        const hf = grown / Math.max(1, yB - yT);
-                        const segDur = (segLen / rate) * (1 + 0.5 * hf); // lên càng cao càng chậm lại
-
-                        stroke({
-                            path: (t) => {
-                                const yy = lerp(ya, yb2, t);
-                                return [
-                                    px(yy) + bow * Math.sin(Math.PI * t),
-                                    yy,
-                                ];
-                            },
-                            width: (t) =>
-                                lerp(w0, w1, t) *
-                                (0.9 + 0.12 * Math.sin(Math.PI * t)),
-                            alpha: (t) =>
-                                ik *
-                                (0.72 + 0.5 * Math.min(1, t * 7)) *
-                                (1 - 0.18 * t),
-                            t0: tCur,
-                            dur: segDur,
-                            seed: bi * 29 + j * 7 + s,
-                            dryness: B.dry,
-                        });
-                        tCur += segDur;
-                        grown += segLen;
-
-                        nodes.push({
-                            y: yb2,
-                            x: px(yb2),
-                            w: w1,
-                            side: dir >= 0 ? 1 : -1,
-                            t: tCur,
-                        });
-                        y = y1;
-                        if (y1 <= yT) break;
-                    }
-
-                    nodes.forEach((n, k) => {
-                        const hw = n.w * 0.62;
-                        stroke({
-                            path: (t) => [
-                                n.x - hw + 2 * hw * t,
-                                n.y +
-                                    n.w * 0.1 -
-                                    Math.sin(Math.PI * t) * n.w * 0.14,
-                            ],
-                            width: () => n.w * 0.34,
-                            alpha: () => ik * 1.25,
-                            t0: n.t + 0.02,
-                            dur: 0.05,
-                            seed: bi * 61 + j * 11 + k,
-                            dryness: 0.25,
-                        });
-                    });
-
-                    built.push({ B, bi, j, nodes, cw, ik, cph });
-                }
-            });
-
-            built.forEach(({ B, bi, j, nodes, cw, ik, cph }) => {
-                if (B.ink < 0.08 && rnd() < 0.45) return;
-                nodes.forEach((n, k) => {
-                    if (rnd() < 0.1) return;
-                    if (B.leafBelow && n.y < H * B.leafBelow) return; // để trơ phần ngọn
-                    const side = rnd() < 0.42 ? -n.side : n.side;
-                    const bl = cw * (1.6 + rnd() * 3.0);
-                    const ang = side * (0.9 + rnd() * 0.5);
-                    const bx = n.x,
-                        by = n.y - cw * 0.1;
-                    const ex = bx + Math.sin(ang) * bl,
-                        ey = by - Math.cos(ang) * bl + bl * 0.12;
-                    const mx = (bx + ex) / 2 - side * bl * 0.1,
-                        my = (by + ey) / 2 - bl * 0.18;
-
-                    flexBlob(
-                        (bx + ex) / 2,
-                        (by + ey) / 2,
-                        bl * 0.6,
-                        0.45 + 0.3 * rnd(),
-                        cph + (rnd() - 0.5) * 0.1,
-                        1,
-                    );
-
-                    const bT0 = n.t + 0.28 + rnd() * 0.48; // nhú ra sau khi đốt đã hình thành
-                    const bDur = 0.2 + (bl / W) * 0.22;
-                    stroke({
-                        path: (t) => {
-                            const u = 1 - t;
-                            return [
-                                u * u * bx + 2 * u * t * mx + t * t * ex,
-                                u * u * by + 2 * u * t * my + t * t * ey,
-                            ];
-                        },
-                        width: (t) =>
-                            cw *
-                            0.26 *
-                            Math.min(1, t * 9) *
-                            Math.pow(1 - t, 0.7),
-                        alpha: () => ik * 1.05,
-                        t0: bT0,
-                        dur: bDur,
-                        seed: bi * 83 + j * 13 + k,
-                        dryness: 0.28,
-                    });
-
-                    const clusters = [{ t: 1.0, n: 4 + Math.floor(rnd() * 3) }];
-                    if (rnd() < 0.85)
-                        clusters.push({
-                            t: 0.58,
-                            n: 3 + Math.floor(rnd() * 3),
-                        });
-                    if (rnd() < 0.5)
-                        clusters.push({
-                            t: 0.32,
-                            n: 2 + Math.floor(rnd() * 2),
-                        });
-
-                    clusters.forEach((cl, ci2) => {
-                        const u = 1 - cl.t;
-                        const ax =
-                            u * u * bx + 2 * u * cl.t * mx + cl.t * cl.t * ex;
-                        const ay =
-                            u * u * by + 2 * u * cl.t * my + cl.t * cl.t * ey;
-                        flexBlob(
-                            ax,
-                            ay,
-                            cw * 3.2,
-                            0.8 + 0.2 * rnd(),
-                            cph + (rnd() - 0.5) * 0.24,
-                            0,
-                        );
-
-                        const clStart = bT0 + bDur * cl.t + 0.05; // lá bung ngay chỗ cành vừa tới
-                        for (let i = 0; i < cl.n; i++) {
-                            const spread =
-                                (i - (cl.n - 1) / 2) * 0.44 +
-                                (rnd() - 0.5) * 0.2;
-                            const la = ang + spread + side * 0.38;
-                            const ll = cw * (1.5 + rnd() * 2.5);
-                            const droop = ll * (0.34 + rnd() * 0.4);
-                            const lx = ax + Math.sin(la) * ll,
-                                ly = ay - Math.cos(la) * ll + droop;
-                            const cx =
-                                (ax + lx) / 2 + Math.sin(la + 1.57) * ll * 0.16;
-                            const cy =
-                                (ay + ly) / 2 + Math.cos(la + 1.57) * ll * 0.16;
-                            const lw = cw * (0.18 + rnd() * 0.12);
-
-                            stroke({
-                                path: (t) => {
-                                    const v = 1 - t;
-                                    return [
-                                        v * v * ax +
-                                            2 * v * t * cx +
-                                            t * t * lx,
-                                        v * v * ay +
-                                            2 * v * t * cy +
-                                            t * t * ly,
-                                    ];
-                                },
-                                width: (t) =>
-                                    lw *
-                                    Math.min(1, t * 5.5) *
-                                    Math.pow(1 - t, 1.35) *
-                                    1.6,
-                                alpha: (t) => ik * (1.15 - 0.35 * t),
-                                t0: clStart + i * 0.05,
-                                dur: 0.1 + (ll / W) * 0.14,
-                                seed: bi * 151 + j * 17 + k * 7 + i + ci2 * 3,
-                                dryness: 0.34,
-                            });
-                        }
-                    });
-                });
-            });
-
-            if (cfg.shoot) {
-                let last = 0;
-                for (const st of stamps) if (st.t > last) last = st.t;
-                const t0 = last + 0.15;
-                const S2 = Math.min(W, H * 1.15);
-                const mx0 = W * bui[0].x - S2 * (0.1 + rnd() * 0.06);
-                const mh = H * (0.21 + rnd() * 0.06);
-                const mw = S2 * 0.042;
-                flexBlob(mx0, H * 0.99 - mh * 0.5, mw * 1.6, 0.05, 0.5, 2);
-                mang(mx0, H * 0.99, mh, mw, t0, 1);
-                if (rnd() < 0.75)
-                    mang(
-                        mx0 - mw * 2.4,
-                        H * 1.01,
-                        mh * 0.6,
-                        mw * 0.76,
-                        t0 + 0.08,
-                        -1,
-                    );
-            }
-
-            stamps.sort((a, b) => a.t - b.t);
-            let total = 0;
-            for (const st of stamps) if (st.t > total) total = st.t;
-            return total;
-        }
-
-        /* ── vẽ ── */
-        let cursor = 0,
-            paintT = 0,
-            total = 0,
-            donePainting = false,
+        let queue: Piece[] = [];
+        let head = 0,
+            total = 1,
             speed = 1;
-        let inkDirty = true,
-            pigDirty = true,
-            bleedDirty = true,
-            bleedTick = 0;
+        const active: Piece[] = [];
+        let raf = 0,
+            started = 0,
+            running = false,
+            visible = false;
+        let bleed = 0.3;
 
-        function drawUpTo(t: number) {
-            ink.globalCompositeOperation = "lighter";
-            pig.globalCompositeOperation = "lighter";
-            const ps = pigC.width / W;
-            let ni = 0,
-                np = 0;
-            while (cursor < stamps.length && stamps[cursor].t <= t) {
-                const s = stamps[cursor++];
-                if (s.ch) {
-                    pig.globalAlpha = s.a;
-                    pig.drawImage(
-                        s.ch === "hoe" ? spr.hoe : spr.son,
-                        (s.x - s.r) * ps,
-                        (s.y - s.r) * ps,
-                        s.r * 2 * ps,
-                        s.r * 2 * ps,
-                    );
-                    np++;
-                } else {
-                    ink.globalAlpha = s.a;
-                    ink.drawImage(
-                        spr.ink,
-                        s.x - s.r,
-                        s.y - s.r,
-                        s.r * 2,
-                        s.r * 2,
-                    );
-                    ni++;
-                }
-            }
-            ink.globalAlpha = 1;
-            pig.globalAlpha = 1;
-            if (ni) {
-                inkDirty = true;
-                bleedDirty = true;
-            }
-            if (np) pigDirty = true;
-            if (cursor >= stamps.length) donePainting = true;
+        function palette() {
+            colors =
+                theme === "dark"
+                    ? { ink: cfg.inkDark, hoe: "220,170,76", son: "212,97,77" }
+                    : {
+                          ink: cfg.inkLight,
+                          hoe: "201,147,47",
+                          son: "181,64,47",
+                      };
+            host.style.setProperty(
+                "--paper",
+                theme === "dark" ? cfg.paperDark : cfg.paperLight,
+            );
         }
 
-        function refreshBleed() {
-            ble.globalCompositeOperation = "source-over";
-            ble.filter = "blur(2.6px)";
-            ble.clearRect(0, 0, bleC.width, bleC.height);
-            ble.drawImage(inkC, 0, 0, bleC.width, bleC.height);
-            ble.filter = "none";
-            bleedDirty = false;
-            // lớp loang chỉ đổi khi nét đổi
-            upload(1, texBleed, bleC);
-        }
-
-        function resize() {
-            const cssW = cv.clientWidth || 1,
-                cssH = cv.clientHeight || 1;
-            const cap = Math.sqrt(1.2e6 / (cssW * cssH)); // nền thì không cần sắc như tranh treo
+        function sizeUp() {
+            const cw = host.clientWidth || window.innerWidth;
+            const ch = host.clientHeight || window.innerHeight;
             const dpr = Math.max(
                 1,
-                Math.min(window.devicePixelRatio || 1, 1.6, cap),
+                Math.min(
+                    window.devicePixelRatio || 1,
+                    1.6,
+                    Math.sqrt(cfg.maxPixels / (cw * ch)),
+                ),
             );
-            W = Math.max(2, Math.round(cssW * dpr));
-            H = Math.max(2, Math.round(cssH * dpr));
-
-            cv.width = W;
-            cv.height = H;
-            inkC.width = W;
-            inkC.height = H;
-            bleC.width = Math.max(2, Math.round(W / 3));
-            bleC.height = Math.max(2, Math.round(H / 3));
-            pigC.width = Math.max(2, Math.round(W / 2));
-            pigC.height = Math.max(2, Math.round(H / 2));
-            mtnC.width = windOn ? Math.max(2, Math.round(W / 4)) : 2;
-            mtnC.height = windOn ? Math.max(2, Math.round(H / 4)) : 2;
-
-            gl.viewport(0, 0, W, H);
-            gl.uniform2f(U.uTexel, 1 / W, 1 / H);
-            gl.uniform2f(U.uReg, -3.2 / W, 2.6 / H); // in lệch ván
-            gl.uniform1f(U.uAspect, W / H);
+            W = Math.max(2, Math.round(cw * dpr));
+            H = Math.max(2, Math.round(ch * dpr));
+            for (const l of layers) {
+                l.cv.width = W;
+                l.cv.height = H;
+                if (l.tmp) {
+                    l.tmp.width = W;
+                    l.tmp.height = H;
+                }
+            }
+            if (cover) {
+                cover.width = W;
+                cover.height = H;
+            }
         }
 
-        function restart(seed: number, instant: boolean) {
-            resize();
-            ink.globalCompositeOperation = "source-over";
-            ink.fillStyle = "#000";
-            ink.fillRect(0, 0, W, H);
-            pig.globalCompositeOperation = "source-over";
-            pig.fillStyle = "#000";
-            pig.fillRect(0, 0, pigC.width, pigC.height);
-
-            total = compose(seed);
-            if (windOn) {
-                paintMotion();
-                upload(3, texMotion, mtnC);
+        /** Allocate the scratch layer. Only used while the ink animation runs. */
+        function openTmp() {
+            for (const l of layers) {
+                if (l.tmp) continue;
+                const c = document.createElement("canvas");
+                c.width = W;
+                c.height = H;
+                l.wrap.appendChild(c);
+                l.tmp = c;
+                l.tctx = c.getContext("2d");
             }
-            speed = Math.max(0.05, total / Math.max(0.3, cfg.duration));
-            cursor = 0;
-            paintT = 0;
-            donePainting = false;
-            inkDirty = pigDirty = bleedDirty = true;
+        }
+        /**
+         * Wipe mode: a PAPER-COLOURED cover sits on top and each frame gets
+         * `destination-out` with one sprite frame of ink. Wherever the ink eats
+         * through, the painting shows.
+         *
+         * Not CSS `mask-image`, because the sprite is greyscale and image masks
+         * read the ALPHA channel by default. That would need `mask-mode:
+         * luminance`, only Baseline since 12/2023. In canvas the problem does
+         * not arise.
+         */
+        let cover: HTMLCanvasElement | null = null;
+        let cctx: CanvasRenderingContext2D | null = null;
 
-            if (instant) drawUpTo(total + 1);
-            refreshBleed();
-            render(0);
+        function openCover() {
+            if (cover) return;
+            const c = document.createElement("canvas");
+            c.className = "bb-cover";
+            c.width = W;
+            c.height = H;
+            host.appendChild(c);
+            cover = c;
+            cctx = c.getContext("2d");
+        }
+        function closeCover() {
+            if (!cover) return;
+            cover.remove();
+            cover.width = cover.height = 0;
+            cover = null;
+            cctx = null;
+        }
+        function drawCover(prog: number) {
+            if (!cctx || !cover || !wipeSheet) return;
+            const fw = wipeSheet.width / WIPE_FRAMES;
+            const fi = Math.min(
+                WIPE_FRAMES - 1,
+                Math.floor(prog * WIPE_FRAMES),
+            );
+            cctx.globalCompositeOperation = "source-over";
+            cctx.fillStyle = theme === "dark" ? cfg.paperDark : cfg.paperLight;
+            cctx.fillRect(0, 0, W, H);
+            cctx.globalCompositeOperation = "destination-out";
+            cctx.drawImage(
+                wipeSheet,
+                fi * fw,
+                0,
+                fw,
+                wipeSheet.height,
+                0,
+                0,
+                W,
+                H,
+            );
+            cctx.globalCompositeOperation = "source-over";
         }
 
-        function render(time: number) {
-            if (inkDirty) {
-                upload(0, texInk, inkC);
-                inkDirty = false;
+        /** Give the memory back: three full-screen canvases are not small. */
+        function closeTmp() {
+            for (const l of layers) {
+                if (!l.tmp) continue;
+                l.tmp.remove();
+                l.tmp.width = l.tmp.height = 0;
+                l.tmp = null;
+                l.tctx = null;
             }
-            if (pigDirty) {
-                upload(2, texPig, pigC);
-                pigDirty = false;
-            }
-            lastTime = time;
-            gl.uniform1f(U.uTime, time);
-            gl.uniform1f(U.uWind, cfg.wind);
-            gl.uniform1f(U.uStrength, cfg.ink);
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
         }
 
-        /* ── vòng lặp: chỉ chạy khi cần ── */
-        let raf = 0,
-            visible = true,
-            startedAt = 0,
-            prev = 0,
-            lastTime = 0,
-            running = false;
-
-        const needsLoop = () =>
-            visible && !document.hidden && (!donePainting || windOn);
-
-        function loop(now: number) {
-            if (!startedAt) startedAt = now;
-            const dt = Math.min(0.05, (now - prev) / 1000);
-            prev = now;
-
-            if (!donePainting) {
-                paintT += dt * speed;
-                drawUpTo(paintT);
+        /** Repaint what is already visible, for theme changes. Strokes still
+         *  bleeding get `drawn` reset so the next frame redraws from the ink drop. */
+        function repaintAll() {
+            for (const l of layers) l.ctx.clearRect(0, 0, W, H);
+            for (let i = 0; i < head; i++) {
+                const p = queue[i];
+                if (!p.blob && active.indexOf(p) >= 0) continue; // still bleeding, the scratch layer has it
+                paintFull(byKey[p.depth].ctx, p, colors);
             }
-            // lớp loang chạy thưa lúc đang vẽ, nhưng nét cuối cùng phải được cập nhật
-            if (bleedDirty && (donePainting || bleedTick++ % 3 === 0))
-                refreshBleed();
-
-            render((now - startedAt) / 1000);
-
-            if (needsLoop()) raf = requestAnimationFrame(loop);
-            else running = false;
         }
 
+        function rebuild(instant: boolean) {
+            sizeUp();
+            palette();
+            queue = build(W, H, cfg.seed, cfg.density, cfg.shoot, cfg.reveal);
+            bleed = cfg.reveal === "ink" ? cfg.bleed : 0;
+            const last = queue.length ? queue[queue.length - 1].t : 1;
+            total = last + bleed;
+            speed = total / cfg.duration;
+            head = 0;
+            active.length = 0;
+            started = 0;
+            for (const l of layers) l.ctx.clearRect(0, 0, W, H);
+            if (cfg.reveal === "wipe") {
+                // the whole painting lands at once; the animation lives in the cover layer
+                closeTmp();
+                flush(total + 1);
+                if (!instant && wipeSheet) {
+                    openCover();
+                    drawCover(0);
+                }
+                return;
+            }
+            if (instant) {
+                closeTmp();
+                flush(total + 1);
+            } else if (bleed > 0) openTmp();
+        }
+        /**
+         * Advance the animation to time t.
+         *
+         * In 'ink' mode each stroke starts as a drop where the brush lands and
+         * bleeds outward. Canvas only accumulates, so a growing stroke cannot be
+         * redrawn: each frame paints only the ANNULUS newly exposed. The annuli
+         * are disjoint, so ink never stacks alpha. A 0.2 px overlap is the least
+         * that closes the AA seam, measuring 0.005 off a single-pass render
+         * against 0.047 at 0.4 px.
+         */
+        /**
+         * Land, soak, pull. The first quarter of the radius barely moves so the
+         * drop has time to appear, then it bleeds fast.
+         */
+        const ease = (x: number) =>
+            x < 0.34
+                ? 0.1 * (x / 0.34)
+                : 0.1 + 0.9 * (1 - Math.pow(1 - (x - 0.34) / 0.66, 2.2));
+
+        function flush(t: number) {
+            while (head < queue.length && queue[head].t <= t) {
+                const p = queue[head++];
+                if (p.blob || bleed <= 0)
+                    paintFull(byKey[p.depth].ctx, p, colors);
+                else active.push(p);
+            }
+            // Wipe the scratch layer every frame. A bleeding stroke is then drawn
+            // FROM SCRATCH rather than accumulated, so there is no annulus seam
+            // and no stacked alpha. Measured against a single-pass render: 0.0000
+            // off. The annulus route gives 0.0049 and leaves visible arcs.
+            // Clear only what is dirty, not three full-screen canvases. At
+            // 1600x900, three full clearRects a frame is the loop's cost floor.
+            for (const l of layers) {
+                if (!l.dirty || !l.tctx) continue;
+                l.tctx.clearRect(
+                    l.d0 - 2,
+                    l.d1 - 2,
+                    l.d2 - l.d0 + 4,
+                    l.d3 - l.d1 + 4,
+                );
+                l.dirty = false;
+                l.d0 = l.d1 = Infinity;
+                l.d2 = l.d3 = -Infinity;
+            }
+
+            for (let i = active.length - 1; i >= 0; i--) {
+                const p = active[i];
+                if (p.blob) {
+                    active.splice(i, 1);
+                    continue;
+                }
+                const lay = byKey[p.depth];
+                const prog = Math.min(1, (t - p.t) / bleed);
+
+                if (prog >= 1) {
+                    paintFull(lay.ctx, p, colors); // commit: fill, then punch the dry grain
+                    active.splice(i, 1);
+                    continue;
+                }
+                const tctx = lay.tctx;
+                if (!tctx) {
+                    paintFull(lay.ctx, p, colors);
+                    active.splice(i, 1);
+                    continue;
+                }
+                if (!p.rx || !p.ry) {
+                    const b = bakeRim(p.maxR, p.rimSeed);
+                    p.rx = b.rx;
+                    p.ry = b.ry;
+                }
+                const rNow = p.blotR + (p.maxR - p.blotR) * ease(prog);
+
+                // The ink drop is a CIRCLE that deliberately spills past the stroke
+                // shape, the way a brush tip looks when it first touches paper. It
+                // lives only on the scratch layer, so committing leaves no lump.
+                const fade = Math.pow(1 - prog, 1.6);
+                if (fade > 0.01) {
+                    const rd = p.blotR * (1.15 + prog * 0.5);
+                    const c = colors[p.tint];
+                    const g = tctx.createRadialGradient(
+                        p.ox,
+                        p.oy,
+                        0,
+                        p.ox,
+                        p.oy,
+                        rd * 2.3,
+                    );
+                    const ka = p.alpha * fade;
+                    g.addColorStop(0, `rgba(${c},${ka.toFixed(3)})`);
+                    g.addColorStop(
+                        0.42,
+                        `rgba(${c},${(ka * 0.85).toFixed(3)})`,
+                    );
+                    g.addColorStop(1, `rgba(${c},0)`); // halo soaking into the paper
+                    tctx.globalAlpha = 1;
+                    tctx.fillStyle = g;
+                    rimPath(tctx, p.ox, p.oy, rd * 2.3, p.rx, p.ry, t * 0.6);
+                    tctx.fill();
+                }
+
+                // The scratch layer has to punch the dry grain EXACTLY as the commit
+                // does. Compensating with a mean value is not enough: the punch takes
+                // up to 54% on individual dabs, so a whole pale culm segment jumps at
+                // once and reads as a flicker.
+                tctx.save();
+                // Past 82% the bleed rim nearly matches the stroke shape, so drop the
+                // polygon clip, the most expensive thing in the loop.
+                if (prog < 0.82) {
+                    rimPath(
+                        tctx,
+                        p.ox,
+                        p.oy,
+                        Math.max(rNow, p.blotR),
+                        p.rx,
+                        p.ry,
+                        t,
+                    );
+                    tctx.clip();
+                }
+                fillShape(tctx, p, colors);
+                punch(tctx, p);
+                tctx.restore();
+
+                // union of the bounding boxes: stroke shape plus the drop spilling past it
+                const pad = p.blotR * 2.6;
+                const ax0 = Math.min(p.bx, p.ox - pad),
+                    ay0 = Math.min(p.by, p.oy - pad);
+                const ax1 = Math.max(p.bx + p.bw, p.ox + pad),
+                    ay1 = Math.max(p.by + p.bh, p.oy + pad);
+                if (!lay.dirty) {
+                    lay.d0 = ax0;
+                    lay.d1 = ay0;
+                    lay.d2 = ax1;
+                    lay.d3 = ay1;
+                } else {
+                    if (ax0 < lay.d0) lay.d0 = ax0;
+                    if (ay0 < lay.d1) lay.d1 = ay0;
+                    if (ax1 > lay.d2) lay.d2 = ax1;
+                    if (ay1 > lay.d3) lay.d3 = ay1;
+                }
+                lay.dirty = true;
+            }
+        }
+
+        function tick(now: number) {
+            if (!started) started = now;
+            if (cfg.reveal === "wipe") {
+                const prog = (now - started) / 1000 / cfg.duration;
+                drawCover(prog);
+                if (prog < 1 && visible && !document.hidden)
+                    raf = requestAnimationFrame(tick);
+                else {
+                    running = false;
+                    if (prog >= 1) {
+                        closeCover();
+                        io.disconnect();
+                    }
+                }
+                return;
+            }
+            flush(((now - started) / 1000) * speed);
+            const done = head >= queue.length && active.length === 0;
+            if (!done && visible && !document.hidden)
+                raf = requestAnimationFrame(tick);
+            else {
+                running = false;
+                // Done, and no more JavaScript. CSS handles the wind from here.
+                if (done) {
+                    closeTmp();
+                    io.disconnect();
+                }
+            }
+        }
         function kick() {
-            if (running || !needsLoop()) return;
+            if (cfg.reveal === "wipe") {
+                if (running || !cover) return;
+                running = true;
+                raf = requestAnimationFrame(tick);
+                return;
+            }
+            if (running || (head >= queue.length && active.length === 0))
+                return;
             running = true;
-            prev = performance.now();
-            raf = requestAnimationFrame(loop);
+            raf = requestAnimationFrame(tick);
         }
 
         const io = new IntersectionObserver(
@@ -1297,43 +1148,59 @@ ${
             },
             { rootMargin: "120px" },
         );
-        io.observe(cv);
 
-        const onVis = () => kick();
-        document.addEventListener("visibilitychange", onVis);
-
-        let rt: number;
+        let rt = 0;
         const ro = new ResizeObserver(() => {
             clearTimeout(rt);
-            // dựng lại ngay, không vẽ dần — đổi khổ giấy giữa chừng thì nhìn rất kỳ
-            rt = window.setTimeout(() => {
-                restart(cfg.seed, true);
-                kick();
-            }, 200);
+            // Redrawing from the start on a resize looks wrong, so build the finished grove directly.
+            rt = window.setTimeout(() => rebuild(true), 200);
         });
-        ro.observe(cv);
 
-        applyTheme();
-        restart(cfg.seed, !cfg.animate);
-        kick();
-
-        // đổi chế độ chỉ cần đổi uniform — trường mực không phụ thuộc màu
         const retheme = () => {
             const next: Theme =
                 cfg.themeMode === "auto" ? detectTheme() : cfg.themeMode;
             if (next === theme) return;
             theme = next;
-            applyTheme();
-            if (!running) render(lastTime);
+            palette();
+            repaintAll(); // 20-60 ms, far cheaper than baking two sets of images
         };
         const mq = matchMedia("(prefers-color-scheme: dark)");
-        mq.addEventListener("change", retheme);
         const mo = new MutationObserver(retheme);
-        if (cfg.themeMode === "auto")
-            mo.observe(document.documentElement, {
-                attributes: true,
-                attributeFilter: ["class", "data-theme", "data-color-scheme"],
-            });
+
+        function boot() {
+            if (cfg.reveal === "wipe" && cfg.animate) {
+                // load the sprite first; if it fails, show the finished grove
+                loadWipe(cfg.wipeSrc).then(() => {
+                    rebuild(false);
+                    kick();
+                });
+            } else {
+                rebuild(!cfg.animate);
+            }
+            io.observe(host);
+            ro.observe(host);
+            mq.addEventListener("change", retheme);
+            if (cfg.themeMode === "auto")
+                mo.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: [
+                        "class",
+                        "data-theme",
+                        "data-color-scheme",
+                    ],
+                });
+            document.addEventListener("visibilitychange", kick);
+        }
+
+        // Deferred until after `load`: the growth animation must not compete for
+        // the main thread while the page is still coming up.
+        if (document.readyState === "complete") requestAnimationFrame(boot);
+        else
+            addEventListener("load", () =>
+                "requestIdleCallback" in window
+                    ? requestIdleCallback(boot, { timeout: 400 })
+                    : setTimeout(boot, 60),
+            );
 
         const inst = {
             destroy() {
@@ -1343,8 +1210,10 @@ ${
                 ro.disconnect();
                 mo.disconnect();
                 mq.removeEventListener("change", retheme);
-                document.removeEventListener("visibilitychange", onVis);
-                gl.getExtension("WEBGL_lose_context")?.loseContext();
+                document.removeEventListener("visibilitychange", kick);
+                closeTmp();
+                closeCover();
+                host.replaceChildren();
                 instances.delete(inst);
             },
         };
@@ -1353,15 +1222,15 @@ ${
 
     function initAll() {
         document
-            .querySelectorAll<HTMLCanvasElement>(
-                "canvas[data-bamboo]:not([data-bamboo-ready])",
+            .querySelectorAll<HTMLElement>(
+                "[data-bamboo-canvas]:not([data-bamboo-ready])",
             )
             .forEach(init);
     }
 
     initAll();
     document.addEventListener("astro:page-load", initAll);
-    document.addEventListener("astro:before-swap", () => {
-        instances.forEach((i) => i.destroy());
-    });
+    document.addEventListener("astro:before-swap", () =>
+        instances.forEach((i) => i.destroy()),
+    );
 </script>
