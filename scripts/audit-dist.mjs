@@ -3,6 +3,7 @@
  * third-party origin, and no UI framework runtime may sneak into a bundle.
  * Run against dist/ after a build.
  */
+import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative, extname } from 'node:path';
 import process from 'node:process';
@@ -211,8 +212,35 @@ for (const asset of localAssets) {
   }
 }
 
+/**
+ * Social cards are rasterised from one shared template, and the only thing that
+ * distinguishes them is the headline. resvg does not fail on a font it cannot
+ * load, it silently drops the text -- so a card set in nothing still rasterises,
+ * and every card collapses onto the same bytes. Comparing them to each other is
+ * what catches that; a size floor would only ever be a guessed number.
+ */
+const cardHashes = new Map();
+try {
+  for (const name of await readdir(join(DIST, 'og'))) {
+    if (extname(name) !== '.png') continue;
+    const hash = createHash('sha256').update(await readFile(join(DIST, 'og', name))).digest('hex');
+    const twin = cardHashes.get(hash);
+    if (twin) {
+      failures.push(
+        `og/${name} is byte-identical to og/${twin}: the headline did not render, ` +
+          `so the fonts behind the card are missing`,
+      );
+    } else {
+      cardHashes.set(hash, name);
+    }
+  }
+} catch {
+  failures.push('no og cards in dist/og: the card route produced nothing');
+}
+
 console.log(
-  `audited ${htmlCount} pages, ${inlineScriptCount} inline scripts, ` +
+  `audited ${htmlCount} pages, ${cardHashes.size} og cards, ` +
+    `${inlineScriptCount} inline scripts, ` +
     `${structuredDataCount} ld+json blocks, ${localAssets.size} local media refs`,
 );
 
