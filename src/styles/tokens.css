@@ -15,8 +15,17 @@
   --color-ink-max: #000000;
   --color-ink-light: #5c5853;
   --color-chip: #88888822;
-  --color-accent: var(--color-ink-deep);
   --color-focus: var(--color-ink-deep);
+
+  /* Cinnabar, the seal red already printed at the foot of the bamboo clump, so
+     the one interactive hue on the site is drawn from its own artwork rather
+     than invented. Re-solved against the paper the same way the inks were: the
+     grove's own #b5402f reads 3.58:1 here and misses AA, #9c3526 holds 4.54:1.
+     Chrome stays greyscale — this is for links inside prose only, where the
+     underline alone left a reference indistinguishable from body text at a
+     glance. */
+  --color-accent: #9c3526;
+  --color-accent-deep: #872d20;
 
   /* Semantic status hues, admonitions only. These are content semantics rather
      than a brand accent: chrome stays greyscale, so the neutral-accent rule
@@ -35,6 +44,10 @@
   --color-ink-deep: #edf0f0;
   --color-ink-max: #ffffff;
   --color-ink-light: #929595;
+
+  /* Same seal red lifted for the near-black paper: 6.19:1 and 8.00:1. */
+  --color-accent: #e08774;
+  --color-accent-deep: #eda294;
 
   /* Lifted for the near-black paper; same 8.2:1 to 10.1:1 band as dark ink. */
   --color-note:      #a7cbeb;

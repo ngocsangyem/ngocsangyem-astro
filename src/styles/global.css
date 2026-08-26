@@ -76,6 +76,42 @@ html {
   transition: background-color var(--dur-fast) var(--ease-out);
 }
 
+/* Cross-document view transitions. Browser-native, so navigation stops being a
+   hard cut without an article shipping a single byte of script for it.
+
+   Only the OLD page animates, and it animates above the new one. The new page
+   already has an entrance: `.prose > *` and `[data-enter]` stagger themselves
+   in. Crossfading the new root on top of that would multiply two opacity
+   ramps against each other, the same trap PostLayout avoids by refusing to
+   nest reveals. So the outgoing page dissolves and the incoming one is simply
+   already there underneath, settling in on its own schedule. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: fade-out var(--dur-base) var(--ease-out) both;
+  /* Painted above the incoming page; the default order puts `new` on top,
+     where it would cover the dissolve completely. */
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Chrome that is identical on both pages is lifted out of the root capture, so
+   it holds still while the content crosses over instead of dissolving with it. */
+.site-header {
+  view-transition-name: site-header;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
+
 /* Anchor jumps ease instead of teleporting. Browser-native, so it costs no
    JavaScript and runs off the main thread; opted into rather than out of, so a
    reduced-motion preference keeps the instant jump. */
@@ -163,6 +199,37 @@ time {
 @media (min-width: 80rem) {
   .page-wide {
     max-inline-size: calc(76rem + 2 * var(--page-gutter));
+  }
+}
+
+/* Visible only once focused. The header's nav sits ahead of the article in the
+   tab order on every page, so without this a keyboard reader walks the whole
+   nav again on each navigation. */
+.skip-link {
+  background: var(--color-paper);
+  border-radius: var(--radius-chip);
+  color: var(--color-ink-deep);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  padding: 0.5rem 0.75rem;
+  position: fixed;
+  text-decoration: none;
+  transform: translateY(-150%);
+  transition: transform var(--dur-fast) var(--ease-out);
+  z-index: 10;
+}
+
+/* `:focus`, not `:focus-visible`. There is no pointer path to this link, so the
+   visible-focus heuristic can only ever cost a keyboard reader the reveal. */
+.skip-link:focus {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
   }
 }
 

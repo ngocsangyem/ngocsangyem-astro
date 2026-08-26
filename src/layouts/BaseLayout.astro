@@ -35,8 +35,10 @@ const { title, description, wide = false, background = false } = Astro.props;
        grove follows the toggle without a second source of truth. */
     }
     {background && <BambooBackground wind={0.55} animate once fixed theme="auto" />}
+    <a class="skip-link" href="#main">Skip to content</a>
     <Header />
     <main
+      id="main"
       class:list={["page page-glass", { "page-wide": wide }]}
       data-pagefind-body
     >

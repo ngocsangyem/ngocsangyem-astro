@@ -35,6 +35,12 @@ const { post, headings, minutesRead } = Astro.props;
   </article>
 </BaseLayout>
 
+{/* The only script an article carries. It enhances the code blocks and does
+    nothing else; without it they render exactly as before. */}
+<script>
+  import '../scripts/code-copy';
+</script>
+
 <style>
   .article {
     margin-inline: auto;

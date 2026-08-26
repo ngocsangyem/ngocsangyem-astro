@@ -48,4 +48,14 @@ const date = post.data.date;
     flex: none;
     font-size: 0.8125rem;
   }
+
+  /* 0.45rem of padding puts a row at roughly 40px, and rows are flush against
+     each other, so on a touch screen the miss lands on the neighbouring post
+     rather than on nothing. Loosened only where the pointer is coarse: this is
+     the site's primary navigation, and desktop keeps its density. */
+  @media (pointer: coarse) {
+    .row {
+      padding-block: 0.65rem;
+    }
+  }
 </style>

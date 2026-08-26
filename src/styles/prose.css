@@ -29,11 +29,24 @@
   font-weight: 500;
 }
 
+/* The one place the accent is spent. `color` also drives the underline, since
+   `text-decoration-color` is only set globally to hold links apart from body
+   text — here the colour does that job and the underline should follow it. */
 .prose a {
+  color: var(--color-accent);
   text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
+/* Beats the global `a:hover`, which would otherwise pull a link back to ink on
+   hover — the one moment it should read as most interactive. */
+.prose a:hover {
+  color: var(--color-accent-deep);
+}
+
+/* Chips carry their own fill and sit in the chrome register, so they stay ink. */
 .prose a.link-chip {
+  color: var(--color-ink);
   text-decoration: none;
 }
 
@@ -84,6 +97,81 @@
 /* A titled block reads as one unit with its caption. */
 .code-figure {
   margin: 0;
+}
+
+/* Both are anchors for the copy control. `.code-block` is created by the copy
+   script around a bare listing; `pre` scrolls, so the control cannot live
+   inside it. */
+.code-figure,
+.code-block {
+  position: relative;
+}
+
+/* Text, not an icon: the site ships no icon set for content, and a word needs
+   no legend. Resting state is hidden from sight but never from the keyboard —
+   `:focus-visible` brings it back, so tabbing through an article still reaches
+   it. */
+.code-copy {
+  background-color: var(--color-chip);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 0;
+  border-radius: var(--radius-chip);
+  color: var(--color-ink-light);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  inset-block-start: 0.4rem;
+  inset-inline-end: 0.4rem;
+  line-height: 1.2;
+  opacity: 0;
+  padding: 0.3rem 0.5rem;
+  position: absolute;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+/* A titled block has a bar of its own, so the control sits in it rather than
+   over the first line of code. */
+.code-figure .code-copy {
+  inset-block-start: 0.28rem;
+}
+
+.code-figure:hover .code-copy,
+.code-block:hover .code-copy,
+.code-copy:focus-visible,
+.code-copy[data-state] {
+  opacity: 1;
+}
+
+.code-copy:hover {
+  color: var(--color-ink-deep);
+}
+
+/* Confirmation is carried by the word alone. */
+.code-copy[data-state='copied'] {
+  color: var(--color-ink-deep);
+}
+
+/* The one place a status hue earns its place outside an admonition: a failure
+   the reader has to act on. */
+.code-copy[data-state='failed'] {
+  color: var(--color-caution);
+}
+
+/* A coarse pointer has no hover to reveal with, and a control that only shows
+   on tap is a control nobody finds. */
+@media (hover: none) {
+  .code-copy {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code-copy {
+    transition: none;
+  }
 }
 
 .code-figure .code-title {
