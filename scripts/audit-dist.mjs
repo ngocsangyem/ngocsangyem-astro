@@ -33,10 +33,20 @@ const localAssets = new Set();
 
 /**
  * Inline scripts the plan allows on every page: the blocking theme init, the
- * search module and the theme toggle. Changing this number is a deliberate act,
- * which is the point of asserting it.
+ * search module and the theme toggle. Changing these numbers is a deliberate
+ * act, which is the point of asserting them.
+ *
+ * An article carries a fourth: the copy control on its code blocks. It is
+ * budgeted separately rather than by raising the figure everywhere, so a script
+ * arriving on a page that should carry none of it still fails the audit.
  */
 const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 3;
+const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 4;
+
+/** `posts/<slug>/index.html`, but not the `posts/index.html` listing. */
+function isArticle(where) {
+  return /^posts\/[^/]+\/index\.html$/.test(where);
+}
 let htmlCount = 0;
 let inlineScriptCount = 0;
 
@@ -138,10 +148,11 @@ function auditHtml(file, html) {
 
   const inlineOnPage = [...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>/gi)].length;
   inlineScriptCount += inlineOnPage;
-  if (inlineOnPage !== ALLOWED_INLINE_SCRIPTS_PER_PAGE) {
-    failures.push(
-      `${where}: ${inlineOnPage} inline scripts, allowlist permits ${ALLOWED_INLINE_SCRIPTS_PER_PAGE}`,
-    );
+  const allowed = isArticle(where)
+    ? ALLOWED_INLINE_SCRIPTS_PER_ARTICLE
+    : ALLOWED_INLINE_SCRIPTS_PER_PAGE;
+  if (inlineOnPage !== allowed) {
+    failures.push(`${where}: ${inlineOnPage} inline scripts, allowlist permits ${allowed}`);
   }
 }
 
