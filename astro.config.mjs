@@ -24,6 +24,10 @@ export default defineConfig({
   site: 'https://ngocsangyem.dev',
   // Pinned so canonical, RSS and sitemap URLs cannot disagree.
   trailingSlash: 'never',
+  // The whole per-page stylesheet is ~5KB gzipped, smaller than the cost of a
+  // render-blocking request on a slow connection, so every page carries its
+  // own CSS instead of fetching it.
+  build: { inlineStylesheets: 'always' },
   // Markdown images carry no layout of their own, and without one Astro emits an
   // empty srcset. Setting it here is what makes every post image responsive.
   image: { layout: 'constrained' },
@@ -68,7 +72,9 @@ export default defineConfig({
       name: 'Inter',
       cssVariable: '--font-inter',
       provider: fontProviders.fontsource(),
-      weights: [400, 500, 600, 700],
+      // 400 body, 500 labels/h4, 600 headings. Bold prose text resolves to
+      // 600 by CSS font matching, so a dedicated 700 face never ships.
+      weights: [400, 500, 600],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['system-ui', 'sans-serif'],
@@ -77,7 +83,7 @@ export default defineConfig({
       name: 'DM Mono',
       cssVariable: '--font-dm-mono',
       provider: fontProviders.fontsource(),
-      weights: [400, 500],
+      weights: [400],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['ui-monospace', 'monospace'],
@@ -86,7 +92,8 @@ export default defineConfig({
       name: 'Roboto Condensed',
       cssVariable: '--font-roboto-condensed',
       provider: fontProviders.fontsource(),
-      weights: [400, 700],
+      // Chips are the only consumer and never render bold.
+      weights: [400],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['sans-serif'],

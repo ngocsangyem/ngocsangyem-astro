@@ -139,5 +139,7 @@ const structuredData = post
 
 {/* Preload only the faces that paint above the fold; the rest load on use. */}
 <Font cssVariable="--font-inter" preload={[{ weight: '400' }, { weight: '600' }]} />
-<Font cssVariable="--font-dm-mono" preload={[{ weight: '400' }]} />
+{/* Mono paints only inside code and tables, always below the fold on a cold
+    load, so it swaps in on use instead of competing with the LCP text. */}
+<Font cssVariable="--font-dm-mono" />
 <Font cssVariable="--font-roboto-condensed" />

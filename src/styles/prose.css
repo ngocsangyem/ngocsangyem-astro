@@ -291,7 +291,9 @@
   color: var(--color-ink-deep);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  font-weight: 500;
+  /* 400: the only mono face that ships; uppercase and tracking carry the
+     emphasis at this size. */
+  font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
