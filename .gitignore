@@ -121,3 +121,4 @@ plans/*
 # Astro
 .astro/
 .DS_Store
+.vercel
