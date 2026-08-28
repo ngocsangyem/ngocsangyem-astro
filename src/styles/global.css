@@ -251,6 +251,7 @@ time {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-edge);
   border-radius: 0.5rem;
 }
 
@@ -259,6 +260,21 @@ time {
 .page-glass {
   padding-top: 1rem;
   padding-bottom: 1rem;
+}
+
+/* Below the panel's natural width, `margin-inline: auto` resolves to zero and
+   the sheet sits flush against the viewport, reading as a plain page background
+   instead of paper laid over the grove. A small reveal on the sides and below
+   keeps the sheet's edge — and the grove behind it — visible on phones. */
+@media (max-width: 48rem) {
+  .page,
+  .site-header {
+    margin-inline: var(--space-4);
+  }
+
+  .page-glass {
+    margin-block-end: var(--space-4);
+  }
 }
 
 /* Magic-link chip: the favicon is the only chroma on the page. Global rather

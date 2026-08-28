@@ -65,6 +65,27 @@ export interface ComposeResult {
     roots: Pt[];
 }
 
+/**
+ * Global multiplier on every greyscale stroke's ink: culms, nodes, branches
+ * and leaves. The per-clump `ink` values below stay as the depth LADDER -- far
+ * clumps pale, front clumps dark -- and this scales the whole ladder at once.
+ *
+ * The ladder was originally solved against a bare canvas. On the site the grove
+ * is only ever seen in the two margins beside the reading panel, at a fraction
+ * of a full viewport, and there the strongest front culm was landing at 1.83:1
+ * against the paper -- perceptible as a stain, not as a drawing. Doubled, that
+ * same culm reads 2.60:1 to 3.84:1 and the far band still stays under 1.5:1, so
+ * the depth ladder is untouched; only the whole thing steps up out of the wash.
+ *
+ * The ceiling is not the paper -- it is the reading panel, which is where any
+ * remaining grove passes behind text. --glass-bg in styles/tokens.css is solved
+ * to hold muted text and prose links above AA across ink up to 0.75, and the
+ * darkest stroke this gain produces (front clump 0.235 x 2 x 1.26 jitter) is
+ * 0.59. Raising this constant past ~2.5 walks the panel back under AA; re-solve
+ * --glass-bg first if you want to go further.
+ */
+const INK_GAIN = 2;
+
 interface Clump {
     x: number;
     n: number;
@@ -192,7 +213,7 @@ export function compose({
 
         for (let j = 0; j < B.n; j++) {
             const dir = lerp(B.lo, B.hi, B.n === 1 ? 0.5 : j / (B.n - 1)) + (rnd() - 0.5) * 0.28;
-            const ik = B.ink * (0.74 + 0.52 * rnd());
+            const ik = B.ink * INK_GAIN * (0.74 + 0.52 * rnd());
             const cw = S * B.w * (0.78 + rnd() * 0.44);
             const yB = H * 1.06;
             const yT = H * (B.top + rnd() * 0.14) - Math.abs(dir) * H * 0.06;

@@ -71,14 +71,33 @@
 
   --radius-chip: 4px;
 
-  /* The frosted panel behind the sticky back-to-top control. Paper at 0.6 plus
-     a blur, so page text scrolling under the icon reads as depth instead of
-     colliding with it. Both themes set this to their own paper colour exactly,
-     so the panel is invisible wherever nothing passes behind it. */
-  --glass-bg: rgba(211, 206, 196, 0.6);
+  /* The reading panel, and the chip behind the sticky back-to-top control.
+     This is a SHEET OF PAPER LAID ON THE GROVE, not a veil over it -- a
+     distinct tone from --color-paper, not the same colour at low alpha.
+
+     The old value was paper at 0.6, which failed twice. It left the panel
+     tonally identical to the canvas, so the reading column had no edge and the
+     grove behind it read as a smudge rather than as depth. And because 40% of
+     the grove still came through, muted text over it fell to 3.59:1 and prose
+     links to 3.62:1 -- under AA -- wherever a culm passed behind the measure.
+     Both numbers the ink tokens above claim are solved against bare paper only.
+
+     Solved instead as a lighter (dark: deeper) sheet at 0.86. The panel now
+     carries its own 1.21:1 step off the paper, so the edge is drawn by tone
+     rather than by a border, and text contrast goes UP on the panel instead of
+     down: across the grove's full ink range muted holds >= 4.54:1 and links
+     >= 4.58:1 in both themes. That headroom is what lets the grove itself get
+     twice as dark (see INK_GAIN in lib/bamboo-geometry.ts) and finally read in
+     the margins, where it is the only place it was ever going to be seen. */
+  --glass-bg: rgba(233, 229, 221, 0.86);
   --glass-blur: 12px;
+  /* Hairline along the sheet's own edge. Tone alone carries the boundary on a
+     flat run; this keeps the rounded corners from reading as a render artifact
+     where a dark culm happens to pass right under them. */
+  --glass-edge: rgba(27, 24, 19, 0.09);
 }
 
 [data-theme='dark'] {
-  --glass-bg: rgba(26, 32, 35, 0.6);
+  --glass-bg: rgba(15, 20, 23, 0.86);
+  --glass-edge: rgba(237, 240, 240, 0.1);
 }
