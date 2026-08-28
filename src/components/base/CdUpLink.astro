@@ -1,4 +1,5 @@
 ---
+import { Icon } from 'astro-icon/components';
 import { parentPath } from '../../lib/routes';
 
 const target = parentPath(Astro.url.pathname);
@@ -9,9 +10,7 @@ const label = target === '/' ? 'cd .. (back to the home page)' : `cd .. (back to
   target && (
     <div class="cd-up page" data-pagefind-ignore>
       <a href={target} aria-label={label}>
-        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 6l6 6-6 6" />
-        </svg>
+        <Icon name="lucide:chevron-right" size={14} aria-hidden="true" />
         <span>cd ..</span>
       </a>
     </div>
@@ -38,7 +37,10 @@ const label = target === '/' ? 'cd .. (back to the home page)' : `cd .. (back to
     color: var(--color-ink-deep);
   }
 
-  svg {
+  /* :global because the Icon component's svg does not carry this component's
+     scope attribute; anchored on the scoped `a`, so nothing leaks. The old
+     glyph's stroke-width was 2, which is lucide's own, so no weight override. */
+  a :global(svg) {
     flex: none;
   }
 </style>

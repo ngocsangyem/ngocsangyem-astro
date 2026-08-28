@@ -1,6 +1,7 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import icon from 'astro-icon';
 import { satteri } from '@astrojs/markdown-satteri';
 import {
   transformerMetaHighlight,
@@ -26,7 +27,18 @@ export default defineConfig({
   // Markdown images carry no layout of their own, and without one Astro emits an
   // empty srcset. Setting it here is what makes every post image responsive.
   image: { layout: 'constrained' },
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    sitemap(),
+    // The include list is the site's icon inventory: only these ship, and a
+    // typo'd name fails the build instead of rendering an empty box.
+    icon({
+      include: {
+        lucide: ['sun', 'moon', 'search', 'arrow-up', 'chevron-right', 'text-align-start'],
+        'simple-icons': ['github', 'linkedin'],
+      },
+    }),
+  ],
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   markdown: {
     processor: satteri({
