@@ -11,16 +11,18 @@ no framework runtime on content pages.
 - Theme · studied-DNA base: antfu.me (structure + tokens), with own identity filling the signature slots (see ## Identity)
 - Axes · dual paper (light >85 / dark <30) / neutral-grotesque display / **accent NEUTRAL — chroma delegated to content** (favicons in link-chips, syntax tokens). This is the strongest signature; never add a chromatic accent.
 - Type · one workhorse grotesque — **Inter** for display + body, hierarchy by size and weight only; **DM Mono** for dates, read-times, email, inline code labels; **Roboto Condensed** only inside link-chips. Self-hosted woff2, latin subset (content is English).
-- Chrome · N9 edge-aligned minimal nav: a plain header on bare paper with a `0.5rem` gap above and below — hand-drawn "Sang" mark top-left, right-aligned row of ≤4 text links (Posts · Projects · About) + search icon + theme toggle · footer: none — pages end with a "Find me on" social row (GitHub, LinkedIn) + DM Mono email line inside the prose column · one floating control: an icon-only back-to-top anchor in the bottom-right gutter, on the same glass, revealed by scrolling and never by script, wearing a frosted `--glass-bg` panel because it is sticky and page text scrolls under it
+- Chrome · N9 edge-aligned minimal nav: a plain header on bare paper with a `0.5rem` gap above and below — hand-drawn "Sang" mark top-left, right-aligned row of ≤4 text links (Posts · Projects · About) + search icon + theme toggle · footer: none — pages end with a "Find me on" social row (GitHub, LinkedIn) + DM Mono email line inside the prose column · one floating control: an icon-only back-to-top anchor in the bottom-right gutter, on the same glass, revealed by scrolling and never by script, wearing a frosted `--glass-bg` panel because it is sticky and page text scrolls under it · one floating *indicator*, on articles only: a 2px `--color-ink-deep` reading-progress hairline pinned to the top of the viewport, driven by `animation-timeline: scroll()` so it too costs no script. It sits outside `<main>` — the glass panel's `backdrop-filter` would otherwise become its containing block
 - Column · single centred prose column, `--prose-max-width: 65ch`, `line-height: 1.75`
 
 ## Content model
 - **One writing collection: `posts`** — the "notes" ARE the posts; no separate notes/TIL collection. Cheap to write: title + date + tags is enough frontmatter.
 - Collections: `posts`, `projects` (data collection), plus an `about` page.
-- URLs · collection-prefixed: `/posts/[slug]`, `/posts` (full index), `/projects`, `/about`, `/tags/[tag]`.
+- URLs · collection-prefixed: `/posts/[slug]`, `/posts` (full index), `/projects`, `/about`, `/tags` (tag index), `/tags/[tag]`.
 - Format · **MDX for all content** (plain-Markdown files still work unchanged; MDX keeps the door open for embedded demos/components).
 - Home · greeting (real first-person, 1–2 lines — never sample copy) + recent posts list, link to `/posts` for the rest.
-- `/posts` · rows grouped by year under ghost-year numerals; row = DM Mono muted date + title, opacity-step hover.
+- `/posts` · rows grouped by year under ghost-year numerals; row = DM Mono muted date + title, opacity-step hover. A row carries no summary anywhere on the site: the title is the whole invitation, and a second line of prose under each one turns a scannable index into a page to be read. A "Browse by tag" link on the title's line is the way into `/tags`.
+- `/tags` · frequency-ordered rows of `#tag` + count, DM Mono. Rows, not a chip cloud: sizing tags by frequency needs a chroma the neutral-accent axis has no way to spend.
+- Article foot · a hairline, then up to three same-tag related posts, then an Older/Newer pair. Labelled by time, not by "previous/next", which points either way on a date-ordered index.
 - `/projects` · antfu-style grid grouped by category: icon + name + one-line description, greyscale-until-hover.
 
 ## Tokens (canonical — emit as `tokens.css` when a build exists)

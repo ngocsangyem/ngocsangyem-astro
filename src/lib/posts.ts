@@ -145,3 +145,49 @@ export async function getPublishedPosts(): Promise<Post[]> {
   const posts = await getCollection('posts');
   return sortByDateDesc(posts.filter(isPublished));
 }
+
+export interface Siblings {
+  /** The post published just after this one; undefined for the newest. */
+  newer?: Post;
+  /** The post published just before this one; undefined for the oldest. */
+  older?: Post;
+}
+
+/**
+ * Neighbours in publication order. Labelled newer/older rather than
+ * previous/next: on a date-ordered index either word can point either way, and
+ * a reader at the foot of an article is choosing a direction in time.
+ */
+export function getSiblings(posts: Post[], current: Post): Siblings {
+  const ordered = sortByDateDesc(posts);
+  const index = ordered.findIndex((post) => post.id === current.id);
+  if (index === -1) return {};
+  return { newer: ordered[index - 1], older: ordered[index + 1] };
+}
+
+/**
+ * Posts sharing the most tags with this one, best match first. Ties break on
+ * recency, so an untagged archive still degrades to "here is what came before"
+ * rather than to an arbitrary order.
+ */
+export function getRelatedPosts(posts: Post[], current: Post, limit = 3): Post[] {
+  const tags = new Set(current.data.tags.map(slugifyTag).filter(Boolean));
+  if (tags.size === 0) return [];
+
+  return posts
+    .filter((post) => post.id !== current.id)
+    .map((post) => ({
+      post,
+      shared: post.data.tags.reduce(
+        (count, raw) => count + (tags.has(slugifyTag(raw)) ? 1 : 0),
+        0,
+      ),
+    }))
+    .filter((entry) => entry.shared > 0)
+    .sort(
+      (a, b) =>
+        b.shared - a.shared || b.post.data.date.getTime() - a.post.data.date.getTime(),
+    )
+    .slice(0, limit)
+    .map((entry) => entry.post);
+}

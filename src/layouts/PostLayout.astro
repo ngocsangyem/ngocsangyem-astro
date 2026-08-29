@@ -2,6 +2,7 @@
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
 import PostMeta from '../components/posts/PostMeta.astro';
+import PostNav from '../components/posts/PostNav.astro';
 import TagList from '../components/posts/TagList.astro';
 import Toc from '../components/posts/Toc.astro';
 import { getDescription, type Post } from '../lib/posts';
@@ -32,13 +33,16 @@ const { post, headings, minutesRead } = Astro.props;
     <div class="prose">
       <slot />
     </div>
+
+    <PostNav post={post} />
   </article>
 </BaseLayout>
 
-{/* The only script an article carries. It enhances the code blocks and does
-    nothing else; without it they render exactly as before. */}
+{/* The two scripts an article carries. Both are enhancements: without either,
+    the code blocks and the table of contents render exactly as before. */}
 <script>
   import '../scripts/code-copy';
+  import '../scripts/toc-active';
 </script>
 
 <style>
@@ -66,7 +70,8 @@ const { post, headings, minutesRead } = Astro.props;
 
     /* Only the pieces this layout owns; the TOC places itself in track 3. */
     .article > header,
-    .article > .prose {
+    .article > .prose,
+    .article > :global(.post-nav) {
       grid-column: 2;
     }
   }

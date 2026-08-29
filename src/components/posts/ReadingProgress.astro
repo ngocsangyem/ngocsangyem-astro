@@ -1,0 +1,55 @@
+---
+/**
+ * How far through the article the reader is, drawn as a hairline across the top
+ * of the viewport. Scroll-driven animation, so the browser reads the scroll
+ * position itself and the article still ships no scroll listener.
+ */
+---
+
+<div class="progress" aria-hidden="true" data-pagefind-ignore></div>
+
+<style>
+  .progress {
+    display: none;
+  }
+
+  /* Nothing here degrades: without scroll-driven animations the bar would sit
+     permanently at either 0% or 100%, which is worse than no bar at all. */
+  @supports (animation-timeline: scroll()) {
+    .progress {
+      /* Longhands, not the `animation` shorthand: the shorthand resets
+         duration to 0s, and a scroll-driven animation needs `auto` for the
+         timeline to drive it at all. With 0s the bar sticks at scaleX(0).
+         The var() indirection is what keeps it that way — the CSS minifier
+         folds plain longhands back into the shorthand and drops an `auto`
+         duration as redundant on the way, which reintroduces the 0s. It
+         cannot fold a declaration whose value it cannot resolve. */
+      animation-name: reading-progress;
+      animation-duration: var(--reading-progress-duration, auto);
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+      /* The document's own scroll, not this element's — the bar is fixed and
+         has no scrollport of its own. */
+      animation-timeline: scroll(root block);
+      background: var(--color-ink-deep);
+      block-size: 2px;
+      display: block;
+      inline-size: 100%;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      position: fixed;
+      transform: scaleX(0);
+      /* Grows from the reading edge, so it runs the way the text does. */
+      transform-origin: 0 50%;
+      /* Above the glass panel the page sits on, below the skip link, which has
+         to stay reachable at the very top of the tab order. */
+      z-index: 4;
+    }
+
+    @keyframes reading-progress {
+      to {
+        transform: scaleX(1);
+      }
+    }
+  }
+</style>

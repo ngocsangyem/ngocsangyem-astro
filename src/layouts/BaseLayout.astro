@@ -3,6 +3,7 @@ import Head from "../components/base/Head.astro";
 import Header from "../components/base/Header.astro";
 import CdUpLink from "../components/base/CdUpLink.astro";
 import SocialRow from "../components/base/SocialRow.astro";
+import ReadingProgress from "../components/posts/ReadingProgress.astro";
 import ToTopLink from "../components/base/ToTopLink.astro";
 import BambooBackground from "./BambooBackground.astro";
 import { SITE } from "../config/site";
@@ -50,6 +51,12 @@ const {
        grove follows the toggle without a second source of truth. */
     }
     {background && <BambooBackground wind={0.55} animate once fixed theme="auto" />}
+    {
+      /* Outside <main> on purpose: the glass panel's backdrop-filter makes it
+        the containing block for any fixed descendant, which would pin the bar
+        to the panel's top edge and let it scroll away with the page. */
+    }
+    {post && <ReadingProgress />}
     <a class="skip-link" href="#main">Skip to content</a>
     <Header />
     <main

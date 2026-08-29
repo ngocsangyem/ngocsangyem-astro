@@ -12,14 +12,39 @@ const posts = await getPublishedPosts();
   description="Notes on building things for the web."
 >
   <div class="prose-column" data-enter-children>
-    <h1>Posts</h1>
+    <div class="head">
+      <h1>Posts</h1>
+      <a class="tags-link" href="/tags">Browse by tag</a>
+    </div>
     <PostRows posts={posts} grouped />
   </div>
 </BaseLayout>
 
 <style>
+  /* The tag index is the other way into the archive, so it sits on the title's
+     own line rather than below it, where it would read as a first list row. */
+  .head {
+    align-items: baseline;
+    display: flex;
+    gap: var(--space-4);
+    justify-content: space-between;
+    margin-block: 1rem 3rem;
+  }
+
   h1 {
     font-size: 1.75rem;
-    margin-block: 1rem 3rem;
+  }
+
+  .tags-link {
+    color: var(--color-ink-light);
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .tags-link:hover {
+    color: var(--color-ink-deep);
   }
 </style>

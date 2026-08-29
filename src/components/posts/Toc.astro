@@ -29,7 +29,7 @@ const entries = headings.filter(
         <span class="toc-icon" aria-hidden="true">
           <Icon name="lucide:text-align-start" size={16} />
         </span>
-        <ol role="list">
+        <ol role="list" data-toc>
           {entries.map((heading) => (
             <li class:list={[`depth-${heading.depth}`]}>
               <a href={`#${heading.slug}`}>{heading.text}</a>
@@ -41,7 +41,7 @@ const entries = headings.filter(
       {/* Narrow viewports: inline, under the header. */}
       <details class="toc-inline" data-pagefind-ignore>
         <summary>On this page</summary>
-        <ol role="list">
+        <ol role="list" data-toc>
           {entries.map((heading) => (
             <li class:list={[`depth-${heading.depth}`]}>
               <a href={`#${heading.slug}`}>{heading.text}</a>
@@ -75,6 +75,12 @@ const entries = headings.filter(
   }
 
   a:hover {
+    color: var(--color-ink-deep);
+  }
+
+  /* Set by scripts/toc-active.ts. Colour alone carries the mark: a weight or a
+     size change here would reflow the list under the reader as they scroll. */
+  a[aria-current] {
     color: var(--color-ink-deep);
   }
 

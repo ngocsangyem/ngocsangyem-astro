@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAllTags, getPublishedPosts, tagUrl } from '../../lib/posts';
+
+const posts = await getPublishedPosts();
+// Frequency order, unlike a post's own tag list: this page is a map of what the
+// blog is mostly about, so the biggest subjects belong at the top.
+const tags = getAllTags(posts);
+---
+
+<BaseLayout title="Tags" description="Every subject written about here.">
+  <div class="prose-column" data-enter-children>
+    <h1>Tags</h1>
+    <p class="count">
+      {`${tags.length} ${tags.length === 1 ? 'tag' : 'tags'} across ${posts.length} ${
+        posts.length === 1 ? 'post' : 'posts'
+      }`}
+    </p>
+
+    {
+      tags.length > 0 ? (
+        <ul class="tags" role="list">
+          {tags.map((tag) => (
+            <li>
+              <a href={tagUrl(tag.slug)}>
+                <span class="label">#{tag.label}</span>
+                <span class="tally">{tag.count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="empty">Nothing is tagged yet.</p>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 1.75rem;
+    margin-block-start: var(--space-4);
+  }
+
+  .count {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    margin-block: var(--space-2) var(--space-7);
+  }
+
+  .tags {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Rows rather than a cloud of chips: the counts only compare when they line
+     up, and a cloud would size tags by frequency, which this palette's neutral
+     axis has no way to say without inventing an accent. */
+  .tags a {
+    align-items: baseline;
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+    padding-block: 0.45rem;
+    text-decoration: none;
+  }
+
+  .label {
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .tags a:hover .label {
+    color: var(--color-ink-deep);
+  }
+
+  .tally {
+    color: var(--color-ink-light);
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  .empty {
+    color: var(--color-ink-light);
+  }
+
+  @media (pointer: coarse) {
+    .tags a {
+      padding-block: 0.65rem;
+    }
+  }
+</style>

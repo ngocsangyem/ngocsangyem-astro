@@ -1,0 +1,127 @@
+---
+import PostRows from './PostRows.astro';
+import {
+  getPublishedPosts,
+  getRelatedPosts,
+  getSiblings,
+  postUrl,
+  type Post,
+} from '../../lib/posts';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+// Read here rather than threaded down from the page: the collection is already
+// in memory at build time, and every article wants the same whole list.
+const posts = await getPublishedPosts();
+const related = getRelatedPosts(posts, post);
+const { newer, older } = getSiblings(posts, post);
+const hasSiblings = Boolean(newer || older);
+---
+
+{
+  (related.length > 0 || hasSiblings) && (
+    <nav class="post-nav" aria-label="More posts" data-pagefind-ignore>
+      {related.length > 0 && (
+        <section class="related">
+          <h2 class="label">Related</h2>
+          <PostRows posts={related} />
+        </section>
+      )}
+
+      {hasSiblings && (
+        <ul class="siblings" role="list">
+          {older && (
+            <li class="sibling older">
+              <a href={postUrl(older)}>
+                <span class="label">Older</span>
+                <span class="title">{older.data.title}</span>
+              </a>
+            </li>
+          )}
+          {newer && (
+            <li class="sibling newer">
+              <a href={postUrl(newer)}>
+                <span class="label">Newer</span>
+                <span class="title">{newer.data.title}</span>
+              </a>
+            </li>
+          )}
+        </ul>
+      )}
+    </nav>
+  )
+}
+
+<style>
+  /* A hairline, not a heading, separates this from the article: the reader has
+     finished reading and is now choosing, and the change of mode is the only
+     thing the rule has to say. */
+  .post-nav {
+    border-block-start: var(--border-hairline) solid var(--color-ink-light);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-block-start: var(--space-9);
+    padding-block-start: var(--space-6);
+  }
+
+  .label {
+    color: var(--color-ink-light);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .related > .label {
+    margin-block-end: var(--space-3);
+  }
+
+  .siblings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sibling a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-decoration: none;
+  }
+
+  .sibling .title {
+    color: var(--color-ink);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .sibling a:hover .title {
+    color: var(--color-ink-deep);
+  }
+
+  /* Older leads, because the archive is what a reader at the foot of a post is
+     usually reaching for; newer sits opposite it once there is room for two
+     columns, so the pair reads as a timeline rather than as a list. */
+  @media (min-width: 40rem) {
+    .siblings {
+      flex-direction: row;
+      gap: var(--space-6);
+      justify-content: space-between;
+    }
+
+    .sibling {
+      flex: 1 1 0;
+      min-inline-size: 0;
+    }
+
+    .newer {
+      text-align: end;
+    }
+  }
+</style>

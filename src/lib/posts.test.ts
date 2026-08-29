@@ -3,6 +3,8 @@ import {
   getAllTags,
   getDescription,
   getPostsByTag,
+  getRelatedPosts,
+  getSiblings,
   groupPostsByYear,
   isPublished,
   postUrl,
@@ -236,5 +238,75 @@ describe('getDescription', () => {
     expect(
       getDescription(post({ id: 'a', date: '2026-01-01', description: '   ', body: 'Prose.' })),
     ).toBe('Prose.');
+  });
+});
+
+describe('getSiblings', () => {
+  const posts = [
+    post({ id: 'newest', date: '2026-03-01' }),
+    post({ id: 'middle', date: '2026-02-01' }),
+    post({ id: 'oldest', date: '2026-01-01' }),
+  ];
+
+  it('reads newer and older off publication order', () => {
+    const { newer, older } = getSiblings(posts, posts[1]);
+    expect(newer?.id).toBe('newest');
+    expect(older?.id).toBe('oldest');
+  });
+
+  it('leaves the end of the run open', () => {
+    expect(getSiblings(posts, posts[0]).newer).toBeUndefined();
+    expect(getSiblings(posts, posts[2]).older).toBeUndefined();
+  });
+
+  it('sorts for itself, so an unsorted list gives the same answer', () => {
+    const shuffled = [posts[2], posts[0], posts[1]];
+    expect(getSiblings(shuffled, posts[1]).newer?.id).toBe('newest');
+  });
+
+  it('returns nothing for a post outside the list', () => {
+    expect(getSiblings(posts, post({ id: 'stranger', date: '2026-04-01' }))).toEqual({});
+  });
+});
+
+describe('getRelatedPosts', () => {
+  const current = post({ id: 'current', date: '2026-03-01', tags: ['astro', 'css'] });
+
+  it('ranks by shared tags, then by recency', () => {
+    const posts = [
+      current,
+      post({ id: 'one-tag-new', date: '2026-02-01', tags: ['css'] }),
+      post({ id: 'both-tags', date: '2025-01-01', tags: ['css', 'astro'] }),
+      post({ id: 'one-tag-old', date: '2025-06-01', tags: ['astro'] }),
+    ];
+    expect(getRelatedPosts(posts, current).map((p) => p.id)).toEqual([
+      'both-tags',
+      'one-tag-new',
+      'one-tag-old',
+    ]);
+  });
+
+  it('never returns the post itself', () => {
+    expect(getRelatedPosts([current], current)).toEqual([]);
+  });
+
+  it('matches on the slug, so casing does not split a tag', () => {
+    const other = post({ id: 'other', date: '2026-01-01', tags: ['Astro'] });
+    expect(getRelatedPosts([current, other], current).map((p) => p.id)).toEqual(['other']);
+  });
+
+  it('returns nothing when the post carries no tags', () => {
+    const untagged = post({ id: 'untagged', date: '2026-03-01' });
+    const posts = [untagged, post({ id: 'other', date: '2026-01-01', tags: ['css'] })];
+    expect(getRelatedPosts(posts, untagged)).toEqual([]);
+  });
+
+  it('honours the limit', () => {
+    const posts = [
+      current,
+      post({ id: 'a', date: '2026-02-01', tags: ['css'] }),
+      post({ id: 'b', date: '2026-01-01', tags: ['css'] }),
+    ];
+    expect(getRelatedPosts(posts, current, 1).map((p) => p.id)).toEqual(['a']);
   });
 });

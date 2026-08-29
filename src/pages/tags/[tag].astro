@@ -19,7 +19,11 @@ const count = posts.length;
 <BaseLayout title={`#${label}`} description={`Posts tagged ${label}.`}>
   <div class="prose-column" data-enter-children>
     <h1>#{label}</h1>
-    <p class="count">{count} {count === 1 ? 'post' : 'posts'}</p>
+    <p class="count">
+      {count} {count === 1 ? 'post' : 'posts'}
+      <span aria-hidden="true"> · </span>
+      <a href="/tags">all tags</a>
+    </p>
     <PostRows posts={posts} />
   </div>
 </BaseLayout>
@@ -35,5 +39,16 @@ const count = posts.length;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     margin-block: var(--space-2) var(--space-7);
+  }
+
+  /* A way back out of a single tag, on the line that already says which tag
+     this is — the header has no entry for it, by design. */
+  .count a {
+    color: inherit;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .count a:hover {
+    color: var(--color-ink-deep);
   }
 </style>
