@@ -27,7 +27,11 @@ const { items } = Astro.props;
         </header>
 
         <p class="location">{item.location}</p>
-        <ul aria-label={`Skills listed for ${item.role} at ${item.company}`}>
+        <p class="highlights-label">What I worked on</p>
+        <ul class="experience-points" aria-label={`Experience highlights for ${item.role} at ${item.company}`}>
+          {item.highlights.map((highlight) => <li>{highlight}</li>)}
+        </ul>
+        <ul class="skills" aria-label={`Skills listed for ${item.role} at ${item.company}`}>
           {item.skills.map((skill) => <li>{skill}</li>)}
         </ul>
       </article>
@@ -40,6 +44,7 @@ const { items } = Astro.props;
 
   .timeline > li {
     min-block-size: 10rem;
+    min-inline-size: 0;
     padding-block: var(--space-6) clamp(4rem, 8vw, 7rem);
     padding-inline-start: var(--entry-indent);
     position: relative;
@@ -47,7 +52,7 @@ const { items } = Astro.props;
 
   .year,
   .period,
-  ul {
+  .skills {
     color: var(--color-ink-light);
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -97,6 +102,12 @@ const { items } = Astro.props;
     justify-content: space-between;
   }
 
+  article,
+  .role-head,
+  .role-head > div {
+    min-inline-size: 0;
+  }
+
   .company {
     color: var(--color-ink-deep);
     font-size: clamp(1.3rem, 2.4vw, 1.85rem);
@@ -129,13 +140,51 @@ const { items } = Astro.props;
     margin-block-start: var(--space-3);
   }
 
-  ul {
+  .experience-points {
+    color: var(--color-ink);
+    display: grid;
+    font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+    gap: var(--space-2);
+    line-height: 1.55;
+    list-style: disc;
+    margin-block-start: var(--space-2);
+    max-inline-size: min(68ch, 100%);
+    padding-inline-start: 1.3rem;
+  }
+
+  .experience-points li {
+    overflow-wrap: anywhere;
+  }
+
+  .experience-points li::marker { color: var(--color-ink-light); }
+
+  .highlights-label {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    margin-block-start: var(--space-5);
+    text-transform: uppercase;
+  }
+
+  .skills {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2) var(--space-3);
     list-style: none;
     margin-block-start: var(--space-4);
+    max-inline-size: 100%;
     padding: 0;
+  }
+
+  .skills li {
+    overflow-wrap: anywhere;
+  }
+
+  .skills li::before {
+    color: var(--color-ink-light);
+    content: '#';
+    margin-inline-end: 0.12em;
   }
 
   @media (max-width: 48rem) {
