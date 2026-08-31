@@ -37,16 +37,24 @@ const localAssets = new Set();
  * search module and the theme toggle. Changing these numbers is a deliberate
  * act, which is the point of asserting them.
  *
- * An article carries a fourth: the copy control on its code blocks. It is
+ * An article carries a fourth: the copy control on its code blocks. Portfolio
+ * also carries a fourth, its scroll-linked career-route indicator. Both are
  * budgeted separately rather than by raising the figure everywhere, so a script
  * arriving on a page that should carry none of it still fails the audit.
  */
 const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 3;
 const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 4;
+const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 4;
 
 /** `posts/<slug>/index.html`, but not the `posts/index.html` listing. */
 function isArticle(where) {
   return /^posts\/[^/]+\/index\.html$/.test(where);
+}
+
+function allowedInlineScripts(where) {
+  if (isArticle(where)) return ALLOWED_INLINE_SCRIPTS_PER_ARTICLE;
+  if (where === 'portfolio/index.html') return ALLOWED_INLINE_SCRIPTS_PORTFOLIO;
+  return ALLOWED_INLINE_SCRIPTS_PER_PAGE;
 }
 let htmlCount = 0;
 let inlineScriptCount = 0;
@@ -166,9 +174,7 @@ function auditHtml(file, html) {
     ...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>/gi),
   ].filter(([tag]) => !/type=["']application\/ld\+json["']/i.test(tag)).length;
   inlineScriptCount += inlineOnPage;
-  const allowed = isArticle(where)
-    ? ALLOWED_INLINE_SCRIPTS_PER_ARTICLE
-    : ALLOWED_INLINE_SCRIPTS_PER_PAGE;
+  const allowed = allowedInlineScripts(where);
   if (inlineOnPage !== allowed) {
     failures.push(`${where}: ${inlineOnPage} inline scripts, allowlist permits ${allowed}`);
   }

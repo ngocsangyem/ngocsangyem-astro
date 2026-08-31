@@ -2,6 +2,7 @@ export interface PortfolioExperience {
   company: string;
   role: string;
   period: string;
+  year: string;
   location: string;
   skills: string[];
 }
@@ -9,30 +10,26 @@ export interface PortfolioExperience {
 export const PORTFOLIO_EXPERIENCE: PortfolioExperience[] = [
   {
     company: 'Aspire',
-    role: 'Senior Frontend Developer',
-    period: 'Mar 2025 to present',
+    role: 'Software Engineer',
+    period: 'Jun 2022 to present',
+    year: '2022',
     location: 'Vietnam',
-    skills: ['CSS', 'HTML5'],
-  },
-  {
-    company: 'Aspire',
-    role: 'Frontend Developer',
-    period: 'Jun 2022 to Mar 2025',
-    location: 'Vietnam',
-    skills: ['JavaScript', 'CSS'],
+    skills: ['React', 'Vuejs', 'Typescript', 'Laravel', 'PHP', 'CSS', 'HTML5', 'AI-workflow', 'E2E/Playwright/Cypress', 'Unit test'],
   },
   {
     company: 'GForces',
     role: 'Frontend Developer',
     period: 'Sep 2020 to Jun 2022',
+    year: '2020',
     location: 'Ho Chi Minh City, Vietnam',
-    skills: ['JavaScript', 'Sass'],
+    skills: ['JavaScript', 'Sass', 'Vuejs', 'Reactjs', 'Typescript', 'Unit test'],
   },
   {
     company: 'Kyanon Digital',
     role: 'Frontend Developer',
     period: 'Jul 2019 to Sep 2020',
+    year: '2019',
     location: 'Vietnam',
-    skills: ['JavaScript', 'Sass'],
+    skills: ['JavaScript', 'Sass', 'Angular', 'HTML5', 'Unit test'],
   },
 ];

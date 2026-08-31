@@ -1,0 +1,131 @@
+<p class="route-label" aria-hidden="true">SGN · 2019 → NOW</p>
+<div class="route" data-career-route aria-hidden="true">
+  <svg class="route-curve" viewBox="0 0 44 110" fill="none">
+    <path
+      class="curve-dots"
+      d="M43 0V7.3A39 39 0 0 1 21.71 42.05A39 39 0 0 0 .5 76.75V110"
+    />
+    <path
+      class="curve-lit"
+      data-route-curve
+      d="M43 0V7.3A39 39 0 0 1 21.71 42.05A39 39 0 0 0 .5 76.75V110"
+      pathLength="1"
+    />
+  </svg>
+  <span class="route-plane" data-route-plane>
+    <svg class="plan-plane" viewBox="0 0 16 15" fill="none" aria-hidden="true">
+      <path
+        d="M8 0c.73 0 1.32 1.05 1.32 2.35v2.2l6.13 3.54c.25.14.4.4.4.69v1.1a.44.44 0 0 1-.56.42L9.32 8.5v3.06l1.9 1.33c.15.11.24.28.24.47v.79a.44.44 0 0 1-.56.42L8 13.79l-2.9.78a.44.44 0 0 1-.56-.42v-.79c0-.19.09-.36.24-.47l1.9-1.33V8.5L.71 10.3a.44.44 0 0 1-.56-.42v-1.1c0-.29.15-.55.4-.69l6.13-3.54v-2.2C6.68 1.05 7.27 0 8 0Z"
+        fill="currentColor"
+      />
+    </svg>
+  </span>
+  <span class="route-rail"><span class="route-rail-lit" data-route-rail-lit></span></span>
+</div>
+
+<script src="../../scripts/career-route.ts"></script>
+
+<style>
+  .route-label {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    inset-block-start: -7rem;
+    inset-inline-start: calc(var(--rail-x) + 2.7rem);
+    letter-spacing: 0.08em;
+    position: absolute;
+    text-transform: uppercase;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .route {
+    inset-block: -4.25rem 0;
+    inset-inline-start: var(--rail-x);
+    pointer-events: none;
+    position: absolute;
+    inline-size: 1px;
+  }
+
+  .route-curve {
+    block-size: 110px;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    max-inline-size: none;
+    overflow: visible;
+    position: absolute;
+    inline-size: 44px;
+  }
+
+  .curve-dots,
+  .curve-lit {
+    fill: none;
+    stroke-linecap: round;
+  }
+
+  .curve-dots {
+    stroke: color-mix(in srgb, var(--color-ink-light) 48%, transparent);
+    stroke-dasharray: 2 3.5;
+    stroke-width: 1;
+  }
+
+  .curve-lit {
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-ink-deep) 22%, transparent));
+    stroke: var(--color-ink-deep);
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    stroke-width: 1.25;
+  }
+
+  .route-rail {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-ink-light) 48%, transparent) 0 2px,
+      transparent 2px 5.5px
+    );
+    inset-block: 110px 0;
+    inset-inline-start: 0;
+    position: absolute;
+    inline-size: 1px;
+  }
+
+  .route-rail-lit {
+    background: var(--color-ink-deep);
+    inset: 0;
+    position: absolute;
+    transform: scaleY(0);
+    transform-origin: 50% 0;
+    inline-size: 1px;
+  }
+
+  .route-plane {
+    color: var(--color-ink-deep);
+    display: block;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    opacity: 1;
+    position: absolute;
+    transform-origin: 50% 50%;
+    will-change: transform, opacity;
+    inline-size: 1rem;
+  }
+
+  .route-plane svg {
+    block-size: auto;
+    display: block;
+    max-inline-size: none;
+    transform: rotate(0deg);
+    transition: transform var(--dur-fast) var(--ease-out);
+    inline-size: 100%;
+  }
+
+  .route-plane.is-returning svg { transform: rotate(180deg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .curve-lit {
+      stroke-dashoffset: 0;
+    }
+
+    .route-rail-lit { transform: scaleY(1); }
+  }
+</style>

@@ -1,0 +1,147 @@
+---
+import type { PortfolioExperience } from '../../data/portfolio-experience';
+
+interface Props {
+  items: PortfolioExperience[];
+}
+
+const { items } = Astro.props;
+---
+
+<ol class="timeline">
+  {items.map((item, index) => (
+    <li class:list={{ current: index === 0 }}>
+      <span class="year" aria-hidden="true">{item.year}</span>
+      <span class="point" aria-hidden="true"></span>
+
+      <article>
+        <header class="role-head">
+          <div>
+            <p class="company">
+              {item.company}
+              {index === 0 && <span class="current-label">Current</span>}
+            </p>
+            <h3>{item.role}</h3>
+          </div>
+          <p class="period">{item.period}</p>
+        </header>
+
+        <p class="location">{item.location}</p>
+        <ul aria-label={`Skills listed for ${item.role} at ${item.company}`}>
+          {item.skills.map((skill) => <li>{skill}</li>)}
+        </ul>
+      </article>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .timeline { list-style: none; margin: 0; padding: 0; }
+
+  .timeline > li {
+    min-block-size: 10rem;
+    padding-block: var(--space-6) clamp(4rem, 8vw, 7rem);
+    padding-inline-start: var(--entry-indent);
+    position: relative;
+  }
+
+  .year,
+  .period,
+  ul {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  .year {
+    inset-block-start: 2.45rem;
+    inset-inline-start: 0;
+    letter-spacing: 0.08em;
+    position: absolute;
+    text-align: end;
+    inline-size: 4.8rem;
+  }
+
+  .point {
+    background: var(--glass-bg);
+    border: 1px solid color-mix(in srgb, var(--color-ink-light) 55%, transparent);
+    border-radius: 50%;
+    block-size: 0.8rem;
+    inset-block-start: 2.55rem;
+    inset-inline-start: var(--rail-x);
+    position: absolute;
+    transform: translate(-50%, -50%);
+    inline-size: 0.8rem;
+    z-index: 1;
+  }
+
+  .point::after {
+    background: var(--color-ink-light);
+    border-radius: inherit;
+    content: '';
+    inset: 0.18rem;
+    position: absolute;
+  }
+
+  .current .point {
+    border-color: var(--color-ink-deep);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--color-ink-deep) 8%, transparent);
+  }
+
+  .current .point::after { background: var(--color-ink-deep); }
+
+  .role-head {
+    align-items: start;
+    display: flex;
+    gap: var(--space-5);
+    justify-content: space-between;
+  }
+
+  .company {
+    color: var(--color-ink-deep);
+    font-size: clamp(1.3rem, 2.4vw, 1.85rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+  }
+
+  .current-label {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    margin-inline-start: var(--space-2);
+    text-transform: uppercase;
+    vertical-align: 0.2em;
+  }
+
+  h3 {
+    font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+    font-weight: 500;
+    margin-block-start: var(--space-2);
+  }
+
+  .period { flex: none; text-align: end; }
+
+  .location {
+    color: var(--color-ink-light);
+    font-size: 0.9rem;
+    margin-block-start: var(--space-3);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    list-style: none;
+    margin-block-start: var(--space-4);
+    padding: 0;
+  }
+
+  @media (max-width: 48rem) {
+    .timeline > li { padding-block-end: var(--space-8); }
+    .year { display: none; }
+    .role-head { flex-direction: column; gap: var(--space-2); }
+    .period { text-align: start; }
+  }
+</style>

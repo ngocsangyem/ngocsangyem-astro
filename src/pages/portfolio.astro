@@ -1,12 +1,8 @@
 ---
-import { getCollection } from 'astro:content';
 import PortfolioContact from '../components/portfolio/PortfolioContact.astro';
 import PortfolioExperience from '../components/portfolio/PortfolioExperience.astro';
 import PortfolioHero from '../components/portfolio/PortfolioHero.astro';
-import ProjectProjector from '../components/portfolio/ProjectProjector.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-
-const projects = await getCollection('projects');
 ---
 
 <BaseLayout
@@ -14,10 +10,9 @@ const projects = await getCollection('projects');
   canvas="wide"
   socials={false}
   title="Portfolio"
-  description="Sang Nguyen is a Senior Frontend Developer at Aspire, based in Vietnam."
+  description="Sang Nguyen is a Software Engineer at Aspire, based in Vietnam."
 >
   <PortfolioHero />
-  <ProjectProjector projects={projects} />
   <PortfolioExperience />
   <PortfolioContact />
 </BaseLayout>

@@ -1,40 +1,31 @@
 ---
-import { PORTFOLIO_EXPERIENCE } from '../../data/portfolio-experience';
+import { PORTFOLIO_EXPERIENCE } from "../../data/portfolio-experience";
+import CareerRouteGraphic from "./CareerRouteGraphic.astro";
+import CareerTimeline from "./CareerTimeline.astro";
 ---
 
-<section class="experience" aria-labelledby="experience-title">
+<section id="experience" class="experience" aria-labelledby="experience-title">
   <header class="section-head" data-enter>
     <div>
-      <p class="label">Experience</p>
-      <h2 id="experience-title">Seven years in frontend.</h2>
+      <p class="label">Career path</p>
+      <h2 id="experience-title">Seven years, four stops.</h2>
     </div>
     <p class="summary">
-      I started as a Frontend Developer in 2019 and moved into a senior role at
-      Aspire in 2025.
+      I started in frontend in 2019. Today I work as a Software Engineer at
+      Aspire.
     </p>
   </header>
 
-  <ol class="timeline">
-    {PORTFOLIO_EXPERIENCE.map((item, index) => (
-      <li>
-        <span class:list={['point', { current: index === 0 }]} aria-hidden="true"></span>
-        <p class="period">{item.period}</p>
-        <div class="role">
-          <h3>{item.role}</h3>
-          <p>{item.company}</p>
-          <p class="location">{item.location}</p>
-        </div>
-        <ul aria-label={`Skills listed for ${item.role} at ${item.company}`}>
-          {item.skills.map((skill) => <li>{skill}</li>)}
-        </ul>
-      </li>
-    ))}
-  </ol>
+  <div class="career-track">
+    <CareerRouteGraphic />
+    <CareerTimeline items={PORTFOLIO_EXPERIENCE} />
+  </div>
 </section>
 
 <style>
   .experience {
-    border-block-start: var(--border-hairline) solid color-mix(in srgb, var(--color-ink-light) 35%, transparent);
+    border-block-start: var(--border-hairline) solid
+      color-mix(in srgb, var(--color-ink-light) 35%, transparent);
     padding-block: clamp(4rem, 9vw, 8rem);
   }
 
@@ -43,18 +34,13 @@ import { PORTFOLIO_EXPERIENCE } from '../../data/portfolio-experience';
     display: grid;
     gap: var(--space-8);
     grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.7fr);
-    margin-block-end: clamp(3rem, 7vw, 6rem);
-  }
-
-  .label,
-  .period,
-  .timeline ul {
-    color: var(--color-ink-light);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
+    margin-block-end: clamp(8rem, 14vw, 11rem);
   }
 
   .label {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
     letter-spacing: 0.04em;
     margin-block-end: var(--space-4);
     text-transform: uppercase;
@@ -73,88 +59,24 @@ import { PORTFOLIO_EXPERIENCE } from '../../data/portfolio-experience';
     text-wrap: pretty;
   }
 
-  .timeline {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 0 var(--space-8);
+  .career-track {
+    --entry-indent: 9rem;
+    --rail-x: 6.5rem;
+    margin-inline: auto;
+    max-inline-size: 52rem;
     position: relative;
-  }
-
-  .timeline::before {
-    background: color-mix(in srgb, var(--color-ink-light) 32%, transparent);
-    content: '';
-    inset-block: 0;
-    inset-inline-start: 0.25rem;
-    position: absolute;
-    inline-size: 1px;
-  }
-
-  .timeline > li {
-    display: grid;
-    gap: var(--space-5);
-    grid-template-columns: 11rem minmax(0, 1fr) 10rem;
-    min-block-size: 9rem;
-    padding-block-end: var(--space-8);
-    position: relative;
-  }
-
-  .point {
-    background: var(--color-paper);
-    border: 1px solid var(--color-ink-light);
-    border-radius: 50%;
-    block-size: 0.6rem;
-    inset-block-start: 0.4rem;
-    inset-inline-start: calc(-1 * var(--space-8));
-    position: absolute;
-    inline-size: 0.6rem;
-  }
-
-  .point.current {
-    background: var(--color-ink-deep);
-    border-color: var(--color-ink-deep);
-  }
-
-  h3 {
-    font-size: clamp(1.2rem, 2vw, 1.6rem);
-    letter-spacing: -0.025em;
-  }
-
-  .role > p {
-    color: var(--color-ink-deep);
-    margin-block-start: var(--space-2);
-  }
-
-  .role .location {
-    color: var(--color-ink-light);
-    font-size: 0.875rem;
-    margin-block-start: 0.1rem;
-  }
-
-  .timeline ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-3);
-    list-style: none;
-    margin: 0;
-    padding: 0;
   }
 
   @media (max-width: 48rem) {
-    .section-head,
-    .timeline > li {
+    .section-head {
+      align-items: start;
       grid-template-columns: 1fr;
+      margin-block-end: 10rem;
     }
 
-    .timeline {
-      padding-inline-start: var(--space-6);
-    }
-
-    .timeline > li {
-      gap: var(--space-3);
-    }
-
-    .point {
-      inset-inline-start: calc(-1 * var(--space-6));
+    .career-track {
+      --entry-indent: 2rem;
+      --rail-x: 0.25rem;
     }
   }
 </style>
