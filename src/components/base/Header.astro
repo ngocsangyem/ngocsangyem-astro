@@ -4,9 +4,19 @@ import NavLink from "./NavLink.astro";
 import Signature from "../identity/Signature.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 import SearchModal from "../search/SearchModal.astro";
+
+interface Props {
+  wide?: boolean;
+}
+
+const { wide = false } = Astro.props;
 ---
 
-<header id="top" class="site-header page" data-pagefind-ignore>
+<header
+  id="top"
+  class:list={["site-header page", { "page-canvas-wide": wide }]}
+  data-pagefind-ignore
+>
   <a class="mark-link" href="/" aria-label={`${SITE.author}, home`}>
     <Signature />
   </a>
@@ -38,5 +48,29 @@ import SearchModal from "../search/SearchModal.astro";
     align-items: center;
     display: flex;
     gap: 1rem;
+  }
+
+  @media (max-width: 42rem) {
+    .site-header {
+      --control-size: 2.25rem;
+    }
+
+    .mark-link {
+      display: none;
+    }
+
+    nav {
+      gap: 0.35rem;
+      inline-size: 100%;
+      justify-content: space-between;
+    }
+
+    nav :global(.nav-link) {
+      font-size: 0.8125rem;
+    }
+
+    nav :global(a[href='/projects']) {
+      display: none;
+    }
   }
 </style>

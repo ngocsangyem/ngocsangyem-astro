@@ -1,0 +1,67 @@
+---
+import { SITE } from '../../config/site';
+---
+
+<section class="contact" aria-labelledby="contact-title" data-enter>
+  <p>If you think we would work well together, write to me.</p>
+  <h2 id="contact-title">
+    <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+  </h2>
+  <div class="meta">
+    <span>Vietnam · GMT+7</span>
+    <nav aria-label="Social links">
+      {SITE.socials.map((social) => (
+        <a href={social.href} rel="me noopener">{social.label}</a>
+      ))}
+    </nav>
+  </div>
+</section>
+
+<style>
+  .contact {
+    border-block-start: var(--border-hairline) solid color-mix(in srgb, var(--color-ink-light) 35%, transparent);
+    padding-block: clamp(5rem, 12vw, 10rem) var(--space-10);
+  }
+
+  .contact > p,
+  .meta {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  h2 {
+    font-size: clamp(2.2rem, 7vw, 6.5rem);
+    font-weight: 550;
+    letter-spacing: -0.07em;
+    line-height: 0.95;
+    margin-block: var(--space-6) clamp(4rem, 10vw, 8rem);
+    overflow-wrap: anywhere;
+  }
+
+  h2 a {
+    text-decoration-thickness: 0.05em;
+    text-underline-offset: 0.12em;
+  }
+
+  .meta,
+  nav {
+    display: flex;
+  }
+
+  .meta {
+    justify-content: space-between;
+  }
+
+  nav {
+    gap: var(--space-5);
+  }
+
+  @media (max-width: 32rem) {
+    .meta {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+  }
+</style>

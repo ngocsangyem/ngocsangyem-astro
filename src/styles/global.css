@@ -194,6 +194,12 @@ time {
   max-inline-size: var(--prose-max-width);
 }
 
+/* A small number of editorial pages need room for parallel columns. The
+   reading measure stays component-owned instead of stretching with the shell. */
+.page-canvas-wide {
+  --page-max-width: 76rem;
+}
+
 /* Article pages need room beside the column for the margin TOC. The prose stays
    at 65ch and stays centred, so every left edge still lines up. */
 @media (min-width: 80rem) {
@@ -270,6 +276,10 @@ time {
   .page,
   .site-header {
     margin-inline: var(--space-4);
+  }
+
+  .page-canvas-wide {
+    inline-size: calc(100% - 2rem);
   }
 
   .page-glass {

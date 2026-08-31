@@ -27,6 +27,7 @@ export const SITE = {
   nav: [
     { label: 'Posts', href: '/posts' },
     { label: 'Projects', href: '/projects' },
+    { label: 'Portfolio', href: '/portfolio' },
     { label: 'About', href: '/about' },
   ] satisfies NavLink[],
   socials: [

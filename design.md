@@ -17,13 +17,18 @@ no framework runtime on content pages.
 ## Content model
 - **One writing collection: `posts`** — the "notes" ARE the posts; no separate notes/TIL collection. Cheap to write: title + date + tags is enough frontmatter.
 - Collections: `posts`, `projects` (data collection), plus an `about` page.
-- URLs · collection-prefixed: `/posts/[slug]`, `/posts` (full index), `/projects`, `/about`, `/tags` (tag index), `/tags/[tag]`.
+- URLs · collection-prefixed: `/posts/[slug]`, `/posts` (full index), `/projects`, `/portfolio`, `/about`, `/tags` (tag index), `/tags/[tag]`.
 - Format · **MDX for all content** (plain-Markdown files still work unchanged; MDX keeps the door open for embedded demos/components).
 - Home · greeting (real first-person, 1–2 lines — never sample copy) + recent posts list, link to `/posts` for the rest.
 - `/posts` · rows grouped by year under ghost-year numerals; row = DM Mono muted date + title, opacity-step hover. A row carries no summary anywhere on the site: the title is the whole invitation, and a second line of prose under each one turns a scannable index into a page to be read. A "Browse by tag" link on the title's line is the way into `/tags`.
 - `/tags` · frequency-ordered rows of `#tag` + count, DM Mono. Rows, not a chip cloud: sizing tags by frequency needs a chroma the neutral-accent axis has no way to spend.
 - Article foot · a hairline, then up to three same-tag related posts, then an Older/Newer pair. Labelled by time, not by "previous/next", which points either way on a date-ordered index.
 - `/projects` · antfu-style grid grouped by category: icon + name + one-line description, greyscale-until-hover.
+- `/portfolio` · a separate wide editorial canvas for work and experience. Hero is
+  name-led and typographic; selected work uses a text index beside a sticky
+  poster-like preview; career history stays compact and chronological. The page
+  inherits the site paper, ink, type, header, and theme toggle rather than
+  inventing a second visual identity.
 
 ## Tokens (canonical — emit as `tokens.css` when a build exists)
 ```css
@@ -148,6 +153,11 @@ no framework runtime on content pages.
 - No motion library, no ClientRouter — real MPA navigation.
 - One reveal primitive: `slide-enter` — fade-up (translateY(10px)→0 + opacity), staggered 90ms per child block, applied to prose children on page enter (pure CSS animation).
 - One entrance animation besides it: the mark draw-in (under ## Identity).
+- `/portfolio` may use one state-indication transition in its project projector:
+  focused or hovered rows crossfade a poster preview with `transform` and
+  `opacity` over `--dur-base`. The transition is pointer-gated, keyboard focus
+  shows the same state, and reduced motion keeps the crossfade without spatial
+  movement.
 - **No perpetual motion.** Everything with content in it holds still: no looping
   chrome, no drifting gradients, no breathing buttons.
 

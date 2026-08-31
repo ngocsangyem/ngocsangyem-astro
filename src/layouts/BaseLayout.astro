@@ -28,6 +28,8 @@ interface Props {
    * same links itself, so they are not offered twice on one screen.
    */
   socials?: boolean;
+  /** Expands both page chrome and content for editorial compositions. */
+  canvas?: "prose" | "wide";
 }
 
 const {
@@ -37,7 +39,10 @@ const {
   background = false,
   post,
   socials = true,
+  canvas = "prose",
 } = Astro.props;
+
+const isWideCanvas = canvas === "wide";
 ---
 
 <!doctype html>
@@ -58,10 +63,10 @@ const {
     }
     {post && <ReadingProgress />}
     <a class="skip-link" href="#main">Skip to content</a>
-    <Header />
+    <Header wide={isWideCanvas} />
     <main
       id="main"
-      class:list={["page page-glass", { "page-wide": wide }]}
+      class:list={["page page-glass", { "page-wide": wide, "page-canvas-wide": isWideCanvas }]}
       data-pagefind-body
     >
       <slot />

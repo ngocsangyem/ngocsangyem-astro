@@ -1,0 +1,123 @@
+---
+import { SITE } from '../../config/site';
+---
+
+<section class="hero" aria-labelledby="portfolio-title">
+  <div class="eyebrow" data-enter>
+    <p>Senior Frontend Developer</p>
+    <p>Based in Vietnam</p>
+  </div>
+
+  <h1 id="portfolio-title" aria-label={SITE.author}>
+    <span data-enter style="--enter-stage: 1">Sang</span>
+    <span data-enter style="--enter-stage: 2">Nguyen</span>
+  </h1>
+
+  <div class="intro-row" data-enter style="--enter-stage: 3">
+    <p>
+      I’m a Senior Frontend Developer at Aspire. I care about interfaces that
+      feel easy on day one and codebases that still make sense a year later.
+    </p>
+    <a href="#selected-work">See the work <span aria-hidden="true">↓</span></a>
+  </div>
+</section>
+
+<style>
+  .hero {
+    min-block-size: min(48rem, calc(100svh - 7rem));
+    padding-block: clamp(3rem, 9vw, 7.5rem) var(--space-10);
+  }
+
+  .eyebrow,
+  .intro-row {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .eyebrow {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(5rem, 15vw, 12.75rem);
+    font-weight: 600;
+    letter-spacing: -0.095em;
+    line-height: 0.68;
+    margin-block: clamp(5rem, 12vw, 9rem);
+  }
+
+  h1 span {
+    display: block;
+  }
+
+  h1 span:last-child {
+    color: var(--color-ink-light);
+    margin-inline-start: 0.7em;
+  }
+
+  .intro-row {
+    align-items: end;
+    border-block-start: var(--border-hairline) solid color-mix(in srgb, var(--color-ink-light) 35%, transparent);
+    gap: var(--space-8);
+    padding-block-start: var(--space-5);
+  }
+
+  .intro-row p {
+    font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+    line-height: 1.55;
+    max-inline-size: 47ch;
+    text-wrap: pretty;
+  }
+
+  .intro-row a {
+    color: var(--color-ink-light);
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  @media (max-width: 42rem) {
+    .hero {
+      min-block-size: auto;
+      padding-block-start: var(--space-10);
+    }
+
+    .eyebrow,
+    .intro-row {
+      flex-direction: column;
+    }
+
+    .eyebrow {
+      gap: var(--space-2);
+    }
+
+    h1 {
+      font-size: clamp(3.5rem, 17vw, 6rem);
+      line-height: 0.74;
+      margin-block: var(--space-10);
+    }
+
+    h1 span:last-child {
+      margin-inline-start: 0.08em;
+    }
+
+    .intro-row {
+      align-items: stretch;
+      gap: var(--space-6);
+    }
+
+    .intro-row p {
+      max-inline-size: none;
+      inline-size: 100%;
+    }
+
+    .intro-row a {
+      align-self: flex-start;
+    }
+  }
+</style>

@@ -1,0 +1,233 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+
+const projects = [...Astro.props.projects].sort((a, b) => a.data.order - b.data.order);
+const posterMarks = ['{ }', 'CLI', '700K', 'ASTRO'];
+---
+
+<section id="selected-work" class="work" aria-labelledby="work-title">
+  <header class="section-head" data-enter>
+    <h2 id="work-title">Selected work</h2>
+    <p>A few things I have built.</p>
+  </header>
+
+  <div class="projector">
+    <ol class="project-list">
+      {projects.map((project, index) => (
+        <li>
+          <a
+            class="project-link"
+            data-project={index}
+            href={project.data.url}
+            rel="noopener"
+            aria-describedby={`project-description-${index}`}
+          >
+            <span class="number">{String(index + 1).padStart(2, '0')}</span>
+            <span class="project-copy">
+              <strong>{project.data.name}</strong>
+              <span id={`project-description-${index}`}>{project.data.description}</span>
+            </span>
+            <span class="arrow" aria-hidden="true">↗</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+
+    <div class="stage" aria-hidden="true">
+      {projects.map((project, index) => (
+        <article class="poster" data-poster={index}>
+          <span class="poster-number">{String(index + 1).padStart(2, '0')}</span>
+          <span class="poster-mark">{posterMarks[index] ?? 'WEB'}</span>
+          <div>
+            <p>{project.data.category}</p>
+            <h3>{project.data.name}</h3>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .work {
+    border-block-start: var(--border-hairline) solid color-mix(in srgb, var(--color-ink-light) 35%, transparent);
+    padding-block: clamp(4rem, 9vw, 8rem);
+  }
+
+  .section-head {
+    align-items: end;
+    display: flex;
+    justify-content: space-between;
+    margin-block-end: clamp(3rem, 7vw, 6rem);
+  }
+
+  h2 {
+    font-size: clamp(2.75rem, 6vw, 5.75rem);
+    letter-spacing: -0.065em;
+    line-height: 0.9;
+  }
+
+  .section-head p,
+  .number,
+  .poster-number,
+  .poster p {
+    color: var(--color-ink-light);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .projector {
+    display: grid;
+    gap: clamp(2rem, 7vw, 7rem);
+    grid-template-columns: minmax(0, 1.12fr) minmax(18rem, 0.88fr);
+  }
+
+  .project-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .project-list li {
+    border-block-start: var(--border-hairline) solid color-mix(in srgb, var(--color-ink-light) 25%, transparent);
+  }
+
+  .project-list li:last-child {
+    border-block-end: var(--border-hairline) solid color-mix(in srgb, var(--color-ink-light) 25%, transparent);
+  }
+
+  .project-link {
+    align-items: baseline;
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: 2rem minmax(0, 1fr) 1rem;
+    padding-block: clamp(1.4rem, 3vw, 2.25rem);
+    text-decoration: none;
+  }
+
+  .project-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .project-copy strong {
+    color: var(--color-ink-deep);
+    font-size: clamp(1.45rem, 3vw, 2.5rem);
+    font-weight: 550;
+    letter-spacing: -0.04em;
+  }
+
+  .project-copy > span {
+    color: var(--color-ink-light);
+    line-height: 1.55;
+    max-inline-size: 52ch;
+  }
+
+  .arrow {
+    color: var(--color-ink-light);
+    transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+
+  .stage {
+    align-self: start;
+    aspect-ratio: 4 / 5;
+    position: sticky;
+    inset-block-start: calc(var(--header-height) + var(--space-5));
+  }
+
+  .poster {
+    background: var(--color-ink-deep);
+    color: var(--color-paper);
+    display: flex;
+    flex-direction: column;
+    inset: 0;
+    justify-content: space-between;
+    opacity: 0;
+    overflow: hidden;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    position: absolute;
+    transform: translateY(3%);
+    transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+  }
+
+  .poster::after {
+    border: 1px solid currentColor;
+    content: '';
+    inset: 18% -14% -25% 34%;
+    opacity: 0.18;
+    position: absolute;
+    transform: rotate(-12deg);
+  }
+
+  .poster[data-poster='0'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .poster-mark {
+    align-self: center;
+    font-family: var(--font-mono);
+    font-size: clamp(4rem, 8vw, 7rem);
+    letter-spacing: -0.08em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .poster h3 {
+    color: inherit;
+    font-size: clamp(2rem, 4vw, 3.75rem);
+    letter-spacing: -0.055em;
+    line-height: 0.9;
+    overflow-wrap: anywhere;
+    position: relative;
+    z-index: 1;
+  }
+
+  .poster p {
+    color: inherit;
+    margin-block-end: var(--space-2);
+    opacity: 0.65;
+  }
+
+  .projector:has(.project-link:is(:hover, :focus-visible)) .poster {
+    opacity: 0;
+    transform: translateY(-3%);
+  }
+
+  .projector:has(.project-link[data-project='0']:is(:hover, :focus-visible)) .poster[data-poster='0'],
+  .projector:has(.project-link[data-project='1']:is(:hover, :focus-visible)) .poster[data-poster='1'],
+  .projector:has(.project-link[data-project='2']:is(:hover, :focus-visible)) .poster[data-poster='2'],
+  .projector:has(.project-link[data-project='3']:is(:hover, :focus-visible)) .poster[data-poster='3'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .project-link:hover .arrow {
+      color: var(--color-ink-deep);
+      transform: translate(0.18rem, -0.18rem);
+    }
+  }
+
+  @media (max-width: 48rem) {
+    .section-head {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .projector { grid-template-columns: 1fr; }
+    .stage { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .poster { transform: none; }
+    .arrow { transition-property: color; }
+  }
+</style>
