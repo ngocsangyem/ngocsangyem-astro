@@ -45,7 +45,11 @@ export interface Step {
   payload: Record<string, unknown>;
 }
 
-/** Durations from the motion tokens (tokens.css): tick, line, pause, hold. */
+/**
+ * Durations mirroring the motion tokens in tokens.css (--motion-tick 20ms,
+ * --motion-line 90ms); pause and hold come from claude-dev-design.md. Change
+ * the token and this table together.
+ */
 export const DEMO_TIMING = {
   tick: 20,
   line: 90,
@@ -67,7 +71,8 @@ const PAST: Record<string, string> = {
 };
 
 export function pastTense(verb: string | undefined): string {
-  return (verb && PAST[verb]) || 'Worked';
+  // Own keys only, so a verb like "constructor" cannot reach Object.prototype.
+  return verb && Object.hasOwn(PAST, verb) ? PAST[verb] : 'Worked';
 }
 
 /** Played spinner length: the real wait, capped at 2s, never under 0.8s. */
@@ -87,9 +92,10 @@ export function doneText(turn: Turn): string {
 }
 
 /** The spinner's words at a given shown second, without the glyph. */
-export function spinnerText(turn: Turn, shownSeconds: number): string {
+export function spinnerText(turn: Pick<Turn, 'verb' | 'tokens'>, shownSeconds: number): string {
   const tokens = turn.tokens === undefined ? '' : ` · ↓ ${turn.tokens} tokens`;
-  return `${turn.verb ?? 'Working'}… (${shownSeconds}s${tokens})`;
+  // An empty verb falls back the same way pastTense does ("Working"/"Worked").
+  return `${turn.verb || 'Working'}… (${shownSeconds}s${tokens})`;
 }
 
 export function choicesText(choices: string[]): string {

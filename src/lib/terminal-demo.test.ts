@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, DEMO_TIMING, pastTense, spinDuration, type Turn } from './terminal-demo';
+import { buildTimeline, DEMO_TIMING, pastTense, spinDuration, spinnerText, type Turn } from './terminal-demo';
 
 const turn: Turn = {
   prompt: 'npm test',
@@ -18,9 +18,18 @@ describe('pastTense', () => {
     expect(pastTense('Churning')).toBe('Churned');
   });
 
-  it('falls back to Worked for anything else', () => {
+  it('falls back to Worked for anything else, including prototype keys', () => {
     expect(pastTense('Pondering')).toBe('Worked');
     expect(pastTense(undefined)).toBe('Worked');
+    expect(pastTense('')).toBe('Worked');
+    expect(pastTense('constructor')).toBe('Worked');
+  });
+});
+
+describe('spinnerText', () => {
+  it('reads verb, shown seconds and tokens, with the same empty-verb fallback', () => {
+    expect(spinnerText({ verb: 'Brewing', tokens: 12 }, 3)).toBe('Brewing… (3s · ↓ 12 tokens)');
+    expect(spinnerText({ verb: '' }, 1)).toBe('Working… (1s)');
   });
 });
 

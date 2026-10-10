@@ -14,6 +14,19 @@ interface Props {
 }
 
 const { label, caption, turns, footer, autoplay = true } = Astro.props;
+
+// MDX expressions are not type-checked, so the shapes that would ship a
+// broken figure fail the build instead.
+const TONES = ['blue', 'cyan', 'green', 'magenta', 'yellow', 'red'];
+if (!label?.trim()) throw new Error('<TerminalDemo> needs a label for assistive tech.');
+if (!Array.isArray(turns) || turns.length === 0) throw new Error(`<TerminalDemo "${label}"> needs at least one turn.`);
+for (const turn of turns) {
+  if (!turn.prompt) throw new Error(`<TerminalDemo "${label}">: every turn needs a prompt.`);
+  if (turn.seconds !== undefined && !(turn.seconds >= 0)) throw new Error(`<TerminalDemo "${label}">: seconds must be ≥ 0.`);
+  if (turn.pane?.tone && !TONES.includes(turn.pane.tone)) {
+    throw new Error(`<TerminalDemo "${label}">: pane tone "${turn.pane.tone}" is not one of ${TONES.join(', ')}.`);
+  }
+}
 const { steps, total } = buildTimeline(turns);
 // Stable across builds (unlike a random id), unique per demo on a page as long
 // as labels differ, which they do: each describes its own session.
@@ -49,7 +62,7 @@ const byTurn = turns.map((turn, index) => {
     {turns.flatMap(finalLines).map((line) => <li>{line}</li>)}
   </ol>
 
-  <div class="frame" aria-hidden="true" data-pagefind-ignore>
+  <div class="frame" aria-hidden="true" data-pagefind-ignore data-frame>
     <div class="stage" data-stage>
       {
         byTurn.map(({ turn, promptAt, tools, spin, lines, paneAt, doneAt }) => (
@@ -70,7 +83,7 @@ const byTurn = turns.map((turn, index) => {
               data-at={spin.at}
               data-duration={String(spin.payload.duration)}
               data-seconds={String(spin.payload.seconds)}
-              data-verb={turn.verb ?? 'Working'}
+              data-verb={turn.verb || 'Working'}
               data-tokens={turn.tokens === undefined ? undefined : String(turn.tokens)}
               hidden
             >
@@ -95,10 +108,10 @@ const byTurn = turns.map((turn, index) => {
     {footer && <p class="status">{footer}</p>}
   </div>
 
-  <figcaption class="caption" data-pagefind-ignore>
+  <figcaption class="caption">
     {caption && <span class="caption-text">{caption}</span>}
     {/* Shown by the player only where motion is allowed. */}
-    <button type="button" class="control" data-demo-control hidden>Play</button>
+    <button type="button" class="control" data-demo-control data-pagefind-ignore hidden>Play</button>
   </figcaption>
   <p class="visually-hidden" role="status" aria-live="polite" data-demo-status></p>
 </figure>

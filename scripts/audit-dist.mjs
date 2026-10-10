@@ -61,7 +61,9 @@ function isArticle(where) {
 
 function allowedInlineScripts(where, html) {
   if (isArticle(where)) {
-    return html.includes('data-terminal-demo')
+    // The element attribute, not the phrase: a post may mention the name in
+    // prose or a code block without embedding a demo.
+    return /<figure\b[^>]*\sdata-terminal-demo[\s=>]/.test(html)
       ? ALLOWED_INLINE_SCRIPTS_PER_ARTICLE_WITH_DEMO
       : ALLOWED_INLINE_SCRIPTS_PER_ARTICLE;
   }
