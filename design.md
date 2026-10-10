@@ -117,7 +117,14 @@ Fonts: the Fonts API owns `--font-inter` (400/500/600) and `--font-jetbrains-mon
 ## Features
 - Tags + tag pages · RSS · light/dark toggle (`[data-theme]`, respects `prefers-color-scheme`, persisted) · contents list.
 - **Search · Pagefind**, framed as a command palette labelled Search with a `❯` prompt (`S`, `/`, `⌘K`; ⌘K again closes). Pagefind keeps the index, ranking and keyboard behaviour. Esc in the field clears the query, then closes; Esc anywhere else closes. Only articles are indexed: `data-pagefind-body` sits on the article, so listings, tag pages and the 404 never appear in results.
-- **`<TerminalDemo>`** MDX component: a scripted Claude Code session (prompt → tool → spinner → output → completion) that plays on viewport entry.
+- **`<TerminalDemo>`** MDX component (`src/components/mdx/TerminalDemo.astro`): a scripted terminal session — `❯` prompt typed one character per tick, collapsed tool lines (`●`), a spinner (`· ✢ ✳ ✶ ✻ ✽` ping-pong at 110ms, verb + real seconds + tokens, wait compressed to 0.8–2s), output line by line, an optional bordered pane in an ANSI hue (the only smooth motion), and a completion line (`✻ Brewed for 52s · done 4:21 PM`). The server renders the finished session with each line stamped `data-at`; the player asks "what is visible at t?" each frame, so pause and replay are just a different t. Plays when half the frame is in view (`autoplay={false}` waits for PLAY), pauses off-screen and in a hidden tab, keeps a reader's own pause, and reserves the finished height. AT gets the label and the finished transcript as text, plus one "Demo finished"; the animated stage is hidden from it. Reduced motion: no player, finished session shown. Usage:
+
+  ```mdx
+  import TerminalDemo from '../../components/mdx/TerminalDemo.astro';
+  <TerminalDemo label="Demo: …" caption="FIG A — …" footer="manual mode on"
+    turns={[{ prompt: 'npm test', tools: ['Ran 1 shell command'], verb: 'Cogitating',
+      seconds: 4, tokens: 312, output: ['✓ 41 passed'], done: '4:20 PM' }]} />
+  ```
 - No comments, no analytics, no newsletter.
 
 ## Motion stance

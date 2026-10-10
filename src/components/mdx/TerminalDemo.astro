@@ -1,0 +1,243 @@
+---
+import { buildTimeline, choicesText, finalLines, type Turn } from '../../lib/terminal-demo';
+
+interface Props {
+  /** One-sentence summary, read by assistive tech in place of the animation. */
+  label: string;
+  /** Visible caption under the frame, e.g. "FIG A — The suite runs…". */
+  caption?: string;
+  turns: Turn[];
+  /** Fixed status line at the foot of the frame, e.g. "manual mode on". */
+  footer?: string;
+  /** `false` waits for PLAY instead of starting when the frame is in view. */
+  autoplay?: boolean;
+}
+
+const { label, caption, turns, footer, autoplay = true } = Astro.props;
+const { steps, total } = buildTimeline(turns);
+// Stable across builds (unlike a random id), unique per demo on a page as long
+// as labels differ, which they do: each describes its own session.
+const id = `demo-${[...label].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7).toString(36)}`;
+
+/**
+ * Each visible line carries the time it appears (`data-at`), taken from the
+ * timeline, so the player only has to ask "what is visible at t?" and pausing
+ * or replaying is just a different t. The server renders every line, which is
+ * the finished state shown without script or with reduced motion.
+ */
+const byTurn = turns.map((turn, index) => {
+  const own = steps.filter((step) => step.turn === index);
+  const typed = own.filter((step) => step.kind === 'type');
+  const spin = own.find((step) => step.kind === 'spin')!;
+  return {
+    turn,
+    promptAt: typed[0]?.at ?? spin.at,
+    tools: own.filter((step) => step.kind === 'tool').map((step) => step.at),
+    spin,
+    lines: own.filter((step) => step.kind === 'line').map((step) => step.at),
+    paneAt: own.find((step) => step.kind === 'pane')?.at,
+    doneAt: own.find((step) => step.kind === 'done')!.at,
+  };
+});
+---
+
+<figure class="terminal-demo" aria-labelledby={`${id}-label`} data-terminal-demo data-total={total} data-autoplay={String(autoplay)}>
+  <p class="visually-hidden" id={`${id}-label`}>{label}</p>
+
+  {/* What assistive tech reads: the finished session, once, as text. */}
+  <ol class="visually-hidden">
+    {turns.flatMap(finalLines).map((line) => <li>{line}</li>)}
+  </ol>
+
+  <div class="frame" aria-hidden="true" data-pagefind-ignore>
+    <div class="stage" data-stage>
+      {
+        byTurn.map(({ turn, promptAt, tools, spin, lines, paneAt, doneAt }) => (
+          <div class="turn">
+            <p class="row prompt" data-at={promptAt}>
+              <span class="glyph">❯</span>
+              <span data-type={turn.prompt}>{turn.prompt}</span>
+            </p>
+            {(turn.tools ?? []).map((tool, i) => (
+              <p class="row tool" data-at={tools[i]}>
+                <span class="glyph">●</span>
+                {tool}
+              </p>
+            ))}
+            <p
+              class="row spinner"
+              data-spin
+              data-at={spin.at}
+              data-duration={String(spin.payload.duration)}
+              data-seconds={String(spin.payload.seconds)}
+              data-verb={turn.verb ?? 'Working'}
+              data-tokens={turn.tokens === undefined ? undefined : String(turn.tokens)}
+              hidden
+            >
+              <span class="glyph spin-glyph" data-spin-glyph>·</span>
+              <span data-spin-text />
+            </p>
+            {(turn.output ?? []).map((line, i) => (
+              <p class="row output" data-at={lines[i]}>{line}</p>
+            ))}
+            {turn.pane && (
+              <div class:list={['pane', `tone-${turn.pane.tone ?? 'yellow'}`]} data-at={paneAt}>
+                <p class="pane-title">{turn.pane.title}</p>
+                {(turn.pane.lines ?? []).map((line) => <p class="row">{line}</p>)}
+                {turn.pane.choices && <p class="row choices">{choicesText(turn.pane.choices)}</p>}
+              </div>
+            )}
+            <p class="row done" data-at={doneAt}>{finalLines(turn).at(-1)}</p>
+          </div>
+        ))
+      }
+    </div>
+    {footer && <p class="status">{footer}</p>}
+  </div>
+
+  <figcaption class="caption" data-pagefind-ignore>
+    {caption && <span class="caption-text">{caption}</span>}
+    {/* Shown by the player only where motion is allowed. */}
+    <button type="button" class="control" data-demo-control hidden>Play</button>
+  </figcaption>
+  <p class="visually-hidden" role="status" aria-live="polite" data-demo-status></p>
+</figure>
+
+<script>
+  import '../../scripts/terminal-demo';
+</script>
+
+<style>
+  .terminal-demo {
+    margin: 1.8em 0 0;
+  }
+
+  .frame {
+    background-color: var(--color-bg-raised);
+    border: var(--border-hairline) solid var(--color-line-soft);
+    color: var(--color-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    line-height: var(--leading-code);
+  }
+
+  .stage {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+
+  .turn {
+    display: grid;
+  }
+
+  .row {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .row[hidden],
+  .pane[hidden] {
+    display: none;
+  }
+
+  /* Fixed-width glyph cell: the spinner dingbats fall back to the system font
+     (JetBrains Mono has none of them), so the cell keeps the text still. */
+  .glyph {
+    display: inline-block;
+    inline-size: 1.5ch;
+    text-align: center;
+  }
+
+  .prompt {
+    color: var(--color-ink);
+  }
+
+  .prompt .glyph {
+    color: var(--color-accent-text);
+  }
+
+  .tool,
+  .spinner,
+  .done {
+    color: var(--color-ink-3);
+  }
+
+  .output {
+    padding-inline-start: 1.5ch;
+  }
+
+  /* The climax, and the only smooth motion in a demo. */
+  .pane {
+    border: var(--border-hairline) solid var(--pane-tone);
+    margin-block: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .pane:not([hidden]) {
+    animation: reveal var(--motion-base) var(--ease-out) both;
+  }
+
+  .pane-title {
+    color: var(--pane-tone);
+    margin: 0;
+  }
+
+  .choices {
+    color: var(--color-ink);
+  }
+
+  .tone-blue { --pane-tone: var(--color-ansi-blue); }
+  .tone-cyan { --pane-tone: var(--color-ansi-cyan); }
+  .tone-green { --pane-tone: var(--color-ansi-green); }
+  .tone-magenta { --pane-tone: var(--color-ansi-magenta); }
+  .tone-yellow { --pane-tone: var(--color-ansi-yellow); }
+  .tone-red { --pane-tone: var(--color-ansi-red); }
+
+  .status {
+    border-block-start: var(--border-hairline) solid var(--color-line-soft);
+    color: var(--color-ink-3);
+    font-size: var(--text-caption);
+    margin: 0;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .caption {
+    align-items: baseline;
+    display: flex;
+    gap: var(--space-4);
+    justify-content: space-between;
+    margin-block-start: var(--space-3);
+  }
+
+  .caption-text {
+    color: var(--color-ink-3);
+    font-size: var(--text-ui);
+    line-height: 1.5;
+  }
+
+  .control {
+    background: none;
+    border: 0;
+    color: var(--color-ink-3);
+    cursor: pointer;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    margin-inline-start: auto;
+    padding: 0;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .control:hover {
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pane:not([hidden]) {
+      animation: none;
+    }
+  }
+</style>

@@ -44,19 +44,27 @@ const localAssets = new Set();
  * page a second, its LOAD MORE control. Each is budgeted separately rather than
  * by raising the figure everywhere, so a script arriving on a page that should
  * carry none of it still fails the audit.
+ *
+ * An article that embeds a <TerminalDemo> (marked `data-terminal-demo`) carries
+ * one more, the demo player, and only that article is allowed it.
  */
 const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 1;
 const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 2;
 const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 2;
 const ALLOWED_INLINE_SCRIPTS_HOME = 2;
+const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE_WITH_DEMO = 3;
 
 /** `posts/<slug>/index.html`, but not the `posts/index.html` listing. */
 function isArticle(where) {
   return /^posts\/[^/]+\/index\.html$/.test(where);
 }
 
-function allowedInlineScripts(where) {
-  if (isArticle(where)) return ALLOWED_INLINE_SCRIPTS_PER_ARTICLE;
+function allowedInlineScripts(where, html) {
+  if (isArticle(where)) {
+    return html.includes('data-terminal-demo')
+      ? ALLOWED_INLINE_SCRIPTS_PER_ARTICLE_WITH_DEMO
+      : ALLOWED_INLINE_SCRIPTS_PER_ARTICLE;
+  }
   if (where === 'portfolio/index.html') return ALLOWED_INLINE_SCRIPTS_PORTFOLIO;
   if (where === 'index.html') return ALLOWED_INLINE_SCRIPTS_HOME;
   return ALLOWED_INLINE_SCRIPTS_PER_PAGE;
@@ -179,7 +187,7 @@ function auditHtml(file, html) {
     ...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>/gi),
   ].filter(([tag]) => !/type=["']application\/ld\+json["']/i.test(tag)).length;
   inlineScriptCount += inlineOnPage;
-  const allowed = allowedInlineScripts(where);
+  const allowed = allowedInlineScripts(where, html);
   if (inlineOnPage !== allowed) {
     failures.push(`${where}: ${inlineOnPage} inline scripts, allowlist permits ${allowed}`);
   }
