@@ -15,7 +15,7 @@ const hasMore = posts.length > recent.length;
   /* The contact links belong to the introduction here, not to the foot of the
      page, so the layout's own copy of them is switched off. */
 }
-<BaseLayout background socials={false}>
+<BaseLayout socials={false}>
   {
     /* Rows carry their own stagger, so the wrapper must not add a second one. */
   }
@@ -54,7 +54,7 @@ const hasMore = posts.length > recent.length;
   }
 
   .greeting {
-    color: var(--color-ink);
+    color: var(--color-ink-2);
     font-size: 1.0625rem;
     line-height: 1.75;
     /* The chip row sits between this and the title now, so the space above only
@@ -64,7 +64,7 @@ const hasMore = posts.length > recent.length;
   }
 
   .heading {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-size: 0.8125rem;
     font-weight: 500;
     letter-spacing: 0.06em;
@@ -73,7 +73,7 @@ const hasMore = posts.length > recent.length;
   }
 
   .more {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-size: 0.9375rem;
     margin-block-start: var(--space-5);
   }

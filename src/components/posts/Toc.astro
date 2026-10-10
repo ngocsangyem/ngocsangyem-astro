@@ -68,20 +68,20 @@ const entries = headings.filter(
   }
 
   a {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-size: 0.8125rem;
     line-height: 1.4;
     text-decoration: none;
   }
 
   a:hover {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 
   /* Set by scripts/toc-active.ts. Colour alone carries the mark: a weight or a
      size change here would reflow the list under the reader as they scroll. */
   a[aria-current] {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 
   .toc-margin {
@@ -89,13 +89,13 @@ const entries = headings.filter(
   }
 
   .toc-inline {
-    border-inline-start: var(--border-hairline) solid var(--color-ink-light);
+    border-inline-start: var(--border-hairline) solid var(--color-ink-3);
     margin-block: var(--space-6);
     padding-inline-start: var(--space-4);
   }
 
   .toc-inline summary {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     cursor: pointer;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
@@ -125,9 +125,9 @@ const entries = headings.filter(
     }
 
     .toc-icon {
-      color: var(--color-ink-light);
+      color: var(--color-ink-3);
       display: block;
-      transition: opacity var(--dur-fast) var(--ease-out);
+      transition: opacity var(--motion-fast) var(--ease-out);
     }
 
     /* Lucide bakes stroke-width 2 into the paths; keep the lighter line the
@@ -145,8 +145,8 @@ const entries = headings.filter(
       /* Compositor-only properties, so revealing the list never triggers
          layout. Both are listed explicitly rather than using `all`. */
       transition:
-        opacity var(--dur-base) var(--ease-out),
-        transform var(--dur-base) var(--ease-out);
+        opacity var(--motion-base) var(--ease-out),
+        transform var(--motion-base) var(--ease-out);
     }
 
     /* Reading the article, pointing at the icon, or reaching a link by keyboard
@@ -168,7 +168,7 @@ const entries = headings.filter(
     @media (prefers-reduced-motion: reduce) {
       .toc-margin ol,
       .toc-icon {
-        transition-duration: var(--dur-fast);
+        transition-duration: var(--motion-fast);
       }
 
       /* Crossfade only: the slide is the part that reads as motion. */

@@ -57,7 +57,7 @@ const stageOf = new Map(
   .group::before {
     content: attr(data-year);
     color: transparent;
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     font-size: 5.5rem;
     /* 600 is the heaviest face that ships; the stroke, not the fill, draws
        this numeral, so the step down from 700 is invisible. */
@@ -68,7 +68,7 @@ const stageOf = new Map(
     pointer-events: none;
     position: absolute;
     inset-block-start: 0;
-    -webkit-text-stroke: 1px var(--color-ink-light);
+    -webkit-text-stroke: 1px var(--color-ink-3);
     user-select: none;
     z-index: -1;
   }

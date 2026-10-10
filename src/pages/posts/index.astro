@@ -7,11 +7,10 @@ const posts = await getPublishedPosts();
 ---
 
 <BaseLayout
-  background
   title="Posts"
   description="Notes on building things for the web."
 >
-  <div class="prose-column" data-enter-children>
+  <div class="prose-column">
     <div class="head">
       <h1>Posts</h1>
       <a class="tags-link" href="/tags">Browse by tag</a>
@@ -36,15 +35,15 @@ const posts = await getPublishedPosts();
   }
 
   .tags-link {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     flex: none;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     text-decoration: none;
-    transition: color var(--dur-fast) var(--ease-out);
+    transition: color var(--motion-fast) var(--ease-out);
   }
 
   .tags-link:hover {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 </style>

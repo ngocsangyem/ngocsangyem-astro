@@ -55,22 +55,19 @@ import { Icon } from 'astro-icon/components';
     position: sticky;
     inset-block-end: var(--space-4);
     align-items: center;
-    /* Frosted, because this is sticky: page text scrolls under the icon, and a
-       bare glyph over running text has nothing to hold it. */
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
-    border-radius: 0.5rem;
-    color: var(--color-ink-light);
+    /* Opaque page tone, because this is sticky: page text scrolls under the
+       icon, and a bare glyph over running text has nothing to hold it. */
+    background: var(--color-bg);
+    color: var(--color-ink-3);
     display: flex;
     block-size: var(--control-size);
     justify-content: center;
     pointer-events: auto;
-    transition: color var(--dur-fast) var(--ease-out);
+    transition: color var(--motion-fast) var(--ease-out);
     inline-size: var(--control-size);
   }
 
   .to-top:hover {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 </style>

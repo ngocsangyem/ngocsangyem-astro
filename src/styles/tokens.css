@@ -1,103 +1,140 @@
-/* Canonical values from DESIGN.md. Font families are the one indirection:
-   the Fonts API owns --font-inter and friends, including size-adjusted
-   fallback faces, so redefining the families here would fight its cascade. */
+/* Canonical values from design.md. Colours are measured off claude.dev
+   (light + dark) and re-solved where the measured value missed AA; every text
+   token notes its WCAG ratio against --color-bg, and against the raised/panel
+   surfaces where it is used on them. Font families are the one indirection:
+   the Fonts API owns --font-inter and --font-jetbrains-mono, including
+   size-adjusted fallback faces, so redefining the families here would fight
+   its cascade. */
 :root {
-  /* Warm laid paper, sampled off the reference artwork. Every ink below
-     was re-solved against it to hold the contrast ratio it had on the old
-     off-white, so the paper got warmer and nothing got harder to read.
-     --color-ink-light is the one exception: it is a shade darker than a faithful
-     port would make it, because the value it was ported from missed AA for
-     normal text by a hair (4.35:1) and this is the moment to stop carrying
-     that. */
-  --color-paper: #d3cec4;
-  --color-ink: #3d3a35;
-  --color-ink-deep: #1b1813;
-  --color-ink-max: #000000;
-  --color-ink-light: #5c5853;
-  --color-chip: #88888822;
-  --color-focus: var(--color-ink-deep);
+  /* Surfaces. */
+  --color-bg: #faf9f5;        /* page */
+  --color-bg-raised: #f1efe8; /* code blocks, frames */
+  --color-bg-panel: #ece9e0;  /* panes, palette, overlays */
 
-  /* Cinnabar, the seal red already printed at the foot of the bamboo clump, so
-     the one interactive hue on the site is drawn from its own artwork rather
-     than invented. Re-solved against the paper the same way the inks were: the
-     grove's own #b5402f reads 3.58:1 here and misses AA, #9c3526 holds 4.54:1.
-     Chrome stays greyscale — this is for links inside prose only, where the
-     underline alone left a reference indistinguishable from body text at a
-     glance. */
-  --color-accent: #9c3526;
-  --color-accent-deep: #872d20;
+  /* Inks. */
+  --color-ink: #141413;   /* headings, values — 17.5:1 bg */
+  --color-ink-2: #4c4b45; /* body prose, standfirst — 8.3:1 bg, 7.2:1 panel */
+  /* Labels and meta. Darker than the measured #7b7a72 (4.1:1, fails AA) so it
+     also holds on every raised surface: 5.6:1 bg, 5.2:1 raised, 4.9:1 panel,
+     5.1:1 hovered row. */
+  --color-ink-3: #65645e;
+  /* Decorative only (░ ▓ └ ❯ ✻ glyphs, always aria-hidden). 2.3:1 — never
+     the sole carrier of information, never a hotkey letter or a label. */
+  --color-ink-4: #a8a69d;
 
-  /* Semantic status hues, admonitions only. These are content semantics rather
-     than a brand accent: chrome stays greyscale, so the neutral-accent rule
-     still holds. Each sits in the same luminance band as the ink token it
-     replaces (5.0:1 to 6.1:1 on paper), so only hue is added, never weight. */
-  --color-note:      #205183;
-  --color-tip:       #235c40;
-  --color-important: #4d338b;
-  --color-warning:   #654200;
-  --color-caution:   #812828;
+  /* Lines and fills. */
+  --color-line: #14141338;      /* 1px dividers */
+  --color-line-soft: #1414131c; /* row separators, code border */
+  --color-hover-row: #1414130d; /* list row hover fill */
+
+  /* Accent. The measured #c15f3c is 4.0:1, so it is for non-text and large
+     marks only; links and accent text use the deeper shade (5.2:1 bg,
+     4.5:1 panel). */
+  --color-accent: #c15f3c;
+  --color-accent-text: #a94e2f;
+  --color-focus: var(--color-accent);
+
+  /* ANSI status set: admonitions, terminal output, error levels. Each ≥ 4.97:1
+     on bg. Yellow is not measured on claude.dev; #7a5d00 solved to 5.9:1.
+     Light blue, cyan, green and magenta hold AA on bg only (4.3–4.6:1 on
+     raised, panel and hover), so re-solve them before setting text in these
+     hues on another surface. */
+  --color-ansi-blue: #3065d7;    /* 5.0:1 */
+  --color-ansi-cyan: #16749a;    /* 5.0:1 */
+  --color-ansi-green: #567527;   /* 5.0:1 */
+  --color-ansi-magenta: #914dbe; /* 5.0:1 */
+  --color-ansi-yellow: #7a5d00;  /* 5.9:1 */
+  --color-ansi-red: #a04545;     /* 5.8:1 */
+
+  /* Diff lines, measured against their own tinted background. Add is darker
+     than the measured #3e7a3e, which reads 4.47:1 on its tint; #356b35 holds
+     5.5:1. Del #a04545 holds 5.2:1. */
+  --color-diff-add: #356b35;
+  --color-diff-add-bg: #50965017;
+  --color-diff-del: #a04545;
+  --color-diff-del-bg: #b45a5a17;
 }
 
 [data-theme='dark'] {
-  --color-paper: #1a2023;
-  --color-ink: #c8cbcb;
-  --color-ink-deep: #edf0f0;
-  --color-ink-max: #ffffff;
-  --color-ink-light: #929595;
+  --color-bg: #141413;
+  --color-bg-raised: #1a1a18;
+  --color-bg-panel: #1e1d1b;
 
-  /* Same seal red lifted for the near-black paper: 6.19:1 and 8.00:1. */
-  --color-accent: #e08774;
-  --color-accent-deep: #eda294;
+  --color-ink: #faf9f5;   /* 17.5:1 bg */
+  --color-ink-2: #b0aea5; /* 8.3:1 bg, 7.6:1 panel */
+  --color-ink-3: #87867f; /* 5.0:1 bg, 4.8:1 raised, 4.6:1 panel/hover */
+  --color-ink-4: #5e5d59; /* decorative only, 2.8:1 */
 
-  /* Lifted for the near-black paper; same 8.2:1 to 10.1:1 band as dark ink. */
-  --color-note:      #a7cbeb;
-  --color-tip:       #a3d6bb;
-  --color-important: #cab8f1;
-  --color-warning:   #e4bf81;
-  --color-caution:   #eba5a5;
+  --color-line: #faf9f529;
+  --color-line-soft: #faf9f517;
+  --color-hover-row: #faf9f50b;
+
+  /* One shade carries both roles in dark: 5.9:1 bg, 5.4:1 panel. */
+  --color-accent: #d97757;
+  --color-accent-text: #d97757;
+
+  --color-ansi-blue: #82aaff;    /* 8.0:1 */
+  --color-ansi-cyan: #89ddff;    /* 12.2:1 */
+  --color-ansi-green: #c3e88d;   /* 13.4:1 */
+  --color-ansi-magenta: #c792ea; /* 7.7:1 */
+  --color-ansi-yellow: #e5c07b;  /* 10.7:1, not measured */
+  --color-ansi-red: #e08f8f;     /* 7.5:1, not measured */
+
+  --color-diff-add: #9ac29a;     /* 8.3:1 on its tint */
+  --color-diff-add-bg: #78be7812;
+  --color-diff-del: #c29a9a;     /* 6.8:1 on its tint */
+  --color-diff-del-bg: #be787812;
+}
+
+/* Terminal glyphs (arrows, box drawing, blocks, ❯, ⚠, ▲). Fontsource's latin
+   subset omits them, so a 4KB subset of JetBrains Mono 2.211 (OFL) is
+   self-hosted and listed first in --font-mono. The unicode-range is exactly
+   the subset's cmap, so it claims no other character and only downloads on a
+   page that prints one. One face serves both weights: glyphs are not
+   synthesised bold. The spinner dingbats (✻ ✢ ✳ ✶ ✽), ※, ↯ and ✓ are not in
+   JetBrains Mono at all and fall through to the system font. */
+@font-face {
+  font-family: 'JetBrains Mono Symbols';
+  src: url('/fonts/jetbrains-mono-symbols.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400 500;
+  unicode-range: U+2190-2199, U+21E7, U+2500-25A1, U+25AA-25AB, U+25B2-25C7,
+    U+25CA, U+25CC, U+25CE-25CF, U+25D4-25D5, U+25E7-25EB, U+25EF, U+26A0,
+    U+2715, U+276E-2771;
 }
 
 :root {
-  --font-display: var(--font-inter), system-ui, sans-serif;
-  --font-body: var(--font-display);
-  --font-mono: var(--font-dm-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-chip: var(--font-roboto-condensed), var(--font-body);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Symbols', var(--font-jetbrains-mono), ui-monospace,
+    'SF Mono', Menlo, monospace;
 
-  --prose-max-width: 65ch;
+  --text-display: clamp(1.75rem, 1.3rem + 1.2vw, 2.25rem); /* lowercase page titles */
+  --text-h1: clamp(1.75rem, 1.4rem + 1vw, 2.125rem);       /* post title, 500 */
+  --text-body: 1.125rem;                                    /* prose */
+  --leading-body: 1.7;
+  --text-ui: 1rem;                                          /* list titles, meta values */
+  --text-label: 0.8125rem;                                  /* mono labels, nav */
+  --tracking-label: 0.02em;
+  --text-code: 0.8125rem;
+  --leading-code: 1.75;
+  --text-caption: 0.75rem;                                  /* code header, fig label */
 
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 150ms;
-  --dur-base: 240ms;
+  /* Chrome, footer and index pages share the wide container; reading pages
+     hold prose to ≈68ch at 18px. */
+  --page-max-width: 80rem;
+  --prose-max-width: 41rem;
 
-  --radius-chip: 4px;
-
-  /* The reading panel, and the chip behind the sticky back-to-top control.
-     This is a SHEET OF PAPER LAID ON THE GROVE, not a veil over it -- a
-     distinct tone from --color-paper, not the same colour at low alpha.
-
-     The old value was paper at 0.6, which failed twice. It left the panel
-     tonally identical to the canvas, so the reading column had no edge and the
-     grove behind it read as a smudge rather than as depth. And because 40% of
-     the grove still came through, muted text over it fell to 3.59:1 and prose
-     links to 3.62:1 -- under AA -- wherever a culm passed behind the measure.
-     Both numbers the ink tokens above claim are solved against bare paper only.
-
-     Solved instead as a lighter (dark: deeper) sheet at 0.86. The panel now
-     carries its own 1.21:1 step off the paper, so the edge is drawn by tone
-     rather than by a border, and text contrast goes UP on the panel instead of
-     down: across the grove's full ink range muted holds >= 4.54:1 and links
-     >= 4.58:1 in both themes. That headroom is what lets the grove itself get
-     twice as dark (see INK_GAIN in lib/bamboo-geometry.ts) and finally read in
-     the margins, where it is the only place it was ever going to be seen. */
-  --glass-bg: rgba(233, 229, 221, 0.86);
-  --glass-blur: 12px;
-  /* Hairline along the sheet's own edge. Tone alone carries the boundary on a
-     flat run; this keeps the rounded corners from reading as a render artifact
-     where a dark culm happens to pass right under them. */
-  --glass-edge: rgba(27, 24, 19, 0.09);
-}
-
-[data-theme='dark'] {
-  --glass-bg: rgba(15, 20, 23, 0.86);
-  --glass-edge: rgba(237, 240, 240, 0.1);
+  /* Motion. Easings are measured off claude.dev; durations follow
+     claude-dev-design.md §Motion system. Terminal parts step, never ease. */
+  --motion-instant: 0ms;
+  --motion-tick: 20ms;
+  --motion-line: 90ms;
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 280ms;
+  --spinner-frame: 110ms;
+  --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-swift: cubic-bezier(0.55, 0, 0.1, 1);
+  --ease-term: steps(1, end);
 }

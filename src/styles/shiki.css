@@ -8,18 +8,15 @@
 
    The block background belongs to the <pre> alone. Setting it on every span
    would paint over line annotations, since a highlighted or diffed line is
-   itself a span. */
+   itself a span. It is the site's raised surface rather than the theme's own
+   background, so code sits on the same tone as every other frame. */
 .astro-code {
-  background-color: var(--shiki-light-bg);
+  background-color: var(--color-bg-raised) !important;
 }
 
 .astro-code,
 .astro-code span {
   color: var(--shiki-light);
-}
-
-html[data-theme='dark'] .astro-code {
-  background-color: var(--shiki-dark-bg) !important;
 }
 
 html[data-theme='dark'] .astro-code,

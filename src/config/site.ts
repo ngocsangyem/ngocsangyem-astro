@@ -34,7 +34,7 @@ export const SITE = {
     { label: 'GitHub', href: 'https://github.com/ngocsangyem', icon: 'github' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/ngocsangyem/', icon: 'linkedin' },
   ] satisfies SiteSocial[],
-  /** Rendered in DM Mono under the social row. */
+  /** Rendered in JetBrains Mono under the social row. */
   email: 'nnsang24@gmail.com',
   /**
    * Home greeting, first person, one or two lines. The home page omits the

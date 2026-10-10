@@ -3,7 +3,7 @@
  *
  * The faces come from `astro:assets`, the same place the `fonts` config in
  * astro.config.mjs serves the site's own CSS from, so the cards are set in the
- * same Inter and DM Mono the pages are and no second copy of either family
+ * same Inter and JetBrains Mono the pages are and no second copy of either family
  * enters the tree. `fontData` names every face the config resolved and
  * `experimental_getFontFileURL` turns one into something fetchable: during a
  * static build Astro answers from a loopback server it runs for exactly this,
@@ -36,7 +36,7 @@ const SFNT_DIR = '.astro/og-fonts';
  * never appears on a card, and handing resvg a face no `font-family` names just
  * costs a decompress per build.
  */
-const FAMILIES = ['--font-inter', '--font-dm-mono'] as const satisfies readonly CssVariable[];
+const FAMILIES = ['--font-inter', '--font-jetbrains-mono'] as const satisfies readonly CssVariable[];
 
 /** What the template sets the headline in, and so what it is measured against. */
 const HEADLINE_FAMILY: CssVariable = '--font-inter';

@@ -20,12 +20,11 @@ is the emitted source of truth for its token values.
 - A projects grid at `/projects`, driven by `src/data/projects.json`.
 - Full-text search over the built site, via Pagefind.
 - Light and dark themes, taken from the OS and overridable, applied before first
-  paint so the wrong paper never flashes.
+  paint so the wrong theme never flashes.
 - Markdown that does its work at build time: reading time, admonitions, code
   titles, line and word highlighting, diff and focus annotations, accessible task
   lists, scrollable tables, and favicon link chips.
-- A handwritten "Sang" signature that draws itself once per visit, over a
-  procedural bamboo grove.
+- A handwritten "Sang" signature that draws itself once per visit.
 
 ## Project structure
 
@@ -33,7 +32,7 @@ is the emitted source of truth for its token values.
 src/
   components/
     base/         header, nav, head, theme toggle, social row, cd-up and to-top links
-    identity/     the signature and the bamboo grove
+    identity/     the signature
     posts/        rows, meta, tag list, table of contents
     projects/     grid and item
     search/       the Pagefind modal

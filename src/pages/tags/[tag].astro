@@ -17,7 +17,7 @@ const count = posts.length;
 ---
 
 <BaseLayout title={`#${label}`} description={`Posts tagged ${label}.`}>
-  <div class="prose-column" data-enter-children>
+  <div class="prose-column">
     <h1>#{label}</h1>
     <p class="count">
       {count} {count === 1 ? 'post' : 'posts'}
@@ -35,7 +35,7 @@ const count = posts.length;
   }
 
   .count {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     margin-block: var(--space-2) var(--space-7);
@@ -45,10 +45,10 @@ const count = posts.length;
      this is — the header has no entry for it, by design. */
   .count a {
     color: inherit;
-    transition: color var(--dur-fast) var(--ease-out);
+    transition: color var(--motion-fast) var(--ease-out);
   }
 
   .count a:hover {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 </style>

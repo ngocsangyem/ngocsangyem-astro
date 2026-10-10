@@ -31,7 +31,7 @@
       /* The document's own scroll, not this element's — the bar is fixed and
          has no scrollport of its own. */
       animation-timeline: scroll(root block);
-      background: var(--color-ink-deep);
+      background: var(--color-ink);
       block-size: 2px;
       display: block;
       inline-size: 100%;
@@ -41,7 +41,7 @@
       transform: scaleX(0);
       /* Grows from the reading edge, so it runs the way the text does. */
       transform-origin: 0 50%;
-      /* Above the glass panel the page sits on, below the skip link, which has
+      /* Above the page content, below the skip link, which has
          to stay reachable at the very top of the tab order. */
       z-index: 4;
     }

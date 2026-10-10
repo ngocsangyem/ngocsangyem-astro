@@ -24,17 +24,17 @@ const label = target === '/' ? 'cd .. (back to the home page)' : `cd .. (back to
 
   a {
     align-items: center;
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     display: inline-flex;
     font-family: var(--font-mono);
     font-size: 0.875rem;
     gap: 0.4rem;
     text-decoration: none;
-    transition: color var(--dur-fast) var(--ease-out);
+    transition: color var(--motion-fast) var(--ease-out);
   }
 
   a:hover {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 
   /* :global because the Icon component's svg does not carry this component's

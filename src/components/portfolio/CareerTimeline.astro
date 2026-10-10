@@ -53,7 +53,7 @@ const { items } = Astro.props;
   .year,
   .period,
   .skills {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-family: var(--font-mono);
     font-size: 0.75rem;
   }
@@ -68,8 +68,8 @@ const { items } = Astro.props;
   }
 
   .point {
-    background: var(--glass-bg);
-    border: 1px solid color-mix(in srgb, var(--color-ink-light) 55%, transparent);
+    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-ink-3) 55%, transparent);
     border-radius: 50%;
     block-size: 0.8rem;
     inset-block-start: 2.55rem;
@@ -81,7 +81,7 @@ const { items } = Astro.props;
   }
 
   .point::after {
-    background: var(--color-ink-light);
+    background: var(--color-ink-3);
     border-radius: inherit;
     content: '';
     inset: 0.18rem;
@@ -89,11 +89,11 @@ const { items } = Astro.props;
   }
 
   .current .point {
-    border-color: var(--color-ink-deep);
-    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--color-ink-deep) 8%, transparent);
+    border-color: var(--color-ink);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--color-ink) 8%, transparent);
   }
 
-  .current .point::after { background: var(--color-ink-deep); }
+  .current .point::after { background: var(--color-ink); }
 
   .role-head {
     align-items: start;
@@ -109,14 +109,14 @@ const { items } = Astro.props;
   }
 
   .company {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
     font-size: clamp(1.3rem, 2.4vw, 1.85rem);
     font-weight: 600;
     letter-spacing: -0.035em;
   }
 
   .current-label {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-family: var(--font-mono);
     font-size: 0.65rem;
     font-weight: 400;
@@ -135,13 +135,13 @@ const { items } = Astro.props;
   .period { flex: none; text-align: end; }
 
   .location {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-size: 0.9rem;
     margin-block-start: var(--space-3);
   }
 
   .experience-points {
-    color: var(--color-ink);
+    color: var(--color-ink-2);
     display: grid;
     font-size: clamp(0.95rem, 1.5vw, 1.05rem);
     gap: var(--space-2);
@@ -156,10 +156,10 @@ const { items } = Astro.props;
     overflow-wrap: anywhere;
   }
 
-  .experience-points li::marker { color: var(--color-ink-light); }
+  .experience-points li::marker { color: var(--color-ink-3); }
 
   .highlights-label {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-family: var(--font-mono);
     font-size: 0.65rem;
     letter-spacing: 0.08em;
@@ -182,7 +182,7 @@ const { items } = Astro.props;
   }
 
   .skills li::before {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     content: '#';
     margin-inline-end: 0.12em;
   }

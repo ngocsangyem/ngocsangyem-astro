@@ -1,107 +1,71 @@
-# Design — ngocsangyem blog (main · locked)
+# Design — ngocsangyem blog (main · claude.dev system)
+
+The antfu-derived "bamboo paper" system that this file used to lock was retired
+on 2026-10-10. The site now follows the claude.dev "warm terminal" system:
+values in this file are measured off claude.dev and re-solved for AA where the
+measured value missed it. Motion and interaction detail live in
+[`claude-dev-design.md`](./claude-dev-design.md); where that guideline marks a
+value [Proposed], this file's measured value wins.
 
 ## Intent
-Personal dev notes, written in English. One author, one voice. Simple,
-developer-friendly, calm. Built with Astro as a true MPA — no client router,
-no framework runtime on content pages.
+Personal dev notes, written in English. One author, one voice. A blog designed
+like a developer tool: terminal grammar (prompts, hotkeys, ASCII glyphs,
+uppercase mono labels) on a cream page, comfortable for long reading. Built with
+Astro as a true MPA — no client router, no framework runtime; every script is a
+progressive enhancement.
 
 ## System
-- Genre · editorial (personal site / notes voice)
-- Macrostructure · Long Document; home = index-first (1–2 line greeting + recent posts), listing pages = Catalogue/Index with ghost-year numeral chapters
-- Theme · studied-DNA base: antfu.me (structure + tokens), with own identity filling the signature slots (see ## Identity)
-- Axes · dual paper (light >85 / dark <30) / neutral-grotesque display / **accent NEUTRAL — chroma delegated to content** (favicons in link-chips, syntax tokens). This is the strongest signature; never add a chromatic accent.
-- Type · one workhorse grotesque — **Inter** for display + body, hierarchy by size and weight only; **DM Mono** for dates, read-times, email, inline code labels; **Roboto Condensed** only inside link-chips. Self-hosted woff2, latin subset (content is English).
-- Chrome · N9 edge-aligned minimal nav: a plain header on bare paper with a `0.5rem` gap above and below — hand-drawn "Sang" mark top-left, right-aligned row of ≤4 text links (Posts · Projects · About) + search icon + theme toggle · footer: none — pages end with a "Find me on" social row (GitHub, LinkedIn) + DM Mono email line inside the prose column · one floating control: an icon-only back-to-top anchor in the bottom-right gutter, on the same glass, revealed by scrolling and never by script, wearing a frosted `--glass-bg` panel because it is sticky and page text scrolls under it · one floating *indicator*, on articles only: a 2px `--color-ink-deep` reading-progress hairline pinned to the top of the viewport, driven by `animation-timeline: scroll()` so it too costs no script. It sits outside `<main>` — the glass panel's `backdrop-filter` would otherwise become its containing block
-- Column · single centred prose column, `--prose-max-width: 65ch`, `line-height: 1.75`
+- Genre · editorial, set in a TUI register.
+- Macrostructure · Long Document; home = index-first (greeting + recent posts), listing pages = dense date · title · reading-time rows.
+- Theme · claude.dev, measured 2026-10-10 (light and dark).
+- Axes · cream page (#faf9f5) / near-black dark (#141413) / one orange accent spent sparingly / ANSI status hues for content semantics.
+- Type · **Inter** for titles, prose and values; **JetBrains Mono** for every label, nav item, hotkey, date, code and terminal glyph. Uppercase is mono only; page titles are lowercase. Self-hosted woff2, latin subset, plus a 4KB JetBrains Mono symbol subset (see Tokens).
+- Chrome · header with hotkey-printed nav (`[P]POSTS` …), a footer, no glass, no background artwork. Every surface is flat; depth comes from tone steps (`bg` → `bg-raised` → `bg-panel`) and 1px lines.
+- Column · `--page-max-width: 80rem` for chrome and index pages; `--prose-max-width: 41rem` (≈68ch at 18px) for reading.
 
 ## Content model
-- **One writing collection: `posts`** — the "notes" ARE the posts; no separate notes/TIL collection. Cheap to write: title + date + tags is enough frontmatter.
+- **One writing collection: `posts`** — title + date + tags is enough frontmatter.
 - Collections: `posts`, `projects` (data collection), plus an `about` page.
-- URLs · collection-prefixed: `/posts/[slug]`, `/posts` (full index), `/projects`, `/portfolio`, `/about`, `/tags` (tag index), `/tags/[tag]`.
-- Format · **MDX for all content** (plain-Markdown files still work unchanged; MDX keeps the door open for embedded demos/components).
-- Home · greeting (real first-person, 1–2 lines — never sample copy) + recent posts list, link to `/posts` for the rest.
-- `/posts` · rows grouped by year under ghost-year numerals; row = DM Mono muted date + title, opacity-step hover. A row carries no summary anywhere on the site: the title is the whole invitation, and a second line of prose under each one turns a scannable index into a page to be read. A "Browse by tag" link on the title's line is the way into `/tags`.
-- `/tags` · frequency-ordered rows of `#tag` + count, DM Mono. Rows, not a chip cloud: sizing tags by frequency needs a chroma the neutral-accent axis has no way to spend.
-- Article foot · a hairline, then up to three same-tag related posts, then an Older/Newer pair. Labelled by time, not by "previous/next", which points either way on a date-ordered index.
-- `/projects` · antfu-style grid grouped by category: icon + name + one-line description, greyscale-until-hover.
-- `/portfolio` · a separate wide editorial résumé. Hero is name-led and
-  typographic; the main body is a chronological career route with a curved SVG
-  approach, a dotted vertical rail, and quiet waypoint markers. There is no
-  selected-work module here because `/projects` already owns that job. The page
-  inherits the site paper, ink, type, header, and theme toggle rather than
-  inventing a second visual identity.
+- URLs · `/posts/[slug]`, `/posts`, `/projects`, `/portfolio`, `/about`, `/tags`, `/tags/[tag]`.
+- Format · MDX for all content (plain Markdown still works).
+- Home · greeting + recent posts, link to `/posts` for the rest. H1 stays "Hello World!".
+- `/posts` · rows of mono date · sans title · mono reading time, 1px separators, no thumbnails, no summaries. Topic tabs swap the list with no sliding indicator.
+- Post page · tag chip, H1, standfirst, AUTHOR / PUBLISHED / READING TIME grid, sticky left rail with TREE table of contents, ASCII progress and SHARE.
+- `/portfolio` · wide editorial résumé on the same tokens; no second visual identity.
 
-## Tokens (canonical — emit as `tokens.css` when a build exists)
-```css
-:root {
-  /* light (default) */
-  /* Warm laid paper (amended 2026-08-22 from #fafafa):
-     sampled off the reference artwork, which is drawn on a warm stock, not an
-     off-white. Every ink below was re-solved against it to hold the contrast
-     ratio it had on #fafafa, so the paper got warmer and nothing got harder to
-     read. #ink-deep is the one that could not be held — 15.2:1 is unreachable on
-     this paper (pure black gives 13.3:1) — and lands at 11.3:1, still far past
-     AAA for headings. */
-  --color-paper:     #d3cec4;   /* warm laid paper */
-  --color-ink:       #3d3a35;   /* body prose, 7.2:1 (was 7.1:1 on #fafafa) */
-  --color-ink-deep:  #1b1813;   /* headings, active nav, 11.3:1 */
-  --color-ink-max:   #000000;   /* rare emphasis */
-  --color-ink-light: #5c5853;   /* dates, read-times, inactive labels — 4.50:1. A shade darker than a faithful port would make it: the #767676 it came from was 4.54:1 on pure white but only 4.35:1 on #fafafa, so the "meets AA" note above it had quietly stopped being true. */
-  --color-chip:      #88888822; /* magic-link chip fill — works on both papers by design */
-  --color-accent:    var(--color-ink-deep); /* NO chromatic accent — content carries colour */
-  --color-focus:     var(--color-ink-deep);
+## Tokens (canonical source: `src/styles/tokens.css`)
+Ratios are WCAG contrast against `--color-bg` unless noted.
 
-  /* Semantic status hues — ADMONITIONS ONLY (added 2026-08-22 at the author's
-     request). Content semantics, not a brand accent: chrome stays greyscale, so
-     the neutral-accent axis above still holds. Each value sits in the same
-     luminance band as the ink token it stands in for (5.2:1–6.4:1 on white), so
-     an admonition gains hue without gaining weight. Only the label and the left
-     hairline take the hue; body text stays --color-ink. */
-  --color-note:      #205183;   /* 5.22:1 on paper */
-  --color-tip:       #235c40;   /* 5.01:1 */
-  --color-important: #4d338b;   /* 6.20:1 */
-  --color-warning:   #654200;   /* 5.74:1 */
-  --color-caution:   #812828;   /* 5.91:1 */
-}
-[data-theme="dark"] {
-  --color-paper:     #1a2023;   /* cool charcoal (amended 2026-08-22 from #0d0d0d: sampled off the reference's dark frame, which is a touch blue rather than neutral) */
-  --color-ink:       #c8cbcb;   /* 10.1:1 (was 10.1:1 on #0d0d0d) */
-  --color-ink-deep:  #edf0f0;   /* 14.4:1 */
-  --color-ink-max:   #ffffff;
-  --color-ink-light: #929595;   /* 5.5:1 */
-  /* --color-chip unchanged */
+| Role | Token | Light | Dark |
+|---|---|---|---|
+| Page | `--color-bg` | #faf9f5 | #141413 |
+| Code, frames | `--color-bg-raised` | #f1efe8 | #1a1a18 |
+| Panes, palette | `--color-bg-panel` | #ece9e0 | #1e1d1b |
+| Headings, values | `--color-ink` | #141413 (17.5) | #faf9f5 (17.5) |
+| Body prose | `--color-ink-2` | #4c4b45 (8.3) | #b0aea5 (8.3) |
+| Labels, meta | `--color-ink-3` | #65645e (5.6; 4.9 on panel) | #87867f (5.0; 4.6 on panel) |
+| Decorative glyphs only | `--color-ink-4` | #a8a69d | #5e5d59 |
+| Dividers | `--color-line` | #14141338 | #faf9f529 |
+| Row separators, code border | `--color-line-soft` | #1414131c | #faf9f517 |
+| Row hover fill | `--color-hover-row` | #1414130d | #faf9f50b |
+| Accent (non-text, large) | `--color-accent` | #c15f3c (4.0) | #d97757 (5.9) |
+| Accent text, links | `--color-accent-text` | #a94e2f (5.2) | #d97757 (5.9) |
+| Focus ring | `--color-focus` | = accent | = accent |
+| ANSI blue / cyan / green | `--color-ansi-*` | #3065d7 / #16749a / #567527 (≈5.0) | #82aaff / #89ddff / #c3e88d |
+| ANSI magenta / yellow / red | `--color-ansi-*` | #914dbe / #7a5d00 / #a04545 (5.0–5.9) | #c792ea / #e5c07b / #e08f8f |
+| Diff add / del (on own tint) | `--color-diff-*` | #356b35 (5.5) / #a04545 (5.2) | #9ac29a (8.3) / #c29a9a (6.8) |
 
-  /* Lifted for the near-black paper; 8.6:1–10.6:1, matching dark ink's 10.6:1 */
-  --color-note:      #8fbce6;
-  --color-tip:       #87c9a6;
-  --color-important: #bda6ee;
-  --color-warning:   #dcae5e;
-  --color-caution:   #e79191;
-}
-:root {
-  --font-display: "Inter", system-ui, sans-serif;   /* same family as body */
-  --font-body:    var(--font-display);
-  --font-mono:    "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-chip:    "Roboto Condensed", var(--font-body); /* link-chips ONLY */
+Deviations from the measured values, all for AA:
+- `--color-ink-3` light is #65645e, not the measured #7b7a72 (4.1:1) or #73726b (passes on bg, fails on raised/panel/hover).
+- Light accent text is #a94e2f; the measured #c15f3c is 4.0:1 and is used only for non-text or large marks.
+- Light diff-add is #356b35; the measured #3e7a3e reads 4.47:1 on its own tint.
+- ANSI yellow and dark red are not measured on claude.dev; solved to ≥ 5.9:1 and 7.5:1.
 
-  --prose-max-width: 65ch;
+Type tokens: `--text-display` (lowercase page titles), `--text-h1` (post title, 500), `--text-body` 1.125rem / `--leading-body` 1.7, `--text-ui` 1rem, `--text-label` 0.8125rem with `--tracking-label` 0.02em, `--text-code` 0.8125rem / `--leading-code` 1.75, `--text-caption` 0.75rem.
 
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 150ms;  --dur-base: 240ms;
+Motion tokens: `--motion-instant` 0, `--motion-tick` 20ms, `--motion-line` 90ms, `--motion-fast` 120ms, `--motion-base` 180ms, `--motion-slow` 280ms, `--spinner-frame` 110ms; `--ease-out` cubic-bezier(.19,1,.22,1) and `--ease-swift` cubic-bezier(.55,0,.1,1) (both measured), `--ease-term` steps(1, end).
 
-  --radius-chip: 4px;
-
-  /* The frosted panel behind the sticky back-to-top control: paper at 0.6 plus a
-     blur, so page text scrolling under the icon reads as depth. Each theme sets
-     this to its own paper colour exactly, so the panel is invisible wherever
-     nothing passes behind it. */
-  --glass-bg:   rgba(211, 206, 196, 0.6);
-  --glass-blur: 12px;
-}
-[data-theme="dark"] {
-  --glass-bg:   rgba(26, 32, 35, 0.6);
-}
-```
+Fonts: the Fonts API owns `--font-inter` (400/500/600) and `--font-jetbrains-mono` (400/500); tokens reference them so Astro's size-adjusted fallbacks stay in play. Fontsource's latin subset has no terminal glyphs, so `public/fonts/jetbrains-mono-symbols.woff2` (subset of JetBrains Mono 2.211, OFL, licence kept in its name table) is registered as `JetBrains Mono Symbols`, listed first in `--font-mono`, and scoped by `unicode-range` to exactly its cmap: arrows, box drawing, blocks, geometric shapes, ❮❯, ⚠. The spinner dingbats ✻ ✢ ✳ ✶ ✽, ※, ↯ and ✓ do not exist in JetBrains Mono and fall back to the system font, so anything that animates through them must sit in a fixed-width cell.
 
 ## CSS authoring rules
 
@@ -117,74 +81,67 @@ no framework runtime on content pages.
 - **Use CSS custom properties for design values that recur or vary by theme or
   component state.** Name them by role, not their literal value; reuse an
   existing token before adding one. Keep canonical colours, typography, motion,
-  and radii in `src/styles/tokens.css`; keep shared page-layout values in
-  `src/styles/global.css`; scope component-only variables to that component.
+  and container widths in `src/styles/tokens.css`; keep gutters and the spacing
+  scale in `src/styles/global.css`; scope component-only variables to that
+  component.
 - Do not create a token for a one-off value or use variables to obscure a value
   whose meaning is clearer inline. Tokens express stable design roles, not a
   complete inventory of numbers.
+- Radius is 0 everywhere; edges are drawn by 1px lines and tone steps.
+- `--color-ink-4` never carries information on its own: it is for `aria-hidden` glyphs, never for hotkey letters, labels or meta.
+- Dates, reading times and percentages use `tabular-nums` (`time`, `.num`).
 
-## Identity (own work — fills the slots antfu's excluded artwork left)
-- **Personal mark** · hand-drawn "Sang" as an SVG path, stroke-animated on load (`stroke-dasharray`/`stroke-dashoffset` draw-in, `--ease-out`, ~1.2s, once per visit). v1 path is designed by Hallmark; swap for the author's real handwriting later — the slot + animation spec are the contract, the path is replaceable.
-- The mark stays neutral (ink greys) — identity comes from line quality, not colour.
+## Identity
+- **Personal mark** · hand-drawn "Sang" SVG path, stroke-drawn once per visit (`draw-in`, `--ease-out`). The path is replaceable; the slot and animation are the contract.
+- The mark stays in ink; identity comes from line quality, not colour.
 
-## Signature moves (from antfu DNA — these travel)
-- **Content-delegated colour** · chrome is greyscale; all chroma comes from content.
-- **Magic-link chips** · inline links in running prose as small rounded chips: translucent grey fill (`--color-chip`), tiny brand favicon, condensed label (`--font-chip`), `translateY(3px)` optical alignment, `--radius-chip`.
-- **Ghost-year chapters** · post lists grouped by year with a huge outlined numeral watermarked behind the first rows of each group.
-- **Display-size tab strip** on listing pages when a page has sibling views: active in `--color-ink-deep`, inactive at `--color-ink-light` minimum (not paler), no underline/pill chrome.
+## Signature moves
+- **Hotkeys printed in the UI** · every nav item shows its key (`[P]POSTS`, `[O]`, `[F]`, `[A]`, plus `H`, `S`, `R`, `?`); keys never fire while typing or with a modifier, and can be switched off from a visible toggle.
+- **Mono labels over sans values** · uppercase JetBrains Mono labels in `--color-ink-3` above Inter values in `--color-ink`.
+- **ASCII instruments** · `░▓` reading progress, `└` TREE outline, `❯` prompts — glyphs instead of icons.
+- **Words, not icons, for controls** · COPY / COPIED, SHARE, PLAY.
 
 ## CTA voice
-- No buttons anywhere. Actions are prose links (underlined) or magic-link chips.
-- Hover language is opacity-step (op50 → op100) and underline — never scale/lift.
+- No pill buttons. Actions are mono labels or underlined prose links; external links end in ↗.
+- Hover is a colour step or a row fill (`--color-hover-row`) — never scale or lift.
 
 ## Article voice (post pages)
-- Header · title (Inter, size/weight hierarchy), then a muted DM Mono meta row `date · N min read`.
-- Tags · small `#tag` links in the meta area, muted until hover; `/tags/[tag]` lists matching posts in the standard row style.
-- TOC · floats in the right margin outside the 65ch column on wide viewports (≥xl); collapses inline below the header on narrow ones. **Optional per post** (`toc: false`) and, on wide viewports, **collapsed to a menu icon at rest**: the list fades in while the pointer is over the article or the icon, and on keyboard focus (amended 2026-08-22 at the author's request).
-- Code blocks · Shiki (Astro built-in), dual theme **`vitesse-light` / `vitesse-dark`** switched with `[data-theme]`. Annotations come from `@shikijs/transformers` at build time (added 2026-08-22): a `title` caption, line highlighting, diff, focus, word marking, and error/warning levels. Diff and severity reuse the status tokens above; everything else tints with `--color-chip`. No client script: Expressive Code was evaluated and rejected because it ships a 2.5KB runtime that cannot be disabled on this setup.
-- Horizontal rules · thin hairlines in muted ink, never heavy bars.
-- Admonitions · GitHub alert syntax (`> [!NOTE]`), five types: note, tip, important, warning, caution. Type is carried by a small icon, a DM Mono uppercase label, and a left hairline, all in that type's semantic hue (see the status tokens). Body text stays `--color-ink`, so the hue marks the block without colouring the prose. This is the one sanctioned exception to the greyscale rule and is scoped to admonitions; chrome carries no hue.
+- Header · tag chip, H1 (Inter 500), standfirst in `--color-ink-2`, then a ruled AUTHOR / PUBLISHED / READING TIME grid.
+- Prose · Inter 18px / 1.7 in `--color-ink-2`; H2 is uppercase JetBrains Mono 500.
+- Code blocks · Shiki dual theme (`vitesse-light` / `vitesse-dark`) on `--color-bg-raised`, a `CODE · <lang> · COPY` header row, transformers for highlight / diff / focus / error levels at build time. Diff uses the diff tokens; error levels use the ANSI tokens.
+- Admonitions · GitHub alert syntax, five types, each label and left hairline in its ANSI hue (note blue, tip green, important magenta, warning yellow, caution red); body text stays `--color-ink-2`.
+- Figures carry `FIG A…` mono labels.
 
 ## Features
-- Tags + tag pages · RSS (`@astrojs/rss`) · dark/light toggle (`[data-theme]`, respects `prefers-color-scheme`, persisted) · TOC.
-- **Search · Pagefind, Cactus-pattern**: `pagefind --site dist` as a postbuild step; `@pagefind/default-ui` inside a modal dialog opened from the nav search icon and a `/` (or `Cmd+K`) shortcut. Style the UI with the tokens above — no Pagefind default chrome colours.
-- No comments in v1. No analytics decided — add deliberately if ever.
+- Tags + tag pages · RSS · light/dark toggle (`[data-theme]`, respects `prefers-color-scheme`, persisted) · TREE table of contents.
+- **Search · Pagefind**, re-skinned as a FINDER command palette (`S`, `/`, `⌘K`); Pagefind keeps the index, ranking and keyboard behaviour.
+- **`<TerminalDemo>`** MDX component: a scripted Claude Code session (prompt → tool → spinner → output → completion) that plays on viewport entry.
+- No comments, no analytics, no newsletter.
 
 ## Motion stance
-- No motion library, no ClientRouter — real MPA navigation.
-- One reveal primitive: `slide-enter` — fade-up (translateY(10px)→0 + opacity), staggered 90ms per child block, applied to prose children on page enter (pure CSS animation).
-- One entrance animation besides it: the mark draw-in (under ## Identity).
-- `/portfolio` may use one scroll-linked explanatory route: a small plane traces
-  the short SVG curve and dotted career rail with normalized
-  `stroke-dashoffset`; reversing scroll flips the plane and retracts the line.
-  The rAF-throttled script is scoped to that page and updates only the plane and
-  route drawing; readable content remains still. Reduced motion shows the
-  complete route immediately.
-- **No perpetual motion.** Everything with content in it holds still: no looping
-  chrome, no drifting gradients, no breathing buttons.
+- No motion library, no ClientRouter — real MPA navigation with a browser-native view-transition fade on the outgoing page.
+- Motion is a status signal. Only `opacity` and `transform` animate, travel never exceeds 4px, and terminal parts step (`--ease-term`) instead of easing.
+- One reveal primitive: `reveal` (opacity + 4px rise, `--motion-base`, `--ease-out`) on page heroes via `[data-enter]`, at most three stages. Body content does not cascade in.
+- The signature draw-in plays once per visit.
+- **No perpetual motion** outside a playing terminal demo. The demo pauses off-screen, honours a user pause, and shows its final state under reduced motion.
+- `prefers-reduced-motion` · reveals are instant (no crossfade), the demo shows its final frame, the view transition is off.
 
-  Amended three times on 2026-08-22 and settled on 2026-08-23. The clause was
-  retired for the ambient grove, then reinstated for it alone on measurement,
-  then made absolute again when the grove was removed from the site. It is now
-  unconditional: nothing on the site loops. A future candidate would have to
-  clear the bar the grove cleared — measured off a reference, imperceptible, and
-  gated on tab visibility, viewport intersection and `prefers-reduced-motion` —
-  and would be reopening a settled decision to do it.
-- Everything else: opacity/colour transitions at `--dur-fast`. Animate `transform` + `opacity` only — never `transition: all`.
-- `prefers-reduced-motion` · slide-enter and mark draw-in collapse to a ≤150ms opacity crossfade.
+## Decisions (2026-10-10, confirmed with the author)
+- **D1** Full re-skin to claude.dev (cream / near-black, orange accent, ANSI status set). The previous lock is retired.
+- **D2** Applies to every page: home, posts, post detail, tags, search, hotkeys and `?`, projects, portfolio, about, 404, OG cards.
+- **D3** An MDX `TerminalDemo` component, no `/terminal` page.
+- **D4** Fonts are Inter + JetBrains Mono; DM Mono and Roboto Condensed are gone.
+- **D5** The light/dark toggle stays, on the measured claude.dev palettes.
+- **D6** The bamboo grove and the glass panel are removed from every page.
+- **D7** Magic-link chips become plain links, with ↗ on external ones.
 
-## Notes (do NOT carry over from sources)
-- antfu's signature artwork (the "af" logo, plum-branch art, Bad Script annotations) is excluded — our slots are filled by ## Identity instead.
-- Cactus DNA contributes ONLY the Pagefind-modal search pattern; its mono-everywhere type, chromatic accent hue-swap, and masthead-stack nav do not apply.
-- Never ship sample/lorem copy — the home greeting is real first-person text.
-- **Paper belongs on `html`, never on `body`**, so a short page and a full-height
-  one are the same colour to the bottom of the viewport.
+## Notes
+- Never ship sample or lorem copy; existing copy (greeting, bio, home H1) is kept verbatim.
+- **The page tone belongs on `html`, never on `body`**, so a short page and a full-height one are the same colour to the bottom of the viewport.
+- Anthropic Sans / Mono are proprietary and are not used; Inter and JetBrains Mono stand in.
 
 ## Exports
-`tokens.css` (in this project) becomes the source of truth once a build exists.
-It now exists at `src/styles/tokens.css` and carries the token values above
-verbatim, with one sanctioned indirection: the font families reference the
-Fonts-API variables (`--font-display: var(--font-inter), system-ui, sans-serif`)
-so Astro's size-adjusted fallback faces stay in play.
-For Tailwind v4 `@theme` or DTCG `tokens.json`, ask *"extend design-main.md
-with exports"*.
+`src/styles/tokens.css` is the source of truth and carries the token values
+above verbatim, with one sanctioned indirection: the font families reference the
+Fonts-API variables (`--font-sans: var(--font-inter), system-ui, sans-serif`) so
+Astro's size-adjusted fallback faces stay in play.

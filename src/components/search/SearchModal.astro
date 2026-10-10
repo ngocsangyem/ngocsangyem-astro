@@ -47,22 +47,22 @@ import { Icon } from 'astro-icon/components';
   #search-open {
     background: none;
     border: 0;
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     cursor: pointer;
     display: inline-flex;
     padding: 0;
-    transition: color var(--dur-fast) var(--ease-out);
+    transition: color var(--motion-fast) var(--ease-out);
   }
 
   #search-open:hover {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 
   dialog {
-    background-color: var(--color-paper);
-    border: 1px solid var(--color-chip);
-    border-radius: var(--radius-chip);
-    color: var(--color-ink);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-line-soft);
+    border-radius: 0;
+    color: var(--color-ink-2);
     margin-inline: auto;
     margin-block-start: 12vh;
     max-block-size: 70vh;
@@ -72,15 +72,15 @@ import { Icon } from 'astro-icon/components';
 
     /* Pagefind's own dark rules key off [data-pf-theme]; defining the tokens on
        the dialog keeps site theme and OS theme independent. */
-    --pf-font: var(--font-body);
-    --pf-background: var(--color-paper);
-    --pf-border: var(--color-chip);
+    --pf-font: var(--font-sans);
+    --pf-background: var(--color-bg);
+    --pf-border: var(--color-line-soft);
     --pf-border-focus: var(--color-focus);
-    --pf-border-radius: var(--radius-chip);
-    --pf-hover: var(--color-chip);
-    --pf-mark: var(--color-ink-max);
+    --pf-border-radius: 0;
+    --pf-hover: var(--color-hover-row);
+    --pf-mark: var(--color-ink);
     --pf-outline-focus: var(--color-focus);
-    --pf-skeleton: var(--color-chip);
+    --pf-skeleton: var(--color-hover-row);
     --pf-modal-backdrop: transparent;
     --pf-shadow-sm: none;
     --pf-shadow-md: none;
@@ -96,7 +96,7 @@ import { Icon } from 'astro-icon/components';
   }
 
   .status {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-size: 0.875rem;
     line-height: 1.6;
     margin: 0;

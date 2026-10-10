@@ -1,6 +1,6 @@
 /* Article typography. Scoped to .prose so list and grid pages stay untouched. */
 .prose {
-  color: var(--color-ink);
+  color: var(--color-ink-2);
   line-height: 1.75;
   max-inline-size: var(--prose-max-width);
 }
@@ -29,24 +29,24 @@
   font-weight: 500;
 }
 
-/* The one place the accent is spent. `color` also drives the underline, since
-   `text-decoration-color` is only set globally to hold links apart from body
-   text — here the colour does that job and the underline should follow it. */
+/* The one place the accent is spent on text, so it takes the AA-safe text
+   shade. `color` also drives the underline, since `text-decoration-color` is
+   only set globally to hold links apart from body text — here the colour does
+   that job and the underline should follow it. */
 .prose a {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   text-decoration: underline;
   text-decoration-color: currentColor;
 }
 
-/* Beats the global `a:hover`, which would otherwise pull a link back to ink on
-   hover — the one moment it should read as most interactive. */
+/* Hover deepens to ink: the lighter accent shade misses AA as text. */
 .prose a:hover {
-  color: var(--color-accent-deep);
+  color: var(--color-ink);
 }
 
 /* Chips carry their own fill and sit in the chrome register, so they stay ink. */
 .prose a.link-chip {
-  color: var(--color-ink);
+  color: var(--color-ink-2);
   text-decoration: none;
 }
 
@@ -60,21 +60,21 @@
 }
 
 .prose blockquote {
-  border-inline-start: var(--border-hairline) solid var(--color-ink-light);
-  color: var(--color-ink-light);
+  border-inline-start: var(--border-hairline) solid var(--color-ink-3);
+  color: var(--color-ink-3);
   margin-inline-start: 0;
   padding-inline-start: var(--space-4);
 }
 
 .prose :not(pre) > code {
-  background-color: var(--color-chip);
-  border-radius: var(--radius-chip);
+  background-color: var(--color-hover-row);
+  border-radius: 0;
   font-size: 0.875em;
   padding: 0.15em 0.35em;
 }
 
 .prose pre {
-  border-radius: var(--radius-chip);
+  border-radius: 0;
   font-size: 0.8125rem;
   line-height: 1.6;
   overflow-x: auto;
@@ -113,12 +113,10 @@
    `:focus-visible` brings it back, so tabbing through an article still reaches
    it. */
 .code-copy {
-  background-color: var(--color-chip);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
+  background-color: var(--color-hover-row);
   border: 0;
-  border-radius: var(--radius-chip);
-  color: var(--color-ink-light);
+  border-radius: 0;
+  color: var(--color-ink-3);
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -129,8 +127,8 @@
   padding: 0.3rem 0.5rem;
   position: absolute;
   transition:
-    opacity var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
+    opacity var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
 }
 
 /* A titled block has a bar of its own, so the control sits in it rather than
@@ -147,18 +145,18 @@
 }
 
 .code-copy:hover {
-  color: var(--color-ink-deep);
+  color: var(--color-ink);
 }
 
 /* Confirmation is carried by the word alone. */
 .code-copy[data-state='copied'] {
-  color: var(--color-ink-deep);
+  color: var(--color-ink);
 }
 
 /* The one place a status hue earns its place outside an admonition: a failure
    the reader has to act on. */
 .code-copy[data-state='failed'] {
-  color: var(--color-caution);
+  color: var(--color-ansi-red);
 }
 
 /* A coarse pointer has no hover to reveal with, and a control that only shows
@@ -176,24 +174,24 @@
 }
 
 .code-figure .code-title {
-  background-color: var(--color-chip);
-  border-radius: var(--radius-chip) var(--radius-chip) 0 0;
-  color: var(--color-ink-light);
+  background-color: var(--color-hover-row);
+  border-radius: 0;
+  color: var(--color-ink-3);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   padding: 0.45rem 1rem;
 }
 
 .code-figure pre {
-  border-radius: 0 0 var(--radius-chip) var(--radius-chip);
+  border-radius: 0;
   margin-block-start: 0;
 }
 
 /* Annotations. Backgrounds are token tints so they hold on either paper, and
    the marker column carries the meaning for anyone who cannot see the tint. */
 .prose pre .line.highlighted {
-  background-color: var(--color-chip);
-  box-shadow: inset 2px 0 0 var(--color-ink-light);
+  background-color: var(--color-hover-row);
+  box-shadow: inset 2px 0 0 var(--color-ink-3);
 }
 
 .prose pre .line.diff {
@@ -201,14 +199,13 @@
 }
 
 .prose pre .line.diff.add {
-  background-color: color-mix(in srgb, var(--color-tip) 12%, transparent);
-  color: var(--color-tip);
+  background-color: var(--color-diff-add-bg);
+  color: var(--color-diff-add);
 }
 
 .prose pre .line.diff.remove {
-  background-color: color-mix(in srgb, var(--color-caution) 12%, transparent);
-  color: var(--color-caution);
-  opacity: 0.75;
+  background-color: var(--color-diff-del-bg);
+  color: var(--color-diff-del);
 }
 
 .prose pre .line.diff::before {
@@ -229,13 +226,13 @@
 /* Error levels borrow the admonition hues, so a warning reads the same
    everywhere on the site. */
 .prose pre .line.error {
-  background-color: color-mix(in srgb, var(--color-caution) 12%, transparent);
-  box-shadow: inset 2px 0 0 var(--color-caution);
+  background-color: color-mix(in srgb, var(--color-ansi-red) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-ansi-red);
 }
 
 .prose pre .line.warning {
-  background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
-  box-shadow: inset 2px 0 0 var(--color-warning);
+  background-color: color-mix(in srgb, var(--color-ansi-yellow) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-ansi-yellow);
 }
 
 /* Focus dims everything else. Hovering the block restores it, so the rest of
@@ -243,7 +240,7 @@
 .prose pre.has-focused .line:not(.focused) {
   filter: blur(0.06rem);
   opacity: 0.5;
-  transition: filter var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+  transition: filter var(--motion-base) var(--ease-out), opacity var(--motion-base) var(--ease-out);
 }
 
 .prose pre.has-focused:hover .line:not(.focused) {
@@ -252,19 +249,19 @@
 }
 
 .prose pre .highlighted-word {
-  background-color: var(--color-chip);
+  background-color: var(--color-hover-row);
   border-radius: 2px;
   padding: 0.1em 0.2em;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .prose pre.has-focused .line:not(.focused) {
-    transition-duration: var(--dur-fast);
+    transition-duration: var(--motion-fast);
   }
 }
 
 .prose img {
-  border-radius: var(--radius-chip);
+  border-radius: 0;
 }
 
 /* A wide table scrolls inside the column. tabindex makes that scroll reachable
@@ -281,7 +278,7 @@
 
 .prose th,
 .prose td {
-  border-block-end: var(--border-hairline) solid var(--color-ink-light);
+  border-block-end: var(--border-hairline) solid var(--color-ink-3);
   padding-block: var(--space-2);
   padding-inline: var(--space-3) 0;
   text-align: start;
@@ -289,7 +286,7 @@
 }
 
 .prose th {
-  color: var(--color-ink-deep);
+  color: var(--color-ink);
   font-family: var(--font-mono);
   font-size: 0.75rem;
   /* 400: the only mono face that ships; uppercase and tracking carry the
@@ -316,10 +313,10 @@
 }
 
 /* Admonitions carry their type in a semantic hue on the label and the left
-   hairline only. Body text stays --color-ink, so a callout is marked without
+   hairline only. Body text stays --color-ink-2, so a callout is marked without
    the prose changing colour. */
 .admonition {
-  border-inline-start: var(--border-hairline) solid var(--admonition-color, var(--color-ink-light));
+  border-inline-start: var(--border-hairline) solid var(--admonition-color, var(--color-ink-3));
   padding-block: 0.15rem;
   padding-inline: var(--space-4) 0;
 }
@@ -330,7 +327,7 @@
 
 .admonition-label {
   align-items: center;
-  color: var(--admonition-color, var(--color-ink-deep));
+  color: var(--admonition-color, var(--color-ink));
   display: flex;
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -343,8 +340,8 @@
   flex: none;
 }
 
-.admonition-note { --admonition-color: var(--color-note); }
-.admonition-tip { --admonition-color: var(--color-tip); }
-.admonition-important { --admonition-color: var(--color-important); }
-.admonition-warning { --admonition-color: var(--color-warning); }
-.admonition-caution { --admonition-color: var(--color-caution); }
+.admonition-note { --admonition-color: var(--color-ansi-blue); }
+.admonition-tip { --admonition-color: var(--color-ansi-green); }
+.admonition-important { --admonition-color: var(--color-ansi-magenta); }
+.admonition-warning { --admonition-color: var(--color-ansi-yellow); }
+.admonition-caution { --admonition-color: var(--color-ansi-red); }

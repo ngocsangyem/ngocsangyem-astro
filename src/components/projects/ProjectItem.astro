@@ -30,7 +30,7 @@ const Tag = url ? 'a' : 'div';
   .icon {
     filter: grayscale(1);
     flex: none;
-    transition: filter var(--dur-fast) var(--ease-out);
+    transition: filter var(--motion-fast) var(--ease-out);
   }
 
   .item:hover .icon {
@@ -44,17 +44,17 @@ const Tag = url ? 'a' : 'div';
   }
 
   .name {
-    color: var(--color-ink);
+    color: var(--color-ink-2);
     font-weight: 500;
-    transition: color var(--dur-fast) var(--ease-out);
+    transition: color var(--motion-fast) var(--ease-out);
   }
 
   .item:hover .name {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 
   .description {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-size: 0.875rem;
     line-height: 1.5;
   }

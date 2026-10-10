@@ -72,31 +72,22 @@ export default defineConfig({
       name: 'Inter',
       cssVariable: '--font-inter',
       provider: fontProviders.fontsource(),
-      // 400 body, 500 labels/h4, 600 headings. Bold prose text resolves to
-      // 600 by CSS font matching, so a dedicated 700 face never ships.
+      // 400 body, 500 titles and headings, 600 strong prose text. Bold
+      // resolves to 600 by CSS font matching, so a 700 face never ships.
       weights: [400, 500, 600],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['system-ui', 'sans-serif'],
     },
     {
-      name: 'DM Mono',
-      cssVariable: '--font-dm-mono',
+      name: 'JetBrains Mono',
+      cssVariable: '--font-jetbrains-mono',
       provider: fontProviders.fontsource(),
-      weights: [400],
+      // 400 labels, nav and code; 500 the uppercase mono H2.
+      weights: [400, 500],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['ui-monospace', 'monospace'],
-    },
-    {
-      name: 'Roboto Condensed',
-      cssVariable: '--font-roboto-condensed',
-      provider: fontProviders.fontsource(),
-      // Chips are the only consumer and never render bold.
-      weights: [400],
-      styles: ['normal'],
-      subsets: ['latin'],
-      fallbacks: ['sans-serif'],
     },
   ],
 });

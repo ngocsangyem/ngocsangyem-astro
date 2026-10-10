@@ -5,7 +5,6 @@ import CdUpLink from "../components/base/CdUpLink.astro";
 import SocialRow from "../components/base/SocialRow.astro";
 import ReadingProgress from "../components/posts/ReadingProgress.astro";
 import ToTopLink from "../components/base/ToTopLink.astro";
-import BambooBackground from "./BambooBackground.astro";
 import { SITE } from "../config/site";
 import type { Post } from "../lib/posts";
 
@@ -19,8 +18,6 @@ interface Props {
   description?: string;
   /** Widens the main container so an article can use the margin beside it. */
   wide?: boolean;
-  /** Paints the bamboo grove behind the page instead of flat paper. */
-  background?: boolean;
   /** Handed to the head so an article can describe itself as one. */
   post?: Post;
   /**
@@ -36,7 +33,6 @@ const {
   title,
   description,
   wide = false,
-  background = false,
   post,
   socials = true,
   canvas = "prose",
@@ -52,21 +48,16 @@ const isWideCanvas = canvas === "wide";
   </head>
   <body>
     {
-      /* `auto` tracks the `data-theme` the head script stamps on <html>, so the
-       grove follows the toggle without a second source of truth. */
-    }
-    {background && <BambooBackground wind={0.55} animate once fixed theme="auto" />}
-    {
-      /* Outside <main> on purpose: the glass panel's backdrop-filter makes it
-        the containing block for any fixed descendant, which would pin the bar
-        to the panel's top edge and let it scroll away with the page. */
+      /* Outside <main> on purpose: a transformed or filtered ancestor would
+        become the containing block for this fixed bar and let it scroll away
+        with the page. */
     }
     {post && <ReadingProgress />}
     <a class="skip-link" href="#main">Skip to content</a>
     <Header wide={isWideCanvas} />
     <main
       id="main"
-      class:list={["page page-glass", { "page-wide": wide, "page-canvas-wide": isWideCanvas }]}
+      class:list={["page", { "page-wide": wide, "page-canvas-wide": isWideCanvas }]}
       data-pagefind-body
     >
       <slot />
