@@ -19,7 +19,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href.replace(/\/$/, ''
 // card cut for it by `pages/og/[id].png.ts`; everything else gets the artwork
 // those cards are cut from.
 const ogImage = new URL(
-  post ? `/og/${post.id}.png` : '/og-default-dark.png',
+  post ? `/og/${post.id}.png` : '/og-default.png',
   Astro.site,
 ).href;
 const ogImageAlt = post ? post.data.title : SITE.description;

@@ -32,7 +32,11 @@ progressive enhancement.
 - `/posts` · rows of mono date · sans title · mono reading time, 1px separators, no thumbnails, no summaries, grouped by year: a large outlined numeral (JetBrains Mono, 1px `--color-ink-3` stroke) with `N posts` in its own sticky column beside the rows from 48rem, above them below that. It never sits under text. Topic tabs swap the list with no sliding indicator.
 - `/tags` · one centred column of ruled rows, most-used first: `#name` large, `N posts` right, newest post title beneath.
 - Post page · one centred reading column, deliberately quieter than claude.dev (2026-10-11): topic line, H1, standfirst, one meta line (author · date · N min read). A small contents list sits in the right margin from 80rem, marked by a left rule on the section being read; below 80rem it is a disclosure under the hero. Tags and share links are one line each after the article. No side rail, no progress meter. Every post is also served as raw source at `/posts/<id>.md` for Copy markdown — MDX imports and components stay as written, since it is the source, not a rendering.
-- `/portfolio` · wide editorial résumé on the same tokens; no second visual identity.
+- `/portfolio` · wide editorial résumé on the same tokens; no second visual identity. The name keeps its large typographic setting (weight 500); the career route's travelled stroke is the accent, the rest muted ink.
+- `/projects` · one centred column, grouped by category (`Developer tools 2`), each project a ruled row: small greyscale icon, name with ↗, one-line description.
+- `/about` · the author's own heading and bio verbatim, in prose styles.
+- 404 · a fixed terminal scene (`❯ cd ~/this-page` / `cd: no such page`), then Home, Posts and the search key.
+- Social cards · `public/og-default.svg` is the single source (cream ground, ink title, accent rule, JetBrains Mono eyebrow, Inter 500 headline). Per-post cards substitute the title; `/og-default.png` is the template rasterised at build, so neither can drift from the artwork.
 
 ## Tokens (canonical source: `src/styles/tokens.css`)
 Ratios are WCAG contrast against `--color-bg` unless noted.

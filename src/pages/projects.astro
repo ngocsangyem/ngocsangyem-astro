@@ -4,18 +4,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectGrid from '../components/projects/ProjectGrid.astro';
 
 const projects = await getCollection('projects');
+const description = 'Things I have built.';
 ---
 
-<BaseLayout title="Projects" description="Things I have built.">
-  <div class="prose-column">
-    <h1>Projects</h1>
+<BaseLayout title="Projects" description={description}>
+  <div class="projects-page">
+    <header class="head">
+      <h1 class="page-title" data-enter>Projects</h1>
+      <p class="page-tagline" data-enter style="--enter-stage: 1">{description}</p>
+    </header>
     <ProjectGrid projects={projects} />
   </div>
 </BaseLayout>
 
 <style>
-  h1 {
-    font-size: 1.75rem;
-    margin-block: 1rem 3rem;
+  /* One centred column, like the other index pages. */
+  .projects-page {
+    margin-inline: auto;
+    max-inline-size: var(--prose-max-width);
+  }
+
+  .head {
+    margin-block: var(--space-8) var(--space-7);
   }
 </style>

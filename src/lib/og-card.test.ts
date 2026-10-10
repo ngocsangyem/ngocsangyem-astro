@@ -8,14 +8,14 @@ import { fitHeadline, renderCardSvg, type Measure } from './og-card';
  */
 const measure: Measure = (text, fontSize) => text.length * fontSize * 0.539;
 
-/** Stands in for `public/og-default-light.svg`: the two lines the substitution
+/** Stands in for `public/og-default.svg`: the two lines the substitution
  *  looks for, plus a sibling it must leave alone. */
-const HEADLINE_FILL = '#edf0f0';
+const HEADLINE_FILL = '#141413';
 const HEADLINE_FAMILY = 'Inter, sans-serif';
 
 const headlineLine = (y: number, text: string) =>
   `<text x="88" y="${y}" fill="${HEADLINE_FILL}" font-family="${HEADLINE_FAMILY}" ` +
-  `font-size="76" font-weight="600" letter-spacing="-1.5">${text}</text>\n  `;
+  `font-size="76" font-weight="500" letter-spacing="-1.5">${text}</text>\n  `;
 
 const template =
   '<svg>' +
@@ -80,6 +80,12 @@ describe('fitHeadline', () => {
 });
 
 describe('renderCardSvg', () => {
+  it('sets the title in the template headline weight, not a hard-coded one', () => {
+    const svg = renderCardSvg(template, { lines: ['A title'], fontSize: 76 });
+    expect(svg).toMatch(/font-size="76" font-weight="500"/);
+    expect(svg).not.toContain('font-weight="600"');
+  });
+
   it('reproduces the template geometry for a two-line headline', () => {
     const svg = renderCardSvg(template, { lines: ['Notes on the', 'craft of the web'], fontSize: 76 });
     expect(headlineBaselines(svg)).toEqual([360, 445]);

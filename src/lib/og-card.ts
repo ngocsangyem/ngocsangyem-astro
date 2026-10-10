@@ -1,6 +1,6 @@
 /**
  * Per-post social card, built by substituting a title into the hand-authored
- * template at `public/og-default-light.svg`.
+ * template at `public/og-default.svg`.
  *
  * The template is the single design source: colours, the eyebrow row, the rule
  * and the signature all stay where they were drawn. Only the two headline lines
@@ -124,6 +124,9 @@ export function renderCardSvg(template: string, headline: Headline): string {
   // file and nothing in this module has to know which one it got.
   const fill = found[0].match(/\bfill="([^"]+)"/)?.[1];
   const family = found[0].match(/\bfont-family="([^"]+)"/)?.[1];
+  // The weight too: the artwork is the design source, so its headline weight
+  // is what the substituted title is set in.
+  const weight = found[0].match(/\bfont-weight="([^"]+)"/)?.[1] ?? '500';
   if (!fill || !family) {
     throw new Error('og card template: headline line carries no fill or font-family');
   }
@@ -142,7 +145,7 @@ export function renderCardSvg(template: string, headline: Headline): string {
       const y = lastBaseline - (lines.length - 1 - index) * leading;
       return (
         `<text x="${TEXT_X}" y="${y}" fill="${fill}" font-family="${family}" ` +
-        `font-size="${fontSize}" font-weight="600" letter-spacing="${tracking}">` +
+        `font-size="${fontSize}" font-weight="${weight}" letter-spacing="${tracking}">` +
         `${escapeXml(line)}</text>`
       );
     })

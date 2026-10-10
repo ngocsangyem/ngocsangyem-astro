@@ -10,10 +10,18 @@ const { name, description, url, icon } = project.data;
 const Tag = url ? 'a' : 'div';
 ---
 
+{
+  /* A ruled row: small greyscale icon, name, one-sentence description. The
+     row is the link; an external one ends in ↗. Hover is a row fill, never
+     a colour pop or movement. */
+}
 <Tag class="item" href={url} rel={url ? 'noopener' : undefined}>
-  {icon && <img class="icon" src={`/icons/${icon}`} alt="" width="28" height="28" />}
+  {icon && <img class="icon" src={`/icons/${icon}`} alt="" width="20" height="20" />}
   <span class="text">
-    <span class="name">{name}</span>
+    <span class="name">
+      {name}
+      {url && <span class="ext" aria-hidden="true">↗</span>}
+    </span>
     <span class="description">{description}</span>
   </span>
 </Tag>
@@ -23,39 +31,40 @@ const Tag = url ? 'a' : 'div';
     align-items: flex-start;
     display: flex;
     gap: var(--space-3);
-    padding-block: var(--space-3);
+    padding: var(--space-4) var(--space-2);
     text-decoration: none;
+  }
+
+  a.item:hover {
+    background-color: var(--color-hover-row);
   }
 
   .icon {
     filter: grayscale(1);
     flex: none;
-    transition: filter var(--motion-fast) var(--ease-out);
-  }
-
-  .item:hover .icon {
-    filter: grayscale(0);
+    margin-block-start: 0.15rem;
   }
 
   .text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
+    display: grid;
+    gap: var(--space-1);
   }
 
   .name {
-    color: var(--color-ink-2);
+    color: var(--color-ink);
+    font-size: var(--text-ui);
     font-weight: 500;
-    transition: color var(--motion-fast) var(--ease-out);
   }
 
-  .item:hover .name {
-    color: var(--color-ink);
+  .ext {
+    color: var(--color-ink-3);
+    font-size: 0.8em;
+    margin-inline-start: 0.25em;
   }
 
   .description {
     color: var(--color-ink-3);
-    font-size: 0.875rem;
+    font-size: var(--text-label);
     line-height: 1.5;
   }
 </style>

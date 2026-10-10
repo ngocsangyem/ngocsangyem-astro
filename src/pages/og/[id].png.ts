@@ -6,12 +6,11 @@
  * post the site does not publish, and its title cannot drift from the heading.
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { Resvg } from '@resvg/resvg-js';
 import { getPublishedPosts, type Post } from '../../lib/posts';
 import { getCardFonts } from '../../lib/og-fonts';
-import { CARD_HEIGHT, CARD_WIDTH, fitHeadline, renderCardSvg, type Measure } from '../../lib/og-card';
+import { fitHeadline, renderCardSvg, type Measure } from '../../lib/og-card';
+import { cardResponse, loadCardTemplate } from '../../lib/og-raster';
 
 // opentype.js resolves to CommonJS here, which exposes nothing as a named
 // export. Requiring it keeps the boundary explicit and the types intact.
@@ -22,18 +21,11 @@ const { parse } = createRequire(import.meta.url)(
 /** Letter-spacing the artwork sets on the headline, per px of font size. */
 const TRACKING_PER_PX = -1.5 / 76;
 
-/**
- * The artwork the cards are cut from, and the fallback for every other page.
- * Its light counterpart sits beside it; swapping this path is the whole change.
- */
-const TEMPLATE = 'public/og-default-dark.svg';
-
 export const getStaticPaths = (async () => {
   const posts = await getPublishedPosts();
   return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
 }) satisfies GetStaticPaths;
 
-let template: Promise<string> | null = null;
 let measure: Promise<Measure> | null = null;
 
 function loadMeasure(): Promise<Measure> {
@@ -65,31 +57,6 @@ function loadMeasure(): Promise<Measure> {
 }
 
 export const GET: APIRoute<{ post: Post }> = async ({ props }) => {
-  template ??= readFile(TEMPLATE, 'utf8');
-
-  const [svgTemplate, measureText, { fontFiles }] = await Promise.all([
-    template,
-    loadMeasure(),
-    getCardFonts(),
-  ]);
-
-  const svg = renderCardSvg(svgTemplate, fitHeadline(props.post.data.title, measureText));
-
-  const png = new Resvg(svg, {
-    // System fonts are whatever the build host happens to carry, which is not
-    // the same on a laptop and on a deploy runner. Only the cached faces count.
-    font: { fontFiles, loadSystemFonts: false, defaultFontFamily: 'Inter' },
-    fitTo: { mode: 'width', value: CARD_WIDTH },
-  })
-    .render()
-    .asPng();
-
-  // Uint8Array rather than Buffer: only the former is a BodyInit.
-  return new Response(new Uint8Array(png), {
-    headers: {
-      'Content-Type': 'image/png',
-      'Content-Length': String(png.length),
-      'X-Card-Size': `${CARD_WIDTH}x${CARD_HEIGHT}`,
-    },
-  });
+  const [svgTemplate, measureText] = await Promise.all([loadCardTemplate(), loadMeasure()]);
+  return cardResponse(renderCardSvg(svgTemplate, fitHeadline(props.post.data.title, measureText)));
 };

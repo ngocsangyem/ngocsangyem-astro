@@ -2,7 +2,7 @@
 import { SITE } from '../../config/site';
 ---
 
-<section class="contact" aria-labelledby="contact-title" data-enter>
+<section class="contact" aria-labelledby="contact-title">
   <p>If you think we would work well together, write to me.</p>
   <h2 id="contact-title">
     <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
@@ -19,7 +19,7 @@ import { SITE } from '../../config/site';
 
 <style>
   .contact {
-    border-block-start: var(--border-hairline) solid color-mix(in srgb, var(--color-ink-3) 35%, transparent);
+    border-block-start: var(--border-hairline) solid var(--color-line);
     padding-block: clamp(5rem, 12vw, 10rem) var(--space-10);
   }
 

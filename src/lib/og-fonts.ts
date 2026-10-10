@@ -40,7 +40,7 @@ const FAMILIES = ['--font-inter', '--font-jetbrains-mono'] as const satisfies re
 
 /** What the template sets the headline in, and so what it is measured against. */
 const HEADLINE_FAMILY: CssVariable = '--font-inter';
-const HEADLINE_WEIGHT = '600';
+const HEADLINE_WEIGHT = '500';
 
 type Face = (typeof fontData)[CssVariable][number];
 
