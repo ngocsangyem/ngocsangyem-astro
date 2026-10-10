@@ -2,7 +2,7 @@
 import Head from "../components/base/Head.astro";
 import Header from "../components/base/Header.astro";
 import CdUpLink from "../components/base/CdUpLink.astro";
-import SocialRow from "../components/base/SocialRow.astro";
+import SiteFooter from "../components/base/SiteFooter.astro";
 import ReadingProgress from "../components/posts/ReadingProgress.astro";
 import ToTopLink from "../components/base/ToTopLink.astro";
 import { SITE } from "../config/site";
@@ -21,8 +21,8 @@ interface Props {
   /** Handed to the head so an article can describe itself as one. */
   post?: Post;
   /**
-   * `false` drops the footer contact line. For a page that already shows the
-   * same links itself, so they are not offered twice on one screen.
+   * `false` drops the footer's social links and email. For a page that already
+   * shows the same links itself, so they are not offered twice on one screen.
    */
   socials?: boolean;
   /** Expands both page chrome and content for editorial compositions. */
@@ -54,7 +54,7 @@ const isWideCanvas = canvas === "wide";
     }
     {post && <ReadingProgress />}
     <a class="skip-link" href="#main">Skip to content</a>
-    <Header wide={isWideCanvas} />
+    <Header />
     <main
       id="main"
       class:list={["page", { "page-wide": wide, "page-canvas-wide": isWideCanvas }]}
@@ -63,7 +63,7 @@ const isWideCanvas = canvas === "wide";
       <slot />
     </main>
     <CdUpLink />
-    {socials && <SocialRow />}
+    <SiteFooter socials={socials} />
     {
       /* Last in the DOM so it lands last in the tab order, after the page's own
         links, rather than interrupting them from a fixed corner. */

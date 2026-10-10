@@ -38,7 +38,7 @@ export default defineConfig({
     // typo'd name fails the build instead of rendering an empty box.
     icon({
       include: {
-        lucide: ['sun', 'moon', 'search', 'arrow-up', 'chevron-right', 'text-align-start'],
+        lucide: ['sun', 'moon', 'chevron-right', 'text-align-start'],
         'simple-icons': ['github', 'linkedin'],
       },
     }),

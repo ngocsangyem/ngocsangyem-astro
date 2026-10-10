@@ -27,7 +27,8 @@ const label = target === '/' ? 'cd .. (back to the home page)' : `cd .. (back to
     color: var(--color-ink-3);
     display: inline-flex;
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
     gap: 0.4rem;
     text-decoration: none;
     transition: color var(--motion-fast) var(--ease-out);

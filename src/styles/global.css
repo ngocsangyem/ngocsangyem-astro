@@ -3,7 +3,7 @@
    the gutters and the spacing scale. */
 :root {
   --page-gutter: 1.5rem;
-  --header-height: 4rem;
+  --header-height: 4.5rem;
 
   /* Shared layout scale. These stay beside the page-level constants rather
      than the canonical visual tokens because they describe reusable geometry,
@@ -232,6 +232,19 @@ time,
 @media (prefers-reduced-motion: reduce) {
   .skip-link {
     transition: none;
+  }
+}
+
+/* Printed hotkey hint, `[K]`. Same colour as its label: the letter carries
+   information, so it never drops to the decorative ink. A device with no
+   keyboard to press it with has no use for the hint. */
+.k {
+  color: inherit;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .k {
+    display: none;
   }
 }
 

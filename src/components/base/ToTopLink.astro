@@ -3,12 +3,11 @@
    navigation anyway. `scroll-behavior: smooth` on `html` already carries the
    travel, and it is declared under `prefers-reduced-motion: no-preference`, so
    a reader who asked for less motion gets an instant jump for free. */
-import { Icon } from 'astro-icon/components';
 ---
 
 <div class="to-top-rail" data-pagefind-ignore>
-  <a class="to-top" href="#top" aria-label="Back to top" title="Back to top">
-    <Icon name="lucide:arrow-up" size={18} aria-hidden="true" />
+  <a class="to-top" href="#top" aria-label="Back to top">
+    <span aria-hidden="true">↑</span>Top
   </a>
 </div>
 
@@ -35,7 +34,6 @@ import { Icon } from 'astro-icon/components';
     position: absolute;
     inset-block: 100vh 0;
     inset-inline-end: var(--page-gutter);
-    inline-size: var(--control-size);
     z-index: 3;
     /* The rail spans nearly the whole document, so it must never swallow a
        click meant for the text underneath it. */
@@ -45,26 +43,26 @@ import { Icon } from 'astro-icon/components';
     justify-content: flex-end;
   }
 
-  /* Lucide bakes stroke-width 2 into the paths; keep the lighter line the
-     hand-drawn arrow had. */
-  .to-top :global(svg *) {
-    stroke-width: 1.5;
-  }
-
   .to-top {
     position: sticky;
     inset-block-end: var(--space-4);
     align-items: center;
-    /* Opaque page tone, because this is sticky: page text scrolls under the
-       icon, and a bare glyph over running text has nothing to hold it. */
+    /* Opaque page tone plus a line, because this is sticky: page text scrolls
+       under the label, and bare text over running text has nothing to hold it. */
     background: var(--color-bg);
+    border: var(--border-hairline) solid var(--color-line);
     color: var(--color-ink-3);
     display: flex;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    gap: 0.4em;
     block-size: var(--control-size);
-    justify-content: center;
+    letter-spacing: var(--tracking-label);
+    padding-inline: var(--space-3);
     pointer-events: auto;
+    text-decoration: none;
+    text-transform: uppercase;
     transition: color var(--motion-fast) var(--ease-out);
-    inline-size: var(--control-size);
   }
 
   .to-top:hover {

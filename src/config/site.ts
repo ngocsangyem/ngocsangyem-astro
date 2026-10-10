@@ -1,6 +1,11 @@
 export interface NavLink {
   label: string;
   href: string;
+  /**
+   * Single-letter shortcut, printed beside the label as `[K]` and stamped on
+   * the link as `data-hotkey` for the keyboard layer to resolve.
+   */
+  key: string;
 }
 
 export interface SiteSocial {
@@ -25,16 +30,18 @@ export const SITE = {
   author: 'Sang Nguyen',
   lang: 'en',
   nav: [
-    { label: 'Posts', href: '/posts' },
-    { label: 'Projects', href: '/projects' },
-    { label: 'Portfolio', href: '/portfolio' },
-    { label: 'About', href: '/about' },
+    { label: 'Posts', href: '/posts', key: 'P' },
+    { label: 'Projects', href: '/projects', key: 'O' },
+    { label: 'Portfolio', href: '/portfolio', key: 'F' },
+    { label: 'About', href: '/about', key: 'A' },
   ] satisfies NavLink[],
+  /** Shortcuts for the chrome controls that are not nav links. */
+  hotkeys: { home: 'H', search: 'S' },
   socials: [
     { label: 'GitHub', href: 'https://github.com/ngocsangyem', icon: 'github' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/ngocsangyem/', icon: 'linkedin' },
   ] satisfies SiteSocial[],
-  /** Rendered in JetBrains Mono under the social row. */
+  /** Rendered in the site footer. */
   email: 'nnsang24@gmail.com',
   /**
    * Home greeting, first person, one or two lines. The home page omits the
