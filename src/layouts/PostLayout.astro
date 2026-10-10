@@ -25,7 +25,9 @@ const entries = post.data.toc && outline.length > 1 ? outline : [];
 ---
 
 <BaseLayout title={post.data.title} description={getDescription(post)} post={post}>
-  <article class="post">
+  {/* Search indexes articles only: once any page marks a body, Pagefind
+      skips every page that does not, so listings and the 404 stay out. */}
+  <article class="post" data-pagefind-body>
     <PostHero post={post} minutesRead={minutesRead} />
 
     {

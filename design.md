@@ -116,7 +116,7 @@ Fonts: the Fonts API owns `--font-inter` (400/500/600) and `--font-jetbrains-mon
 
 ## Features
 - Tags + tag pages · RSS · light/dark toggle (`[data-theme]`, respects `prefers-color-scheme`, persisted) · contents list.
-- **Search · Pagefind**, re-skinned as a FINDER command palette (`S`, `/`, `⌘K`); Pagefind keeps the index, ranking and keyboard behaviour.
+- **Search · Pagefind**, framed as a command palette labelled Search with a `❯` prompt (`S`, `/`, `⌘K`; ⌘K again closes). Pagefind keeps the index, ranking and keyboard behaviour. Esc in the field clears the query, then closes; Esc anywhere else closes. Only articles are indexed: `data-pagefind-body` sits on the article, so listings, tag pages and the 404 never appear in results.
 - **`<TerminalDemo>`** MDX component: a scripted Claude Code session (prompt → tool → spinner → output → completion) that plays on viewport entry.
 - No comments, no analytics, no newsletter.
 

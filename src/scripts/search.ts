@@ -59,6 +59,18 @@ function loadUi(): Promise<void> {
   return loading;
 }
 
+/**
+ * Pagefind announces result counts through live regions it appends to
+ * <body>. While the modal is open everything outside it is inert, so those
+ * announcements would never be spoken. The regions are moved into the dialog
+ * (Pagefind keeps its own references to them, so moving is safe). They may be
+ * created lazily on the first search, hence the call on input as well.
+ */
+function adoptAnnouncer(): void {
+  const announcer = document.querySelector('[data-pagefind-announcer]');
+  if (dialog && announcer && announcer.parentElement !== dialog) dialog.append(announcer);
+}
+
 async function open(): Promise<void> {
   if (!dialog || dialog.open) return;
   dialog.showModal();
@@ -76,8 +88,11 @@ async function open(): Promise<void> {
     }
     return;
   }
+  adoptAnnouncer();
   dialog.querySelector('pagefind-input')?.querySelector('input')?.focus();
 }
+
+dialog?.addEventListener('input', () => requestAnimationFrame(adoptAnnouncer));
 
 trigger?.addEventListener('click', () => void open());
 
@@ -86,7 +101,46 @@ dialog?.addEventListener('click', (event) => {
   if (event.target === dialog) dialog.close();
 });
 
+/*
+ * Esc clears, then closes. Pagefind's input clears its own query on Esc but
+ * does not cancel the key, so the native dialog would close on the same press.
+ * Whether there was a query is read in the capture phase, before Pagefind
+ * empties the field, and a press that had one does not close the dialog.
+ */
+let escapeHadQuery = false;
+dialog?.addEventListener(
+  'keydown',
+  (event) => {
+    if (event.key !== 'Escape') return;
+    const input = dialog.querySelector<HTMLInputElement>('pagefind-input input');
+    // Only a press in the field clears it; from a result link Pagefind clears
+    // nothing, so that press must close. Esc that ends an IME composition is
+    // the input method's, not ours.
+    escapeHadQuery = event.target === input && !event.isComposing && Boolean(input?.value);
+  },
+  true,
+);
+dialog?.addEventListener('cancel', (event) => {
+  if (escapeHadQuery) event.preventDefault();
+  escapeHadQuery = false;
+});
+// A press that never reaches `cancel` must not leave the flag set for the next.
+dialog?.addEventListener('keyup', (event) => {
+  if (event.key === 'Escape') escapeHadQuery = false;
+});
+
 document.addEventListener('keydown', (event) => {
+  // Lowercased so Shift or Caps Lock does not defeat ⌘K.
+  const commandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+
+  // ⌘K toggles: pressed again inside the palette, it closes it. It is always
+  // the site's, so the browser's own Ctrl+K never fires on top of an overlay.
+  if (commandK) event.preventDefault();
+  if (commandK && dialog?.open) {
+    dialog.close();
+    return;
+  }
+
   // Any modal, not only this one: the shortcut overlay owns the keyboard too.
   if (document.querySelector('dialog[open]')) return;
 
@@ -94,11 +148,9 @@ document.addEventListener('keydown', (event) => {
 
   // `/` is a single-character shortcut, so it obeys the reader's OFF switch
   // (WCAG 2.1.4); ⌘K carries a modifier and stays live. The letter `S` belongs
-  // to the hotkey registry, which clicks the trigger. Lowercased so Shift or
-  // Caps Lock does not defeat ⌘K.
+  // to the hotkey registry, which clicks the trigger.
   const bare = !event.ctrlKey && !event.altKey && !event.metaKey;
   const slash = bare && event.key === '/' && document.documentElement.dataset.hotkeys !== HOTKEYS_OFF;
-  const commandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
   if (!slash && !commandK) return;
 
   event.preventDefault();

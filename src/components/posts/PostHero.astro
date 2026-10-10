@@ -20,10 +20,11 @@ const standfirst = post.data.description?.trim();
      and one quiet meta line, closed by a hairline. */
 }
 <header class="hero">
-  {firstTag && <a class="topic mono-label" href={tagUrl(firstTag.slug)} data-enter>{firstTag.label}</a>}
+  {firstTag && <a class="topic mono-label" href={tagUrl(firstTag.slug)} data-enter data-pagefind-ignore>{firstTag.label}</a>}
   <h1 class="title" data-enter style="--enter-stage: 1">{post.data.title}</h1>
   {standfirst && <p class="standfirst" data-enter style="--enter-stage: 2">{standfirst}</p>}
-  <p class="meta" data-enter style="--enter-stage: 3">
+  {/* Chrome, not content: kept out of search excerpts. */}
+  <p class="meta" data-enter style="--enter-stage: 3" data-pagefind-ignore>
     <span>{SITE.author}</span>
     <span aria-hidden="true">·</span>
     <time datetime={toISODate(post.data.date)}>{formatDateShort(post.data.date)}</time>

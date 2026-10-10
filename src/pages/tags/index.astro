@@ -34,13 +34,12 @@ const description = 'Every subject written about here.';
                   <span class="count num">
                     {tag.count} {tag.count === 1 ? 'post' : 'posts'}
                   </span>
-                  {tag.latest && (
-                    <span class="latest">
-                      <span class="visually-hidden">Latest: </span>
-                      {tag.latest.data.title}
-                    </span>
-                  )}
                 </a>
+                {
+                  /* Outside the link, so a link to a tag is not named after a
+                     post; the link's ::after still covers the whole row. */
+                  tag.latest && <p class="latest">Latest: {tag.latest.data.title}</p>
+                }
               </li>
             ))}
           </ul>
@@ -75,20 +74,29 @@ const description = 'Every subject written about here.';
 
   .tags li {
     border-block-end: var(--border-hairline) solid var(--color-line-soft);
+    position: relative;
   }
 
   /* One link per tag: name and count on the first line, the newest post's
      title under it. Hover is a row fill, never movement. */
   .tags a {
+    align-items: baseline;
     column-gap: var(--space-4);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    padding: var(--space-4) var(--space-2);
-    row-gap: var(--space-1);
+    padding: var(--space-4) var(--space-2) 0;
     text-decoration: none;
   }
 
-  .tags a:hover {
+  /* The link covers the whole row, latest line included, so hover and click
+     still work across it. */
+  .tags a::after {
+    content: '';
+    inset: 0;
+    position: absolute;
+  }
+
+  .tags li:hover {
     background-color: var(--color-hover-row);
   }
 
@@ -117,8 +125,9 @@ const description = 'Every subject written about here.';
   .latest {
     color: var(--color-ink-3);
     font-size: var(--text-label);
-    grid-column: 1 / -1;
     line-height: 1.4;
+    margin: var(--space-1) 0 0;
+    padding: 0 var(--space-2) var(--space-4);
   }
 
   .empty {

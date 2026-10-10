@@ -5,8 +5,10 @@
 const isProd = import.meta.env.PROD;
 
 import { SITE } from '../../config/site';
+import { getPublishedPosts } from '../../lib/posts';
 
 const key = SITE.hotkeys.search;
+const total = (await getPublishedPosts()).length;
 ---
 
 <button
@@ -18,14 +20,31 @@ const key = SITE.hotkeys.search;
   <span class="k" aria-hidden="true">[{key}]</span>Search
 </button>
 
-<dialog id="search-dialog" aria-label="Search this site" data-pagefind-ignore>
+{
+  /* A command palette in the site's own voice: a label, a prompt, Pagefind's
+     searchbox and results, and a footer that states the real keys. Pagefind
+     keeps indexing, ranking and keyboard navigation; this only frames it. */
+}
+<dialog id="search-dialog" aria-labelledby="search-title" data-pagefind-ignore>
   <div class="shell">
+    {/* Divs, not header/footer: inside a dialog those would still map to
+        banner and contentinfo landmarks. */}
+    <div class="head">
+      <h2 id="search-title" class="mono-label">Search</h2>
+      <form method="dialog">
+        <button class="close mono-label" type="submit">Close <kbd aria-hidden="true">Esc</kbd></button>
+      </form>
+    </div>
+
     {
       isProd ? (
         <>
           <p class="status" data-search-status>Loading search…</p>
           <div class="ui" data-search-ui hidden>
-            <pagefind-input></pagefind-input>
+            <div class="prompt">
+              <span class="caret" aria-hidden="true">❯</span>
+              <pagefind-input></pagefind-input>
+            </div>
             <pagefind-summary></pagefind-summary>
             <pagefind-results></pagefind-results>
           </div>
@@ -37,6 +56,13 @@ const key = SITE.hotkeys.search;
         </p>
       )
     }
+
+    <div class="foot mono-label">
+      <span class="key-hint"><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span class="key-hint"><kbd>↵</kbd> open</span>
+      <span class="key-hint"><kbd>Esc</kbd> clear, then close</span>
+      <span class="total num">{total} {total === 1 ? 'post' : 'posts'}</span>
+    </div>
   </div>
 </dialog>
 
@@ -62,19 +88,21 @@ const key = SITE.hotkeys.search;
 
   dialog {
     background-color: var(--color-bg);
-    border: 1px solid var(--color-line-soft);
+    border: var(--border-hairline) solid var(--color-line);
     border-radius: 0;
     color: var(--color-ink-2);
-    margin-inline: auto;
-    margin-block-start: 12vh;
-    max-block-size: 70vh;
-    max-inline-size: min(38rem, calc(100vw - var(--space-6)));
-    padding: 0;
     inline-size: 100%;
+    margin-block-start: 12vh;
+    margin-inline: auto;
+    max-block-size: 76vh;
+    max-inline-size: min(40rem, calc(100vw - var(--space-6)));
+    padding: 0;
 
-    /* Pagefind's own dark rules key off [data-pf-theme]; defining the tokens on
-       the dialog keeps site theme and OS theme independent. */
+    /* Pagefind's component UI reads these; nothing of its own palette shows. */
     --pf-font: var(--font-sans);
+    --pf-text: var(--color-ink);
+    --pf-text-secondary: var(--color-ink-2);
+    --pf-text-muted: var(--color-ink-3);
     --pf-background: var(--color-bg);
     --pf-border: var(--color-line-soft);
     --pf-border-focus: var(--color-focus);
@@ -83,34 +111,258 @@ const key = SITE.hotkeys.search;
     --pf-mark: var(--color-ink);
     --pf-outline-focus: var(--color-focus);
     --pf-skeleton: var(--color-hover-row);
-    --pf-modal-backdrop: transparent;
+    --pf-skeleton-shine: var(--color-bg-raised);
+    --pf-input-font-size: var(--text-ui);
+    --pf-result-title-font-size: var(--text-ui);
+    --pf-result-excerpt-font-size: var(--text-label);
+    --pf-summary-font-size: var(--text-label);
+    --pf-scroll-shadow: none;
     --pf-shadow-sm: none;
     --pf-shadow-md: none;
     --pf-shadow-lg: none;
+  }
+
+  dialog[open] {
+    animation: reveal var(--motion-base) var(--ease-out) both;
   }
 
   dialog::backdrop {
     background-color: rgb(0 0 0 / 0.4);
   }
 
+  /* The dialog's own border sits inside its 76vh, so the shell is that much
+     shorter; otherwise the dialog overflows by 2px and scrolls itself. */
   .shell {
-    padding: var(--space-4);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    max-block-size: calc(76vh - 2 * var(--border-hairline));
+  }
+
+  /* No keyboard, no key hints; the post count stays. */
+  @media (hover: none), (pointer: coarse) {
+    .key-hint {
+      display: none;
+    }
+  }
+
+  .head,
+  .foot {
+    align-items: center;
+    display: flex;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .head {
+    border-block-end: var(--border-hairline) solid var(--color-line-soft);
+    justify-content: space-between;
+  }
+
+  .head h2 {
+    margin: 0;
+  }
+
+  .close {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .close:hover {
+    color: var(--color-ink);
+  }
+
+  kbd {
+    color: var(--color-ink);
+    font-family: inherit;
+  }
+
+  .foot {
+    border-block-start: var(--border-hairline) solid var(--color-line-soft);
+    flex-wrap: wrap;
+    font-size: var(--text-caption);
+    gap: var(--space-2) var(--space-5);
+  }
+
+  .foot kbd + kbd {
+    margin-inline-start: 0.2em;
+  }
+
+  .total {
+    margin-inline-start: auto;
   }
 
   .status {
     color: var(--color-ink-3);
-    font-size: 0.875rem;
+    font-size: var(--text-label);
     line-height: 1.6;
     margin: 0;
+    padding: var(--space-4);
   }
 
   .status code {
-    font-size: 0.8125rem;
+    font-size: var(--text-label);
   }
 
   .ui {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    min-block-size: 0;
+    overflow-y: auto;
+    padding: var(--space-4);
+  }
+
+  .ui[hidden] {
+    display: none;
+  }
+
+  .prompt {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .caret {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+  }
+
+  .prompt :global(pagefind-input) {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    dialog[open] {
+      animation: none;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Pagefind's own markup, styled from outside. It renders into light DOM with
+     documented .pf-* classes, but every rule of its stylesheet is wrapped in
+     `:is(*, #\#)` three times (three ids of specificity) so pages cannot
+     override it by accident. Repeating this dialog's id four times wins on
+     purpose, without forking the component or reaching for !important. */
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-input-wrapper::before {
+    display: none;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-input {
+    border: var(--border-hairline) solid var(--color-line);
+    color: var(--color-ink);
+    padding-inline-start: var(--space-3);
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-input-clear,
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-input-clear:hover,
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-skeleton {
+    border-radius: 0;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-input-clear {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    text-transform: uppercase;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-summary {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+  }
+
+  /* Results as ruled rows, like every other list on the site. */
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-results {
+    border-block-start: var(--border-hairline) solid var(--color-line-soft);
+    display: grid;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-result {
+    border-block-end: var(--border-hairline) solid var(--color-line-soft);
+    gap: 0;
+    padding-block: var(--space-3);
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-result-card {
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-result-image {
+    display: none;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-result-title {
+    margin: 0;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-result-link {
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-result-link:hover,
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-heading-link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-result-excerpt,
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-heading-excerpt {
+    color: var(--color-ink-3);
+    font-size: var(--text-label);
+    line-height: 1.5;
+    margin: var(--space-1) 0 0;
+    /* Pagefind truncates excerpts to one line; two short lines read better. */
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog mark {
+    background: none;
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  /* Matching sections hang under their post on a left rule, like the article
+     contents list: no cards, no `#` prefix. */
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-heading-chips {
+    border-inline-start: var(--border-hairline) solid var(--color-line-soft);
+    display: grid;
+    gap: var(--space-2);
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: 0 0 0 var(--space-3);
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-heading-chip {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    display: grid;
+    padding: 0;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-heading-link {
+    color: var(--color-ink-2);
+    font-size: var(--text-label);
+    text-decoration: none;
+  }
+
+  #search-dialog#search-dialog#search-dialog#search-dialog .pf-heading-link::before {
+    content: none;
   }
 </style>
