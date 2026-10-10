@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { fitHeadline, renderCardSvg, type Measure } from './og-card';
+import { fitHeadline, HEADLINE_WEIGHT, renderCardSvg, type Measure } from './og-card';
 
 /**
  * A fixed advance per character, so a width is a character count and every
@@ -8,14 +9,14 @@ import { fitHeadline, renderCardSvg, type Measure } from './og-card';
  */
 const measure: Measure = (text, fontSize) => text.length * fontSize * 0.539;
 
-/** Stands in for `public/og-default-light.svg`: the two lines the substitution
+/** Stands in for `public/og-default.svg`: the two lines the substitution
  *  looks for, plus a sibling it must leave alone. */
-const HEADLINE_FILL = '#edf0f0';
+const HEADLINE_FILL = '#141413';
 const HEADLINE_FAMILY = 'Inter, sans-serif';
 
 const headlineLine = (y: number, text: string) =>
   `<text x="88" y="${y}" fill="${HEADLINE_FILL}" font-family="${HEADLINE_FAMILY}" ` +
-  `font-size="76" font-weight="600" letter-spacing="-1.5">${text}</text>\n  `;
+  `font-size="76" font-weight="500" letter-spacing="-1.5">${text}</text>\n  `;
 
 const template =
   '<svg>' +
@@ -80,6 +81,25 @@ describe('fitHeadline', () => {
 });
 
 describe('renderCardSvg', () => {
+  it('sets the title in the template headline weight, not a hard-coded one', () => {
+    const heavy = template.replaceAll('font-weight="500"', 'font-weight="700"');
+    const svg = renderCardSvg(heavy, { lines: ['A title'], fontSize: 76 });
+    expect(svg).toMatch(/font-size="76" font-weight="700"/);
+  });
+
+  it('refuses a template whose headline has no weight', () => {
+    const bare = template.replaceAll(' font-weight="500"', '');
+    expect(() => renderCardSvg(bare, { lines: ['A title'], fontSize: 76 })).toThrow(/font-weight/);
+  });
+
+  // The fonts module measures titles in HEADLINE_WEIGHT; the artwork must draw
+  // them in the same face, or long titles are wrapped against the wrong widths.
+  it('matches the real template headline weight', () => {
+    const artwork = readFileSync('public/og-default.svg', 'utf8');
+    const weights = [...artwork.matchAll(/font-size="76"[^>]*font-weight="([^"]+)"/g)].map((m) => m[1]);
+    expect(weights).toEqual([HEADLINE_WEIGHT, HEADLINE_WEIGHT]);
+  });
+
   it('reproduces the template geometry for a two-line headline', () => {
     const svg = renderCardSvg(template, { lines: ['Notes on the', 'craft of the web'], fontSize: 76 });
     expect(headlineBaselines(svg)).toEqual([360, 445]);
@@ -139,7 +159,7 @@ describe('renderCardSvg', () => {
     const bare =
       '<svg><text font-size="76">a</text><text font-size="76">b</text></svg>';
     expect(() => renderCardSvg(bare, { lines: ['x'], fontSize: 76 })).toThrow(
-      /no fill or font-family/,
+      /no fill, font-family or font-weight/,
     );
   });
 

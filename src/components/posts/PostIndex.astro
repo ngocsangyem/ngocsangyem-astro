@@ -1,0 +1,69 @@
+---
+import type { Post, Tag } from '../../lib/posts';
+import PostList from './PostList.astro';
+import TopicTabs from './TopicTabs.astro';
+
+interface Props {
+  title: string;
+  tagline: string;
+  /** Every post this index lists; there is no LOAD MORE here. */
+  posts: Post[];
+  minutes: Map<string, number>;
+  topTags: Tag[];
+  /** Size of the whole archive, for the ALL tab. */
+  total: number;
+  current?: string;
+  extra?: Tag;
+}
+
+const { title, tagline, posts, minutes, topTags, total, current, extra } = Astro.props;
+---
+
+{
+  /* The archive index shared by /posts and each /tags/[tag] page: the same
+     template with a different tab selected, complete without script. */
+}
+<div class="index">
+  <header class="head">
+    <h1 class="page-title" data-enter>{title}</h1>
+    <p class="page-tagline" data-enter style="--enter-stage: 1">{tagline}</p>
+  </header>
+
+  <div class="body">
+    <aside class="filters">
+      <TopicTabs tags={topTags} total={total} current={current} extra={extra} column />
+    </aside>
+    <PostList posts={posts} minutes={minutes} grouped />
+  </div>
+</div>
+
+<style>
+  .head {
+    margin-block: var(--space-8) var(--space-7);
+  }
+
+  .body {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  /* Greptile-style: a sticky filter column beside the list on wide screens,
+     a tab row above it below that. */
+  @media (min-width: 64rem) {
+    .body {
+      align-items: start;
+      grid-template-columns: 14rem minmax(0, 52rem);
+      gap: var(--space-8);
+    }
+
+    .head {
+      margin-inline-start: calc(14rem + var(--space-8));
+    }
+
+    /* Stretched to the list's height, so the sticky tabs inside have room
+       to travel. */
+    .filters {
+      align-self: stretch;
+    }
+  }
+</style>

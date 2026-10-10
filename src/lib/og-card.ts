@@ -1,6 +1,6 @@
 /**
  * Per-post social card, built by substituting a title into the hand-authored
- * template at `public/og-default-light.svg`.
+ * template at `public/og-default.svg`.
  *
  * The template is the single design source: colours, the eyebrow row, the rule
  * and the signature all stay where they were drawn. Only the two headline lines
@@ -28,6 +28,13 @@ const TRACKING_RATIO = -1.5 / 76;
 /** Steps down from the template's own size, tried largest first. */
 const FONT_SIZES = [76, 66, 58, 52] as const;
 const MAX_LINES = 4;
+
+/**
+ * Weight of the template's headline lines. Shared with og-fonts.ts, which
+ * measures titles in this face, so what is measured is what is drawn; a test
+ * pins it to public/og-default.svg.
+ */
+export const HEADLINE_WEIGHT = '500';
 
 export const CARD_WIDTH = 1200;
 export const CARD_HEIGHT = 630;
@@ -124,8 +131,11 @@ export function renderCardSvg(template: string, headline: Headline): string {
   // file and nothing in this module has to know which one it got.
   const fill = found[0].match(/\bfill="([^"]+)"/)?.[1];
   const family = found[0].match(/\bfont-family="([^"]+)"/)?.[1];
-  if (!fill || !family) {
-    throw new Error('og card template: headline line carries no fill or font-family');
+  // The weight too: the artwork is the design source, so its headline weight
+  // is what the substituted title is set in.
+  const weight = found[0].match(/\bfont-weight="([^"]+)"/)?.[1];
+  if (!fill || !family || !weight) {
+    throw new Error('og card template: headline line carries no fill, font-family or font-weight');
   }
 
   const { lines, fontSize } = headline;
@@ -142,7 +152,7 @@ export function renderCardSvg(template: string, headline: Headline): string {
       const y = lastBaseline - (lines.length - 1 - index) * leading;
       return (
         `<text x="${TEXT_X}" y="${y}" fill="${fill}" font-family="${family}" ` +
-        `font-size="${fontSize}" font-weight="600" letter-spacing="${tracking}">` +
+        `font-size="${fontSize}" font-weight="${weight}" letter-spacing="${tracking}">` +
         `${escapeXml(line)}</text>`
       );
     })

@@ -27,33 +27,38 @@ const categories = [...byCategory.entries()];
 <div class="categories">
   {categories.map(([category, items]) => (
     <section>
-      <h2 class="category">{category}</h2>
-      <div class="grid">
-        {items.map((project) => <ProjectItem project={project} />)}
-      </div>
+      <h2 class="mono-label category">
+        {category} <span class="num">{items.length}<span class="visually-hidden"> {items.length === 1 ? 'project' : 'projects'}</span></span>
+      </h2>
+      <ul class="rows" role="list">
+        {items.map((project) => <li><ProjectItem project={project} /></li>)}
+      </ul>
     </section>
   ))}
 </div>
 
 <style>
   .categories {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-7);
+    display: grid;
+    gap: var(--space-8);
   }
 
   .category {
-    color: var(--color-ink-light);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
+    color: var(--color-ink);
     margin-block-end: var(--space-2);
-    text-transform: uppercase;
   }
 
-  .grid {
-    display: grid;
-    gap: var(--space-2) var(--space-6);
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  .category .num {
+    color: var(--color-ink-3);
+    margin-inline-start: var(--space-2);
+  }
+
+  .rows {
+    border-block-start: var(--border-hairline) solid var(--color-line);
+    margin: 0;
+  }
+
+  .rows > li {
+    border-block-end: var(--border-hairline) solid var(--color-line-soft);
   }
 </style>

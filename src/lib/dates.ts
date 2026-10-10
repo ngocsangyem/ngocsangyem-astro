@@ -14,6 +14,17 @@ export function formatDate(date: Date, currentYear = new Date().getUTCFullYear()
   return year === currentYear ? `${month} ${day}` : `${month} ${day}, ${year}`;
 }
 
+/**
+ * List-row form: "Oct 08, 2026". Always dated and zero-padded, so a column of
+ * rows lines up character for character in a tabular mono face. UTC, like
+ * formatDate.
+ */
+export function formatDateShort(date: Date): string {
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${month} ${day}, ${date.getUTCFullYear()}`;
+}
+
 export function getYear(date: Date): number {
   return date.getUTCFullYear();
 }

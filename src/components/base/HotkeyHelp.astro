@@ -1,0 +1,139 @@
+---
+/* The `?` overlay. Rows for the letter keys are filled in when it opens, from
+   the page's own `[data-hotkey]` elements, so a key a page adds (LOAD MORE)
+   is listed without this component knowing about it. The rows below are the
+   keys that are not letters and so are not stamped on any element; a row
+   naming a letter in `data-hotkey-static` stands in for that letter's own. */
+import { SITE } from '../../config/site';
+---
+
+<dialog id="hotkey-help" aria-labelledby="hotkey-help-title" data-pagefind-ignore>
+  <div class="shell">
+    <h2 id="hotkey-help-title" class="title">Keyboard shortcuts</h2>
+
+    <section aria-labelledby="hotkey-help-navigate">
+      <h3 id="hotkey-help-navigate" class="group">Navigate</h3>
+      <ul class="rows" role="list" data-hotkey-rows="navigate"></ul>
+    </section>
+
+    <section aria-labelledby="hotkey-help-actions">
+      <h3 id="hotkey-help-actions" class="group">Actions</h3>
+      <ul class="rows" role="list" data-hotkey-rows="actions">
+        <li data-hotkey-static={SITE.hotkeys.search.toLowerCase()}>
+          <span>Search</span>
+          <span><kbd>{SITE.hotkeys.search}</kbd> <kbd>/</kbd> <kbd>⌘K</kbd></span>
+        </li>
+        <li><span>Show shortcuts</span><kbd>?</kbd></li>
+        <li><span>Close</span><kbd>Esc</kbd></li>
+      </ul>
+    </section>
+
+    <div class="foot">
+      <button class="shortcuts" type="button" data-shortcuts-toggle aria-pressed="true" hidden>
+        Shortcuts<span aria-hidden="true">: <span data-shortcuts-state>On</span></span>
+      </button>
+      {/* Opening focus lands here, not on the toggle, so a stray Space or
+          Enter cannot switch shortcuts off. */}
+      <form method="dialog">
+        <button class="close" type="submit" autofocus>Close</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  dialog {
+    background-color: var(--color-bg-panel);
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: 0;
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    max-inline-size: min(30rem, calc(100vw - var(--space-6)));
+    padding: 0;
+    inline-size: 100%;
+  }
+
+  dialog[open] {
+    animation: reveal var(--motion-base) var(--ease-out) both;
+  }
+
+  dialog::backdrop {
+    background-color: rgb(0 0 0 / 0.4);
+  }
+
+  .shell {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-5);
+  }
+
+  .title,
+  .group {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+
+  .title {
+    color: var(--color-ink);
+  }
+
+  .group {
+    color: var(--color-ink-3);
+    margin-block-end: var(--space-2);
+  }
+
+  .rows {
+    margin: 0;
+  }
+
+  /* Label left, key right, one ruled row each — the grouped table from the
+     reference, with the key caps aligned to the end. */
+  .rows :global(li) {
+    align-items: baseline;
+    border-block-end: var(--border-hairline) solid var(--color-line-soft);
+    color: var(--color-ink-2);
+    display: flex;
+    gap: var(--space-4);
+    justify-content: space-between;
+    padding-block: var(--space-2);
+  }
+
+  .rows :global(kbd) {
+    color: var(--color-ink);
+    font-family: inherit;
+  }
+
+  .foot {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .shortcuts,
+  .close {
+    background: none;
+    border: 0;
+    color: var(--color-ink-3);
+    cursor: pointer;
+    font: inherit;
+    letter-spacing: inherit;
+    padding: 0;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .shortcuts:hover,
+  .close:hover {
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    dialog[open] {
+      animation: none;
+    }
+  }
+</style>

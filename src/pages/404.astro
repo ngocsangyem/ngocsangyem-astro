@@ -1,22 +1,77 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config/site';
 ---
 
 <BaseLayout title="Not found" description="That page does not exist.">
-  <div class="prose-column" data-enter-children>
-    <h1>404</h1>
-    <p>That page does not exist. Try the <a href="/posts">posts index</a>.</p>
+  <div class="not-found">
+    {
+      /* Prerendered, so the requested path is unknown here; the session is a
+         fixed little scene rather than an echo of the URL. */
+    }
+    <div class="session" aria-hidden="true">
+      <p><span class="caret">❯</span> cd ~/this-page</p>
+      <p class="error">cd: no such page</p>
+    </div>
+    <h1 class="page-title" data-enter>Not found</h1>
+    <p class="page-tagline">That page does not exist, or it moved.</p>
+    <p class="links">
+      <a href="/"><span aria-hidden="true">← </span>Home</a>
+      <a href="/posts">Posts<span aria-hidden="true"> →</span></a>
+      <span class="k hint">Press [{SITE.hotkeys.search}] to search</span>
+    </p>
   </div>
 </BaseLayout>
 
 <style>
-  h1 {
-    font-family: var(--font-mono);
-    font-size: 3rem;
-    margin-block: 2rem 0.5rem;
+  .not-found {
+    margin-inline: auto;
+    max-inline-size: var(--prose-max-width);
+    padding-block: var(--space-10);
   }
 
-  p {
-    color: var(--color-ink-light);
+  .session {
+    background-color: var(--color-bg-raised);
+    border: var(--border-hairline) solid var(--color-line-soft);
+    color: var(--color-ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    line-height: var(--leading-code);
+    margin-block-end: var(--space-7);
+    padding: var(--space-4);
+  }
+
+  .session p {
+    margin: 0;
+  }
+
+  .caret {
+    color: var(--color-accent-text);
+  }
+
+  .error {
+    color: var(--color-ansi-red);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    margin-block-start: var(--space-6);
+  }
+
+  .links a,
+  .hint {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .links a:hover {
+    color: var(--color-ink);
   }
 </style>

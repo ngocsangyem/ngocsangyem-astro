@@ -1,0 +1,59 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+---
+
+{
+  /* The article outline: h2 entries, h3 one level in. The entry for the
+     section being read is marked by scripts/toc-active.ts with aria-current,
+     shown as a left rule (Codecademy's contents list). */
+}
+<ol class="contents" role="list" data-toc>
+  {
+    headings.map((heading) => (
+      <li class:list={[`depth-${heading.depth}`]}>
+        <a href={`#${heading.slug}`}>{heading.text}</a>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .contents {
+    border-inline-start: var(--border-hairline) solid var(--color-line-soft);
+    display: grid;
+    margin: 0;
+  }
+
+  a {
+    border-inline-start: var(--border-hairline) solid transparent;
+    color: var(--color-ink-3);
+    display: block;
+    font-size: var(--text-label);
+    line-height: 1.4;
+    margin-inline-start: calc(-1 * var(--border-hairline));
+    padding: var(--space-1) 0 var(--space-1) var(--space-3);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .depth-3 a {
+    padding-inline-start: calc(var(--space-3) + 0.75rem);
+  }
+
+  /* Colour and the rule carry the mark; a weight change would reflow the list
+     under the reader as they scroll. */
+  a:hover {
+    color: var(--color-ink);
+  }
+
+  a[aria-current] {
+    border-inline-start-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+</style>

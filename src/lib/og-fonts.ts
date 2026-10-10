@@ -3,7 +3,7 @@
  *
  * The faces come from `astro:assets`, the same place the `fonts` config in
  * astro.config.mjs serves the site's own CSS from, so the cards are set in the
- * same Inter and DM Mono the pages are and no second copy of either family
+ * same Inter and JetBrains Mono the pages are and no second copy of either family
  * enters the tree. `fontData` names every face the config resolved and
  * `experimental_getFontFileURL` turns one into something fetchable: during a
  * static build Astro answers from a loopback server it runs for exactly this,
@@ -27,6 +27,7 @@ import { fontData, experimental_getFontFileURL, type CssVariable } from 'astro:a
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { decompress } from 'wawoff2';
+import { HEADLINE_WEIGHT as CARD_HEADLINE_WEIGHT } from './og-card';
 
 /** Decompressed faces land here, gitignored with the rest of `.astro`. */
 const SFNT_DIR = '.astro/og-fonts';
@@ -36,11 +37,12 @@ const SFNT_DIR = '.astro/og-fonts';
  * never appears on a card, and handing resvg a face no `font-family` names just
  * costs a decompress per build.
  */
-const FAMILIES = ['--font-inter', '--font-dm-mono'] as const satisfies readonly CssVariable[];
+const FAMILIES = ['--font-inter', '--font-jetbrains-mono'] as const satisfies readonly CssVariable[];
 
 /** What the template sets the headline in, and so what it is measured against. */
 const HEADLINE_FAMILY: CssVariable = '--font-inter';
-const HEADLINE_WEIGHT = '600';
+// The measured face must be the drawn one; og-card.ts owns the number.
+const HEADLINE_WEIGHT = CARD_HEADLINE_WEIGHT;
 
 type Face = (typeof fontData)[CssVariable][number];
 

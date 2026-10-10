@@ -2,29 +2,43 @@
 interface Props {
   href: string;
   label: string;
+  /**
+   * Printed as `[K]` and stamped as `data-hotkey`. Omitted for the mobile
+   * panel's copy of the nav, so the keyboard layer finds each key once.
+   */
+  hotkey?: string;
 }
 
-const { href, label } = Astro.props;
+const { href, label, hotkey } = Astro.props;
 const path = Astro.url.pathname;
 const isActive = path === href || path.startsWith(`${href}/`);
 ---
 
-<a href={href} class:list={['nav-link', { active: isActive }]} aria-current={isActive ? 'page' : undefined}>
-  {label}
+<a
+  href={href}
+  class:list={['nav-link', { active: isActive }]}
+  aria-current={isActive ? 'page' : undefined}
+  data-hotkey={hotkey?.toLowerCase()}
+  data-hotkey-label={hotkey ? label : undefined}
+>
+  {hotkey && <span class="k" aria-hidden="true">[{hotkey}]</span>}{label}
 </a>
 
 <style>
+  /* Uppercase comes from CSS, not the markup, so the accessible name stays
+     "Posts" rather than being spelled out letter by letter. */
   .nav-link {
-    color: var(--color-ink-light);
-    font-size: 0.9375rem;
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
     text-decoration: none;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
   }
 
-  .nav-link:hover {
-    color: var(--color-ink-deep);
-  }
-
+  .nav-link:hover,
   .active {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
   }
 </style>

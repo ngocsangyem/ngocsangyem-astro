@@ -4,10 +4,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import '../styles/prose.css';
 ---
 
-<BaseLayout background title="About" description="Sang, a software engineer writing about building software.">
-  {/* The prose blocks stagger themselves; a wrapper reveal would compound. */}
-  <div class="prose-column prose">
-    <h1>Hey, I’m Sang.</h1>
+<BaseLayout title="About" description="Sang, a software engineer writing about building software.">
+  {/* The heading is the author's own line, kept verbatim, so it is set as a
+      page title without the lowercase the index pages use. */}
+  <div class="prose-column prose about">
+    <h1 class="page-title about-title" data-enter>Hey, I’m Sang.</h1>
 
     <p>
       I’m a software engineer who enjoys turning ideas into thoughtful digital
@@ -134,9 +135,12 @@ import '../styles/prose.css';
 </BaseLayout>
 
 <style>
-  h1 {
-    font-size: 1.875rem;
-    letter-spacing: -0.015em;
-    margin-block: 1rem 2rem;
+  .about {
+    padding-block-start: var(--space-8);
+  }
+
+  .about-title {
+    margin-block-end: var(--space-7);
+    text-transform: none;
   }
 </style>

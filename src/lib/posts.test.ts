@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   getAllTags,
   getDescription,
+  getFeaturedPost,
+  getTopTags,
   getPostsByTag,
   getRelatedPosts,
   getSiblings,
@@ -21,15 +23,25 @@ interface Fixture {
   tags?: string[];
   description?: string;
   draft?: boolean;
+  featured?: boolean;
   body?: string;
 }
 
-function post({ id, date, title = id, tags = [], description, draft = false, body = '' }: Fixture) {
+function post({
+  id,
+  date,
+  title = id,
+  tags = [],
+  description,
+  draft = false,
+  featured = false,
+  body = '',
+}: Fixture) {
   return {
     id,
     body,
     collection: 'posts',
-    data: { title, date: new Date(date), tags, description, draft },
+    data: { title, date: new Date(date), tags, description, draft, featured },
   } as unknown as Post;
 }
 
@@ -308,5 +320,44 @@ describe('getRelatedPosts', () => {
       post({ id: 'b', date: '2026-01-01', tags: ['css'] }),
     ];
     expect(getRelatedPosts(posts, current, 1).map((p) => p.id)).toEqual(['a']);
+  });
+});
+
+describe('getFeaturedPost', () => {
+  it('picks the newest post marked featured', () => {
+    const posts = [
+      post({ id: 'newest', date: '2026-05-01' }),
+      post({ id: 'old-pick', date: '2025-01-01', featured: true }),
+      post({ id: 'new-pick', date: '2026-01-01', featured: true }),
+    ];
+    expect(getFeaturedPost(posts)?.id).toBe('new-pick');
+  });
+
+  it('falls back to the newest post when none is marked', () => {
+    const posts = [post({ id: 'older', date: '2025-01-01' }), post({ id: 'newer', date: '2026-01-01' })];
+    expect(getFeaturedPost(posts)?.id).toBe('newer');
+  });
+
+  it('is undefined for an empty archive', () => {
+    expect(getFeaturedPost([])).toBeUndefined();
+  });
+});
+
+describe('getTopTags', () => {
+  const posts = [
+    post({ id: 'a', date: '2026-01-01', tags: ['JavaScript', 'vue'] }),
+    post({ id: 'b', date: '2026-01-02', tags: ['javascript', 'html'] }),
+    post({ id: 'c', date: '2026-01-03', tags: ['javascript', 'vue'] }),
+  ];
+
+  it('returns the most used tags first, capped at n', () => {
+    expect(getTopTags(posts, 2).map((tag) => [tag.slug, tag.count])).toEqual([
+      ['javascript', 3],
+      ['vue', 2],
+    ]);
+  });
+
+  it('returns every tag when there are fewer than n', () => {
+    expect(getTopTags(posts, 10)).toHaveLength(3);
   });
 });

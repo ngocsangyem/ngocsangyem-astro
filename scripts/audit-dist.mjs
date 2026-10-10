@@ -33,27 +33,42 @@ const failures = [];
 const localAssets = new Set();
 
 /**
- * Inline scripts the plan allows on every page: the blocking theme init, the
- * search module and the theme toggle. Changing these numbers is a deliberate
- * act, which is the point of asserting them.
+ * Inline scripts the plan allows on every page: the blocking theme init alone.
+ * Theme toggle, search and the keyboard layer ship together as the site-wide
+ * `scripts/site.ts` module, which is emitted as an external file and so does
+ * not count here. Changing these numbers is a deliberate act, which is the
+ * point of asserting them.
  *
- * An article carries a fourth: the copy control on its code blocks. Portfolio
- * also carries a fourth, its scroll-linked career-route indicator. Both are
- * budgeted separately rather than by raising the figure everywhere, so a script
- * arriving on a page that should carry none of it still fails the audit.
+ * An article carries a second: the copy control on its code blocks. Portfolio
+ * also carries a second, its scroll-linked career-route indicator, and the home
+ * page a second, its LOAD MORE control. Each is budgeted separately rather than
+ * by raising the figure everywhere, so a script arriving on a page that should
+ * carry none of it still fails the audit.
+ *
+ * An article that embeds a <TerminalDemo> (marked `data-terminal-demo`) carries
+ * one more, the demo player, and only that article is allowed it.
  */
-const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 3;
-const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 4;
-const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 4;
+const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 1;
+const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 2;
+const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 2;
+const ALLOWED_INLINE_SCRIPTS_HOME = 2;
+const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE_WITH_DEMO = 3;
 
 /** `posts/<slug>/index.html`, but not the `posts/index.html` listing. */
 function isArticle(where) {
   return /^posts\/[^/]+\/index\.html$/.test(where);
 }
 
-function allowedInlineScripts(where) {
-  if (isArticle(where)) return ALLOWED_INLINE_SCRIPTS_PER_ARTICLE;
+function allowedInlineScripts(where, html) {
+  if (isArticle(where)) {
+    // The element attribute, not the phrase: a post may mention the name in
+    // prose or a code block without embedding a demo.
+    return /<figure\b[^>]*\sdata-terminal-demo[\s=>]/.test(html)
+      ? ALLOWED_INLINE_SCRIPTS_PER_ARTICLE_WITH_DEMO
+      : ALLOWED_INLINE_SCRIPTS_PER_ARTICLE;
+  }
   if (where === 'portfolio/index.html') return ALLOWED_INLINE_SCRIPTS_PORTFOLIO;
+  if (where === 'index.html') return ALLOWED_INLINE_SCRIPTS_HOME;
   return ALLOWED_INLINE_SCRIPTS_PER_PAGE;
 }
 let htmlCount = 0;
@@ -174,7 +189,7 @@ function auditHtml(file, html) {
     ...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>/gi),
   ].filter(([tag]) => !/type=["']application\/ld\+json["']/i.test(tag)).length;
   inlineScriptCount += inlineOnPage;
-  const allowed = allowedInlineScripts(where);
+  const allowed = allowedInlineScripts(where, html);
   if (inlineOnPage !== allowed) {
     failures.push(`${where}: ${inlineOnPage} inline scripts, allowlist permits ${allowed}`);
   }
@@ -242,6 +257,16 @@ try {
   }
 } catch {
   failures.push('no og cards in dist/og: the card route produced nothing');
+}
+
+// The site-wide card is rasterised from the same template; it must exist and
+// must not collapse onto a post card's bytes.
+try {
+  const fallback = createHash('sha256').update(await readFile(join(DIST, 'og-default.png'))).digest('hex');
+  const twin = cardHashes.get(fallback);
+  if (twin) failures.push(`og-default.png is byte-identical to og/${twin}`);
+} catch {
+  failures.push('no og-default.png in dist: the fallback card route produced nothing');
 }
 
 console.log(

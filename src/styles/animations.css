@@ -1,10 +1,14 @@
-/* The single reveal primitive. Base opacity stays 1 so a failed or
-   unsupported animation leaves readable text; fill-mode both supplies the
-   from-state during the stagger delay. */
-@keyframes slide-enter {
+/* Motion is a status signal, not decoration: only opacity and transform move,
+   travel never exceeds 4px, and nothing loops outside a playing terminal demo.
+   There is no per-block reveal — body content is simply there. */
+
+/* The single reveal primitive, for page heroes only. Base opacity stays 1 so
+   a failed or unsupported animation leaves readable text; fill-mode both
+   supplies the from-state during the stage delay. */
+@keyframes reveal {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -42,60 +46,23 @@
   }
 }
 
+/* Terminal cursor. Stepped, so it is on or off and never half-faded. */
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 [data-enter] {
-  animation: slide-enter var(--dur-base) var(--ease-out) both;
-  /* Capped: fill-mode holds opacity 0 through the delay, so an uncapped index
-     would leave the 50th row blank for four seconds. */
-  animation-delay: calc(min(var(--enter-stage, 0), 8) * 90ms);
+  animation: reveal var(--motion-base) var(--ease-out) both;
+  /* Capped at three stages: a hero has at most a label, a title, a standfirst
+     and a meta row, and anything later than that is body content. */
+  animation-delay: calc(min(var(--enter-stage, 0), 3) * var(--motion-line));
 }
 
-/* Stagger direct children of a marked container. */
-[data-enter-children] > * {
-  animation: slide-enter var(--dur-base) var(--ease-out) both;
-}
-
-[data-enter-children] > *:nth-child(1) { animation-delay: 0ms; }
-[data-enter-children] > *:nth-child(2) { animation-delay: 90ms; }
-[data-enter-children] > *:nth-child(3) { animation-delay: 180ms; }
-[data-enter-children] > *:nth-child(4) { animation-delay: 270ms; }
-[data-enter-children] > *:nth-child(5) { animation-delay: 360ms; }
-[data-enter-children] > *:nth-child(n + 6) { animation-delay: 450ms; }
-
-/* Rendered prose has no place to put a server-set index, so it steps by
-   position up to a ceiling of 20 blocks and holds one delay after that. A long
-   article should not open with a two-second cascade. */
-.prose > * {
-  animation: slide-enter var(--dur-base) var(--ease-out) both;
-}
-
-.prose > *:nth-child(1) { animation-delay: 0ms; }
-.prose > *:nth-child(2) { animation-delay: 45ms; }
-.prose > *:nth-child(3) { animation-delay: 90ms; }
-.prose > *:nth-child(4) { animation-delay: 135ms; }
-.prose > *:nth-child(5) { animation-delay: 180ms; }
-.prose > *:nth-child(6) { animation-delay: 225ms; }
-.prose > *:nth-child(7) { animation-delay: 270ms; }
-.prose > *:nth-child(8) { animation-delay: 315ms; }
-.prose > *:nth-child(9) { animation-delay: 360ms; }
-.prose > *:nth-child(10) { animation-delay: 405ms; }
-.prose > *:nth-child(11) { animation-delay: 450ms; }
-.prose > *:nth-child(12) { animation-delay: 495ms; }
-.prose > *:nth-child(13) { animation-delay: 540ms; }
-.prose > *:nth-child(14) { animation-delay: 585ms; }
-.prose > *:nth-child(15) { animation-delay: 630ms; }
-.prose > *:nth-child(16) { animation-delay: 675ms; }
-.prose > *:nth-child(17) { animation-delay: 720ms; }
-.prose > *:nth-child(18) { animation-delay: 765ms; }
-.prose > *:nth-child(19) { animation-delay: 810ms; }
-.prose > *:nth-child(n + 20) { animation-delay: 855ms; }
-
+/* Reduced motion means instant, not a softer animation. */
 @media (prefers-reduced-motion: reduce) {
-  [data-enter],
-  [data-enter-children] > *,
-  .prose > * {
-    animation-name: fade-enter;
-    animation-duration: var(--dur-fast);
-    /* Stagger delays must not survive; they would stall the crossfade. */
-    animation-delay: 0s !important;
+  [data-enter] {
+    animation: none;
   }
 }

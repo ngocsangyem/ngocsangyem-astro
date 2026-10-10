@@ -1,10 +1,10 @@
 ---
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
-import PostMeta from '../components/posts/PostMeta.astro';
+import Contents from '../components/posts/Contents.astro';
+import PostHero from '../components/posts/PostHero.astro';
 import PostNav from '../components/posts/PostNav.astro';
-import TagList from '../components/posts/TagList.astro';
-import Toc from '../components/posts/Toc.astro';
+import ShareList from '../components/posts/ShareList.astro';
 import { getDescription, type Post } from '../lib/posts';
 
 import '../styles/prose.css';
@@ -16,63 +16,115 @@ interface Props {
 }
 
 const { post, headings, minutesRead } = Astro.props;
+// h2 and h3 only; the footnotes section adds a heading of its own that would
+// list "Footnotes" twice. A single entry is not an outline.
+const outline = headings.filter(
+  (heading) => heading.depth >= 2 && heading.depth <= 3 && heading.slug !== 'footnote-label',
+);
+const entries = post.data.toc && outline.length > 1 ? outline : [];
 ---
 
-<BaseLayout title={post.data.title} description={getDescription(post)} post={post} wide>
-  {/* Prose blocks stagger themselves, so the wrapper stays still: nesting
-      two reveals multiplies their opacity mid-animation. */}
-  <article class="article">
-    <header data-enter>
-      <h1>{post.data.title}</h1>
-      <PostMeta date={post.data.date} minutesRead={minutesRead} />
-      <TagList post={post} />
-    </header>
+<BaseLayout title={post.data.title} description={getDescription(post)} post={post}>
+  {/* Search indexes articles only: once any page marks a body, Pagefind
+      skips every page that does not, so listings and the 404 stay out. */}
+  <article class="post" data-pagefind-body>
+    <PostHero post={post} minutesRead={minutesRead} />
 
-    {post.data.toc && <Toc headings={headings} />}
+    {
+      entries.length > 0 && (
+        <>
+          {/* Wide screens: a quiet contents list in the right margin. */}
+          <nav class="contents-margin" aria-labelledby="contents-margin-label" data-pagefind-ignore>
+            <p class="mono-label" id="contents-margin-label">Contents</p>
+            <Contents headings={entries} />
+          </nav>
+          {/* Everywhere else: a disclosure under the title. */}
+          <details class="contents-inline" data-pagefind-ignore>
+            <summary class="mono-label">Contents</summary>
+            <Contents headings={entries} />
+          </details>
+        </>
+      )
+    }
 
     <div class="prose">
       <slot />
     </div>
 
+    <ShareList post={post} />
     <PostNav post={post} />
   </article>
 </BaseLayout>
 
-{/* The two scripts an article carries. Both are enhancements: without either,
-    the code blocks and the table of contents render exactly as before. */}
+{/* Every article script is an enhancement: without them the code blocks,
+    the outline and the share links render and work as plain HTML. */}
 <script>
   import '../scripts/code-copy';
   import '../scripts/toc-active';
+  import '../scripts/share';
 </script>
 
 <style>
-  .article {
+  /* One centred reading column. minmax(0, …) keeps a long code line from
+     widening the column and scrolling the page sideways on a phone. */
+  .post {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     margin-inline: auto;
-    max-width: var(--prose-max-width);
+    max-inline-size: var(--prose-max-width);
   }
 
-  header {
-    margin-block: 1rem 3rem;
+  .contents-margin {
+    display: none;
   }
 
-  h1 {
-    font-size: 1.875rem;
-    letter-spacing: -0.015em;
+  .contents-inline {
+    margin-block-end: var(--space-7);
   }
 
-  /* The margin column exists only once there is room for it beside the prose. */
+  .contents-inline summary {
+    cursor: pointer;
+  }
+
+  .contents-inline[open] summary {
+    margin-block-end: var(--space-3);
+  }
+
+  /* Only once there is a real margin beside the column does the outline move
+     into it; the column itself never shifts. */
   @media (min-width: 80rem) {
-    .article {
-      display: grid;
-      max-width: none;
-      grid-template-columns: 1fr min(var(--prose-max-width), 100%) 1fr;
+    .post {
+      column-gap: var(--space-10);
+      grid-template-columns: 1fr minmax(0, var(--prose-max-width)) 1fr;
+      max-inline-size: none;
     }
 
-    /* Only the pieces this layout owns; the TOC places itself in track 3. */
-    .article > header,
-    .article > .prose,
-    .article > :global(.post-nav) {
+    /* :global, because the hero, end line and post nav are other components'
+       roots and carry their own scope, not this layout's. */
+    .post > :global(:not(.contents-margin)) {
       grid-column: 2;
+    }
+
+    .contents-margin {
+      align-self: start;
+      display: block;
+      grid-column: 3;
+      grid-row: 2 / span 2;
+      inset-block-start: var(--space-8);
+      max-block-size: calc(100vh - 6rem);
+      max-inline-size: 15rem;
+      overflow-y: auto;
+      /* Room for the links' focus rings inside the scroll box. */
+      padding: var(--space-1);
+      position: sticky;
+    }
+
+    .contents-margin > .mono-label {
+      margin-block-end: var(--space-3);
+    }
+
+    .contents-inline {
+      display: none;
     }
   }
 </style>

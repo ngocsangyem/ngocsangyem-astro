@@ -1,4 +1,4 @@
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { SITE } from '../config/site';
 
 export type Post = CollectionEntry<'posts'>;
@@ -133,6 +133,36 @@ export function getAllTags(posts: Post[]): Tag[] {
   }
   return [...tags.values()].sort(
     (a, b) => b.count - a.count || a.slug.localeCompare(b.slug),
+  );
+}
+
+/** The `n` most used tags, in getAllTags order. */
+export function getTopTags(posts: Post[], n: number): Tag[] {
+  return getAllTags(posts).slice(0, n);
+}
+
+/** The newest post marked `featured`, or the newest post when none is. */
+export function getFeaturedPost(posts: Post[]): Post | undefined {
+  const ordered = sortByDateDesc(posts);
+  return ordered.find((post) => post.data.featured) ?? ordered[0];
+}
+
+/**
+ * Reading time per post id, from the minutes the reading-time plugin writes
+ * into each post's render output. Build time only; Astro caches each render,
+ * so the article page rendering the same post pays nothing extra.
+ */
+export async function getReadingTimes(posts: Post[]): Promise<Map<string, number>> {
+  const entries = await Promise.all(
+    posts.map(async (post) => {
+      const { remarkPluginFrontmatter } = await render(post);
+      return [post.id, remarkPluginFrontmatter.minutesRead] as const;
+    }),
+  );
+  // A post the plugin did not measure is left out rather than guessed, so a
+  // row matches its article page, which omits the figure too.
+  return new Map(
+    entries.flatMap(([id, minutes]) => (typeof minutes === 'number' ? [[id, minutes] as const] : [])),
   );
 }
 

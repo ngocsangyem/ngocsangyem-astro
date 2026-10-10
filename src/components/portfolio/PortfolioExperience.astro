@@ -5,7 +5,7 @@ import CareerTimeline from "./CareerTimeline.astro";
 ---
 
 <section id="experience" class="experience" aria-labelledby="experience-title">
-  <header class="section-head" data-enter>
+  <header class="section-head">
     <div>
       <p class="label">Career path</p>
       <h2 id="experience-title">Seven years, three stops.</h2>
@@ -25,7 +25,7 @@ import CareerTimeline from "./CareerTimeline.astro";
 <style>
   .experience {
     border-block-start: var(--border-hairline) solid
-      color-mix(in srgb, var(--color-ink-light) 35%, transparent);
+      var(--color-line);
     padding-block: clamp(4rem, 9vw, 8rem);
   }
 
@@ -38,7 +38,7 @@ import CareerTimeline from "./CareerTimeline.astro";
   }
 
   .label {
-    color: var(--color-ink-light);
+    color: var(--color-ink-3);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     letter-spacing: 0.04em;

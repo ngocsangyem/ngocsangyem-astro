@@ -1,25 +1,22 @@
 /* Read off the build output of a real fence, not from docs:
-   Astro 7.2.4 emits class="astro-code astro-code-themes vitesse-light vitesse-dark"
-   with inline --shiki-light / --shiki-dark (+ -bg on the <pre>). The prefix is
+   Astro emits class="astro-code astro-code-themes vitesse-light vitesse-dark"
+   with inline --shiki-light / --shiki-dark on every token span. The prefix is
    --shiki-*, not --astro-code-*.
 
    defaultColor: false leaves no baked colour, so light needs its own rule set
    here, not just a dark override. !important beats the inline style attribute.
 
-   The block background belongs to the <pre> alone. Setting it on every span
-   would paint over line annotations, since a highlighted or diffed line is
-   itself a span. */
+   The block background is the site's raised surface rather than either
+   theme's own, so code sits on the same tone as every other frame. It belongs
+   to the <pre> alone: setting it on every span would paint over line
+   annotations, since a highlighted or diffed line is itself a span. */
 .astro-code {
-  background-color: var(--shiki-light-bg);
+  background-color: var(--color-bg-raised) !important;
 }
 
 .astro-code,
 .astro-code span {
   color: var(--shiki-light);
-}
-
-html[data-theme='dark'] .astro-code {
-  background-color: var(--shiki-dark-bg) !important;
 }
 
 html[data-theme='dark'] .astro-code,

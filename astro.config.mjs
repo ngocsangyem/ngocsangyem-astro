@@ -14,7 +14,8 @@ import {
 } from '@shikijs/transformers';
 import { shikiCodeTitle } from './src/lib/shiki-code-title';
 import { mdastReadingTime } from './src/lib/mdast-reading-time';
-import { hastLinkChips } from './src/lib/hast-link-chips';
+import { hastExternalLinks } from './src/lib/hast-external-links';
+import { hastFigures } from './src/lib/hast-figures';
 import { hastAdmonitions } from './src/lib/hast-admonitions';
 import { hastCodeTitles } from './src/lib/hast-code-titles';
 import { hastTaskLists } from './src/lib/hast-task-lists';
@@ -38,8 +39,7 @@ export default defineConfig({
     // typo'd name fails the build instead of rendering an empty box.
     icon({
       include: {
-        lucide: ['sun', 'moon', 'search', 'arrow-up', 'chevron-right', 'text-align-start'],
-        'simple-icons': ['github', 'linkedin'],
+        lucide: ['sun', 'moon', 'chevron-right'],
       },
     }),
   ],
@@ -47,11 +47,15 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       mdastPlugins: [mdastReadingTime],
-      hastPlugins: [hastAdmonitions, hastCodeTitles, hastTaskLists, hastTables, hastLinkChips],
+      // Figures last among the content plugins; it wraps image paragraphs in
+      // place so Astro's own image marker, which runs after, still finds them.
+      hastPlugins: [hastAdmonitions, hastCodeTitles, hastTaskLists, hastTables, hastExternalLinks, hastFigures],
     }),
     shikiConfig: {
       themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
-      // Emits both palettes as CSS vars so [data-theme] can switch them.
+      // Emits both palettes as CSS vars so [data-theme] can switch them. A
+      // CSS-variables theme was tried and dropped: it colours only keywords,
+      // functions and strings, so code read as nearly monochrome.
       defaultColor: false,
       // All build-time: annotations become classes in the emitted HTML, so the
       // page ships no script for any of this.
@@ -72,31 +76,22 @@ export default defineConfig({
       name: 'Inter',
       cssVariable: '--font-inter',
       provider: fontProviders.fontsource(),
-      // 400 body, 500 labels/h4, 600 headings. Bold prose text resolves to
-      // 600 by CSS font matching, so a dedicated 700 face never ships.
+      // 400 body, 500 titles and headings, 600 strong prose text. Bold
+      // resolves to 600 by CSS font matching, so a 700 face never ships.
       weights: [400, 500, 600],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['system-ui', 'sans-serif'],
     },
     {
-      name: 'DM Mono',
-      cssVariable: '--font-dm-mono',
+      name: 'JetBrains Mono',
+      cssVariable: '--font-jetbrains-mono',
       provider: fontProviders.fontsource(),
-      weights: [400],
+      // 400 labels, nav and code; 500 the uppercase mono H2.
+      weights: [400, 500],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['ui-monospace', 'monospace'],
-    },
-    {
-      name: 'Roboto Condensed',
-      cssVariable: '--font-roboto-condensed',
-      provider: fontProviders.fontsource(),
-      // Chips are the only consumer and never render bold.
-      weights: [400],
-      styles: ['normal'],
-      subsets: ['latin'],
-      fallbacks: ['sans-serif'],
     },
   ],
 });

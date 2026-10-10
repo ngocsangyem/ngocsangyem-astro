@@ -5,72 +5,142 @@ import Signature from "../identity/Signature.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 import SearchModal from "../search/SearchModal.astro";
 
-interface Props {
-  wide?: boolean;
-}
-
-const { wide = false } = Astro.props;
+const homeKey = SITE.hotkeys.home;
 ---
 
-<header
-  id="top"
-  class:list={["site-header page", { "page-canvas-wide": wide }]}
-  data-pagefind-ignore
->
-  <a class="mark-link" href="/" aria-label={`${SITE.author}, home`}>
+<header id="top" class="site-header page" data-pagefind-ignore>
+  <a
+    class="mark-link"
+    href="/"
+    aria-label={`${SITE.author}, home`}
+    data-hotkey={homeKey.toLowerCase()}
+    data-hotkey-label="Home"
+  >
     <Signature />
   </a>
 
-  <nav aria-label="Main">
-    {SITE.nav.map((link) => <NavLink href={link.href} label={link.label} />)}
+  <nav class="nav-desktop" aria-label="Main">
+    {SITE.nav.map((link) => <NavLink href={link.href} label={link.label} hotkey={link.key} />)}
+  </nav>
+
+  <div class="actions">
     <SearchModal />
     <ThemeToggle />
+    {
+      /* Opens the panel through the Popover API, so the menu works with no
+         script; Esc and light dismiss close it and focus returns here. */
+    }
+    <button class="menu-button" type="button" popovertarget="nav-panel">Menu</button>
+  </div>
+
+  {
+    /* Nav links only. The search dialog and the theme toggle stay single
+       instances in the bar, and these links carry no hotkey, so the keyboard
+       layer resolves each key to the desktop nav alone. */
+  }
+  <nav id="nav-panel" class="nav-panel" popover aria-label="Main">
+    {SITE.nav.map((link) => <NavLink href={link.href} label={link.label} />)}
   </nav>
 </header>
 
 <style>
   .site-header {
     align-items: center;
-    display: flex;
-    justify-content: space-between;
-    min-height: var(--header-height);
-    margin-block-end: 0.5rem;
-    margin-block-start: 0.5rem;
+    border-block-end: var(--border-hairline) solid var(--color-line-soft);
+    column-gap: var(--space-6);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    min-block-size: var(--header-height);
   }
 
   .mark-link {
-    color: var(--color-ink-deep);
+    color: var(--color-ink);
     display: block;
     text-decoration: none;
   }
 
-  nav {
+  .nav-desktop {
     align-items: center;
     display: flex;
-    gap: 1rem;
+    gap: var(--space-5);
+    justify-content: center;
   }
 
-  @media (max-width: 42rem) {
+  .actions {
+    align-items: center;
+    display: flex;
+    gap: var(--space-4);
+    justify-self: end;
+  }
+
+  .menu-button {
+    background: none;
+    border: 0;
+    color: var(--color-ink-3);
+    cursor: pointer;
+    display: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    padding: 0;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .menu-button:hover {
+    color: var(--color-ink);
+  }
+
+  /* Overrides the UA's centred popover box: a full-width sheet hung under the
+     bar. Absolute, not the UA's fixed: in the top layer that resolves against
+     the document, so the sheet stays under the bar (which is not sticky) even
+     when the menu is opened after a partial scroll. */
+  .nav-panel {
+    position: absolute;
+    background-color: var(--color-bg-panel);
+    border: 0;
+    border-block-end: var(--border-hairline) solid var(--color-line);
+    color: var(--color-ink-3);
+    flex-direction: column;
+    gap: var(--space-4);
+    inline-size: 100%;
+    inset: var(--header-height) 0 auto;
+    margin: 0;
+    max-inline-size: none;
+    padding: var(--space-5) var(--page-gutter);
+  }
+
+  .nav-panel:popover-open {
+    display: flex;
+    animation: reveal var(--motion-base) var(--ease-out) both;
+  }
+
+  .nav-panel :global(.nav-link) {
+    font-size: var(--text-ui);
+  }
+
+  @media (max-width: 47.99rem) {
     .site-header {
-      --control-size: 2.25rem;
+      grid-template-columns: auto 1fr;
     }
 
-    .mark-link {
+    .nav-desktop {
       display: none;
     }
 
-    nav {
-      gap: 0.35rem;
-      inline-size: 100%;
-      justify-content: space-between;
+    /* A 13px word is far below a comfortable tap target; give both text
+       controls the theme toggle's 2.25rem box. */
+    .menu-button,
+    .actions :global(#search-open) {
+      align-items: center;
+      display: inline-flex;
+      min-block-size: 2.25rem;
     }
+  }
 
-    nav :global(.nav-link) {
-      font-size: 0.8125rem;
-    }
-
-    nav :global(a[href='/projects']) {
-      display: none;
+  @media (prefers-reduced-motion: reduce) {
+    .nav-panel:popover-open {
+      animation: none;
     }
   }
 </style>

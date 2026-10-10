@@ -1,0 +1,94 @@
+---
+import type { Post } from '../../lib/posts';
+import PostRow from './PostRow.astro';
+
+interface Props {
+  /** Posts after the first page, held back for LOAD MORE. */
+  rest: Post[];
+  minutes?: Map<string, number>;
+  /** id of the list the rows are appended to. */
+  listId: string;
+}
+
+const { rest, minutes, listId } = Astro.props;
+---
+
+{
+  /* Without script the button stays hidden and ALL POSTS is the way on; the
+     held-back rows sit inert in the template. With script, LOAD MORE appends
+     them a page at a time and hides itself once the template is empty, which
+     also takes `R` out of the keyboard registry. */
+}
+<div class="load-more" data-load-more-root data-list={listId} data-pagefind-ignore>
+  <template data-load-more-rows>
+    {rest.map((post) => <PostRow post={post} minutes={minutes?.get(post.id)} />)}
+  </template>
+  <div class="controls">
+    <button
+      type="button"
+      class="button"
+      data-load-more
+      data-hotkey="r"
+      data-hotkey-label="Load more"
+      hidden
+    >
+      Load more
+    </button>
+    <p class="hint k" data-load-more-hint hidden>Press R to load more</p>
+  </div>
+  <p class="all"><a href="/posts">All posts <span aria-hidden="true">→</span></a></p>
+</div>
+
+<script>
+  import '../../scripts/load-more';
+</script>
+
+<style>
+  .load-more {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    justify-content: space-between;
+    margin-block-start: var(--space-5);
+  }
+
+  .controls {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .button,
+  .all a {
+    background: none;
+    border: 0;
+    color: var(--color-ink-3);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    padding: 0;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .button {
+    border: var(--border-hairline) solid var(--color-line);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .button:hover,
+  .all a:hover {
+    color: var(--color-ink);
+  }
+
+  .hint {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-label);
+  }
+</style>

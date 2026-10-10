@@ -1,0 +1,127 @@
+---
+import { groupPostsByYear, type Post } from '../../lib/posts';
+import PostRow from './PostRow.astro';
+
+interface Props {
+  posts: Post[];
+  /** Year chapters, each led by an outlined numeral in its own column. */
+  grouped?: boolean;
+  /** Reading time per post id. */
+  minutes?: Map<string, number>;
+  /** Marks the list the home page's LOAD MORE appends to. */
+  id?: string;
+}
+
+const { posts, grouped = false, minutes, id } = Astro.props;
+const groups = grouped ? groupPostsByYear(posts) : [];
+---
+
+{
+  grouped ? (
+    <div class="groups">
+      {groups.map((group) => (
+        <section class="group">
+          <h2 class="year">
+            <span class="numeral" aria-hidden="true">{group.year}</span>
+            <span class="tally mono-label" aria-hidden="true">
+              {group.posts.length} {group.posts.length === 1 ? 'post' : 'posts'}
+            </span>
+            <span class="visually-hidden">
+              {group.year}, {group.posts.length} {group.posts.length === 1 ? 'post' : 'posts'}
+            </span>
+          </h2>
+          <ul class="rows" role="list">
+            {group.posts.map((post) => <PostRow post={post} minutes={minutes?.get(post.id)} />)}
+          </ul>
+        </section>
+      ))}
+    </div>
+  ) : (
+    <ul class="rows" role="list" id={id}>
+      {posts.map((post) => <PostRow post={post} minutes={minutes?.get(post.id)} />)}
+    </ul>
+  )
+}
+
+<style>
+  .groups {
+    display: grid;
+  }
+
+  /* Year chapters, after OpenAI's index: the year owns a column of its own
+     and the rows sit beside it, so the large outlined numeral never lies under
+     text. Each chapter opens with a rule. */
+  .group {
+    border-block-start: var(--border-hairline) solid var(--color-line);
+    display: grid;
+    gap: var(--space-4);
+    padding-block: var(--space-6) var(--space-8);
+  }
+
+  .year {
+    align-items: baseline;
+    display: flex;
+    gap: var(--space-3);
+    margin: 0;
+  }
+
+  /* Outlined numeral in JetBrains Mono. Hidden from AT (the heading's hidden
+     text says it), and standing clear of the rows, so the stroke can use the
+     readable label ink rather than the decorative one. */
+  .numeral {
+    color: transparent;
+    font-family: var(--font-mono);
+    font-size: 2.75rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    -webkit-text-stroke: 1px var(--color-ink-3);
+  }
+
+  /* Forced colours turn the transparent fill into solid text, which is fine
+     here: the numeral overlaps nothing, so it simply reads as the year. */
+  @media (forced-colors: active) {
+    .numeral {
+      color: CanvasText;
+      -webkit-text-stroke: 0;
+    }
+  }
+
+  /* Side by side once there is room: the year column stays in view while its
+     rows scroll past. */
+  @media (min-width: 48rem) {
+    .group {
+      align-items: start;
+      gap: var(--space-6);
+      grid-template-columns: 10rem minmax(0, 1fr);
+    }
+
+    .year {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: var(--space-2);
+      inset-block-start: var(--space-6);
+      position: sticky;
+    }
+
+    .numeral {
+      font-size: 3.5rem;
+    }
+  }
+
+  .rows {
+    border-block-start: var(--border-hairline) solid var(--color-line-soft);
+    margin: 0;
+  }
+
+  /* Inside a chapter the chapter rules open and close the list, so the rows'
+     own first and last rules would double them. */
+  .group .rows {
+    border-block-start: 0;
+  }
+
+  .group .rows > :global(li:last-child) {
+    border-block-end: 0;
+  }
+</style>

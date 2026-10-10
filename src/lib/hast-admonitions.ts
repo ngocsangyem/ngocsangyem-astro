@@ -10,12 +10,18 @@ import { defineHastPlugin } from 'satteri';
  * Astro 7's Markdown pipeline leaves the marker as literal text inside a
  * blockquote, so this promotes it to a labelled block.
  */
+/*
+ * Each type pairs its hue with a single-width terminal glyph and a word, so
+ * colour is never the only signal. The glyph is decorative (hidden from AT);
+ * the word carries the meaning. ⚠ takes U+FE0E so it renders as text, not as
+ * a colour emoji.
+ */
 const TYPES = {
-  note: { label: 'Note', icon: 'M12 16v-5M12 8h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z' },
-  tip: { label: 'Tip', icon: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z' },
-  important: { label: 'Important', icon: 'M12 8v5M12 17h.01M3 5h18v13H8l-5 4V5Z' },
-  warning: { label: 'Warning', icon: 'M12 9v4M12 17h.01M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z' },
-  caution: { label: 'Caution', icon: 'M12 8v4M12 16h.01M12 3 3 7.5v5C3 17.6 6.8 21.5 12 22c5.2-.5 9-4.4 9-9.5v-5L12 3Z' },
+  note: { label: 'Note', glyph: '※' },
+  tip: { label: 'Tip', glyph: '✓' },
+  important: { label: 'Important', glyph: '▲' },
+  warning: { label: 'Warning', glyph: '⚠\uFE0E' },
+  caution: { label: 'Caution', glyph: '↯' },
 } as const;
 
 type AdmonitionType = keyof typeof TYPES;
@@ -67,7 +73,7 @@ export const hastAdmonitions = defineHastPlugin({
       if (!parsed) return;
 
       const { type, label, remainder } = parsed;
-      const { icon } = TYPES[type];
+      const { glyph } = TYPES[type];
 
       const emptyParagraph = remainder.trim() === '' && firstParagraph.children.length === 1;
 
@@ -91,25 +97,14 @@ export const hastAdmonitions = defineHastPlugin({
           {
             type: 'element',
             tagName: 'p',
-            properties: { className: ['admonition-label'] },
+            // Chrome, not content: the label stays out of the search index.
+            properties: { className: ['admonition-label'], dataPagefindIgnore: '' },
             children: [
               {
                 type: 'element',
-                tagName: 'svg',
-                properties: {
-                  viewBox: '0 0 24 24',
-                  width: 15,
-                  height: 15,
-                  ariaHidden: 'true',
-                  fill: 'none',
-                  stroke: 'currentColor',
-                  strokeWidth: '1.8',
-                  strokeLinecap: 'round',
-                  strokeLinejoin: 'round',
-                },
-                children: [
-                  { type: 'element', tagName: 'path', properties: { d: icon }, children: [] },
-                ],
+                tagName: 'span',
+                properties: { className: ['admonition-glyph'], ariaHidden: 'true' },
+                children: [{ type: 'text', value: glyph }],
               },
               { type: 'element', tagName: 'span', properties: {}, children: [{ type: 'text', value: label }] },
             ],

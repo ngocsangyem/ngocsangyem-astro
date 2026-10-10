@@ -1,61 +1,89 @@
 ---
-import { formatDate, toISODate } from '../../lib/dates';
+import { formatDateShort, toISODate } from '../../lib/dates';
 import { postUrl, type Post } from '../../lib/posts';
 
 interface Props {
   post: Post;
-  /** Position in the whole list, for the reveal stagger. */
-  stage?: number;
+  /** Reading time in whole minutes; the column is left empty without it. */
+  minutes?: number;
 }
 
-const { post, stage } = Astro.props;
+const { post, minutes } = Astro.props;
 const date = post.data.date;
 ---
 
-<a
-  class="row"
-  href={postUrl(post)}
-  data-enter={stage === undefined ? undefined : ''}
-  style={stage === undefined ? undefined : `--enter-stage: ${stage}`}
->
-  <span class="title">{post.data.title}</span>
-  <time class="date" datetime={toISODate(date)}>{formatDate(date)}</time>
-</a>
+{
+  /* The whole row is one link. The title comes first in the markup so it leads
+     the link's accessible name; grid areas put the date first on screen. */
+}
+<li class="row-item">
+  <a class="row" href={postUrl(post)}>
+    <span class="title">{post.data.title}</span>
+    <time class="date" datetime={toISODate(date)}>{formatDateShort(date)}</time>
+    {
+      minutes !== undefined && (
+        <span class="time">
+          <span aria-hidden="true">{minutes} min</span>
+          <span class="visually-hidden">{minutes} {minutes === 1 ? 'minute' : 'minutes'}</span>
+        </span>
+      )
+    }
+  </a>
+</li>
 
 <style>
-  /* Hover steps colour along the ink ramp rather than fading opacity: a rested
-     op50 would push muted text under the 4.5:1 floor. */
+  .row-item {
+    border-block-end: var(--border-hairline) solid var(--color-line-soft);
+  }
+
+  /* Hover is an instant row fill, never movement. */
   .row {
     align-items: baseline;
-    display: flex;
-    gap: 0.75rem;
-    justify-content: space-between;
-    padding-block: 0.45rem;
+    column-gap: var(--space-4);
+    display: grid;
+    grid-template-areas: 'date title time';
+    grid-template-columns: 8.5rem 1fr 5rem;
+    padding-block: var(--space-3);
+    padding-inline: var(--space-2);
     text-decoration: none;
+  }
+
+  .row:hover {
+    background-color: var(--color-hover-row);
   }
 
   .title {
     color: var(--color-ink);
-    transition: color var(--dur-fast) var(--ease-out);
+    font-size: var(--text-ui);
+    grid-area: title;
   }
 
-  .row:hover .title {
-    color: var(--color-ink-deep);
+  .date,
+  .time {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-label);
   }
 
   .date {
-    color: var(--color-ink-light);
-    flex: none;
-    font-size: 0.8125rem;
+    grid-area: date;
   }
 
-  /* 0.45rem of padding puts a row at roughly 40px, and rows are flush against
-     each other, so on a touch screen the miss lands on the neighbouring post
-     rather than on nothing. Loosened only where the pointer is coarse: this is
-     the site's primary navigation, and desktop keeps its density. */
-  @media (pointer: coarse) {
+  .time {
+    grid-area: time;
+    text-align: end;
+  }
+
+  /* Narrow: the title takes the full first line, date and time share the second. */
+  @media (max-width: 39.99rem) {
     .row {
-      padding-block: 0.65rem;
+      grid-template-areas:
+        'title title'
+        'date time';
+      grid-template-columns: 1fr auto;
+      row-gap: var(--space-2);
     }
   }
 </style>

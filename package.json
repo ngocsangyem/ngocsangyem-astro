@@ -22,7 +22,6 @@
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.3",
     "@iconify-json/lucide": "^1.2.126",
-    "@iconify-json/simple-icons": "^1.2.93",
     "@shikijs/transformers": "4.4.3",
     "astro": "^7.2.9",
     "astro-icon": "^1.1.5",

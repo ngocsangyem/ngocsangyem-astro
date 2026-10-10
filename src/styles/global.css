@@ -1,14 +1,14 @@
-/* Layout constants the token block does not define live here. Chrome shares the
-   prose column's width so the nav, the content and the social row all sit on one
-   left edge. */
+/* Layout constants the token block does not define live here. The container
+   widths (--page-max-width, --prose-max-width) are tokens; this block holds
+   the gutters and the spacing scale. */
 :root {
-  --page-max-width: var(--prose-max-width);
   --page-gutter: 1.5rem;
-  --header-height: 4rem;
+  --header-height: 4.5rem;
 
   /* Shared layout scale. These stay beside the page-level constants rather
      than the canonical visual tokens because they describe reusable geometry,
      not new design decisions. */
+  --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
@@ -18,6 +18,8 @@
   --space-8: 3rem;
   --space-9: 3.5rem;
   --space-10: 4rem;
+  /* Between major page blocks. */
+  --space-12: 6rem;
   --border-hairline: 1px;
   --control-size: 2.5rem;
 }
@@ -68,29 +70,28 @@ video {
   block-size: auto;
 }
 
-/* Paper lives on `html`, never on `body`, so a full-height page and a short one
+/* The page tone lives on `html`, never on `body`, so a full-height page and a short one
    are the same colour to the bottom of the viewport. */
 html {
   color-scheme: light;
-  background-color: var(--color-paper);
-  transition: background-color var(--dur-fast) var(--ease-out);
+  background-color: var(--color-bg);
+  transition: background-color var(--motion-fast) var(--ease-out);
 }
 
 /* Cross-document view transitions. Browser-native, so navigation stops being a
    hard cut without an article shipping a single byte of script for it.
 
    Only the OLD page animates, and it animates above the new one. The new page
-   already has an entrance: `.prose > *` and `[data-enter]` stagger themselves
-   in. Crossfading the new root on top of that would multiply two opacity
-   ramps against each other, the same trap PostLayout avoids by refusing to
-   nest reveals. So the outgoing page dissolves and the incoming one is simply
-   already there underneath, settling in on its own schedule. */
+   already has an entrance: its hero reveals through `[data-enter]`.
+   Crossfading the new root on top of that would multiply two opacity ramps
+   against each other. So the outgoing page dissolves and the incoming one is
+   simply already there underneath. */
 @view-transition {
   navigation: auto;
 }
 
 ::view-transition-old(root) {
-  animation: fade-out var(--dur-base) var(--ease-out) both;
+  animation: fade-out var(--motion-base) var(--ease-out) both;
   /* Painted above the incoming page; the default order puts `new` on top,
      where it would cover the dissolve completely. */
   z-index: 1;
@@ -126,9 +127,9 @@ html {
 }
 
 body {
-  color: var(--color-ink);
-  font-family: var(--font-body);
-  font-size: 1rem;
+  color: var(--color-ink-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-ui);
   line-height: 1.6;
   min-height: 100vh;
 }
@@ -137,9 +138,9 @@ h1,
 h2,
 h3,
 h4 {
-  color: var(--color-ink-deep);
-  font-family: var(--font-display);
-  font-weight: 600;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 500;
   line-height: 1.25;
   text-wrap: balance;
   margin-block-start: 0;
@@ -147,14 +148,14 @@ h4 {
 
 a {
   color: inherit;
-  text-decoration-color: var(--color-ink-light);
+  text-decoration-color: var(--color-ink-3);
   text-underline-offset: 0.2em;
-  transition: opacity var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
+  transition: opacity var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
 }
 
 a:hover {
-  color: var(--color-ink-deep);
+  color: var(--color-ink);
 }
 
 :focus-visible {
@@ -162,10 +163,14 @@ a:hover {
   outline-offset: 2px;
 }
 
+::selection {
+  background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
 /* Hairline, never a heavy bar. */
 hr {
   border: 0;
-  border-block-start: var(--border-hairline) solid var(--color-ink-light);
+  border-block-start: var(--border-hairline) solid var(--color-ink-3);
   opacity: 0.25;
   margin-block: var(--space-8);
 }
@@ -174,6 +179,12 @@ code,
 kbd,
 time {
   font-family: var(--font-mono);
+}
+
+/* Dates, reading times and percentages line up column to column. */
+time,
+.num {
+  font-variant-numeric: tabular-nums;
 }
 
 .page {
@@ -194,27 +205,13 @@ time {
   max-inline-size: var(--prose-max-width);
 }
 
-/* A small number of editorial pages need room for parallel columns. The
-   reading measure stays component-owned instead of stretching with the shell. */
-.page-canvas-wide {
-  --page-max-width: 76rem;
-}
-
-/* Article pages need room beside the column for the margin TOC. The prose stays
-   at 65ch and stays centred, so every left edge still lines up. */
-@media (min-width: 80rem) {
-  .page-wide {
-    max-inline-size: calc(76rem + 2 * var(--page-gutter));
-  }
-}
-
 /* Visible only once focused. The header's nav sits ahead of the article in the
    tab order on every page, so without this a keyboard reader walks the whole
    nav again on each navigation. */
 .skip-link {
-  background: var(--color-paper);
-  border-radius: var(--radius-chip);
-  color: var(--color-ink-deep);
+  background: var(--color-bg);
+  border-radius: 0;
+  color: var(--color-ink);
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   inset-block-start: var(--space-2);
@@ -223,7 +220,7 @@ time {
   position: fixed;
   text-decoration: none;
   transform: translateY(-150%);
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--motion-fast) var(--ease-out);
   z-index: 10;
 }
 
@@ -239,6 +236,51 @@ time {
   }
 }
 
+/* Printed hotkey hint, `[K]`. Same colour as its label: the letter carries
+   information, so it never drops to the decorative ink. A device with no
+   keyboard to press it with has no use for the hint. */
+.k {
+  color: inherit;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .k {
+    display: none;
+  }
+}
+
+/* Shortcuts switched off: the hints go with them. */
+[data-hotkeys='off'] .k {
+  display: none;
+}
+
+/* Index and page titles are lowercase by CSS, so the markup keeps the real
+   word for search and assistive tech. Sentence-case tagline beneath. */
+.page-title {
+  font-size: var(--text-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-transform: lowercase;
+}
+
+.page-tagline {
+  color: var(--color-ink-2);
+  font-size: var(--text-ui);
+  margin-block-start: var(--space-2);
+}
+
+/* The site's label voice: uppercase JetBrains Mono in the muted ink. Uppercase
+   comes from CSS, so the text stays readable as written for AT and search. */
+.mono-label {
+  color: var(--color-ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
 .visually-hidden {
   position: absolute;
   inline-size: 1px;
@@ -250,68 +292,3 @@ time {
   white-space: nowrap;
 }
 
-.page-glass,
-.site-header {
-  position: relative;
-  z-index: 2;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-edge);
-  border-radius: 0.5rem;
-}
-
-/* Only the reading column needs room inside the glass. The header sets its own
-   height from --header-height instead. */
-.page-glass {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-/* Below the panel's natural width, `margin-inline: auto` resolves to zero and
-   the sheet sits flush against the viewport, reading as a plain page background
-   instead of paper laid over the grove. A small reveal on the sides and below
-   keeps the sheet's edge — and the grove behind it — visible on phones. */
-@media (max-width: 48rem) {
-  .page,
-  .site-header {
-    margin-inline: var(--space-4);
-  }
-
-  .page-canvas-wide {
-    inline-size: calc(100% - 2rem);
-  }
-
-  .page-glass {
-    margin-block-end: var(--space-4);
-  }
-}
-
-/* Magic-link chip: the favicon is the only chroma on the page. Global rather
-   than prose-scoped because a chip is chrome -- rehype mints them inside posts,
-   and the home page writes them by hand. */
-.link-chip {
-  align-items: center;
-  background-color: var(--color-chip);
-  border-radius: var(--radius-chip);
-  display: inline-flex;
-  gap: 0.28em;
-  font-family: var(--font-chip);
-  font-size: 0.94em;
-  line-height: 1.2;
-  padding: 0.1em 0.32em 0.1em 0.28em;
-  text-decoration: none;
-  transition: opacity var(--dur-fast) var(--ease-out);
-}
-
-.link-chip:hover {
-  opacity: 0.7;
-}
-
-/* `img` for a rehype chip's committed favicon, `svg` for one written inline so
-   the mark can take its colour from the text around it. */
-.link-chip :is(img, svg) {
-  display: inline-block;
-  block-size: 0.95em;
-  inline-size: 0.95em;
-}
