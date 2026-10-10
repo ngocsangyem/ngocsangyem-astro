@@ -1,3 +1,5 @@
+import { HOTKEYS_OFF, isTypingTarget, type PathNodeLike } from '../lib/hotkeys';
+
 const CSS_HREF = '/pagefind/pagefind-component-ui.css';
 const JS_HREF = '/pagefind/pagefind-component-ui.js';
 
@@ -85,23 +87,19 @@ dialog?.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
-  if (dialog?.open) return;
+  // Any modal, not only this one: the shortcut overlay owns the keyboard too.
+  if (document.querySelector('dialog[open]')) return;
 
-  // composedPath rather than target: it reads correctly whether the focused
-  // field is in the page or inside a custom element's shadow root, so this
-  // keeps working if Pagefind ever moves its input there.
-  const typing = event.composedPath().some((node) => {
-    if (!(node instanceof HTMLElement)) return false;
-    return (
-      node.isContentEditable || node.tagName === 'INPUT' || node.tagName === 'TEXTAREA'
-    );
-  });
-  if (typing) return;
+  if (isTypingTarget(event.composedPath() as PathNodeLike[])) return;
 
-  // Lowercased so Shift or Caps Lock does not defeat the shortcut.
-  const shortcut =
-    event.key === '/' || ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k');
-  if (!shortcut) return;
+  // `/` is a single-character shortcut, so it obeys the reader's OFF switch
+  // (WCAG 2.1.4); ⌘K carries a modifier and stays live. The letter `S` belongs
+  // to the hotkey registry, which clicks the trigger. Lowercased so Shift or
+  // Caps Lock does not defeat ⌘K.
+  const bare = !event.ctrlKey && !event.altKey && !event.metaKey;
+  const slash = bare && event.key === '/' && document.documentElement.dataset.hotkeys !== HOTKEYS_OFF;
+  const commandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+  if (!slash && !commandK) return;
 
   event.preventDefault();
   void open();

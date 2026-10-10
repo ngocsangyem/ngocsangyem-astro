@@ -33,18 +33,20 @@ const failures = [];
 const localAssets = new Set();
 
 /**
- * Inline scripts the plan allows on every page: the blocking theme init, the
- * search module and the theme toggle. Changing these numbers is a deliberate
- * act, which is the point of asserting them.
+ * Inline scripts the plan allows on every page: the blocking theme init alone.
+ * Theme toggle, search and the keyboard layer ship together as the site-wide
+ * `scripts/site.ts` module, which is emitted as an external file and so does
+ * not count here. Changing these numbers is a deliberate act, which is the
+ * point of asserting them.
  *
- * An article carries a fourth: the copy control on its code blocks. Portfolio
- * also carries a fourth, its scroll-linked career-route indicator. Both are
+ * An article carries a second: the copy control on its code blocks. Portfolio
+ * also carries a second, its scroll-linked career-route indicator. Both are
  * budgeted separately rather than by raising the figure everywhere, so a script
  * arriving on a page that should carry none of it still fails the audit.
  */
-const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 3;
-const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 4;
-const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 4;
+const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 1;
+const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 2;
+const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 2;
 
 /** `posts/<slug>/index.html`, but not the `posts/index.html` listing. */
 function isArticle(where) {

@@ -3,6 +3,7 @@ import Head from "../components/base/Head.astro";
 import Header from "../components/base/Header.astro";
 import CdUpLink from "../components/base/CdUpLink.astro";
 import SiteFooter from "../components/base/SiteFooter.astro";
+import HotkeyHelp from "../components/base/HotkeyHelp.astro";
 import ReadingProgress from "../components/posts/ReadingProgress.astro";
 import ToTopLink from "../components/base/ToTopLink.astro";
 import { SITE } from "../config/site";
@@ -69,5 +70,10 @@ const isWideCanvas = canvas === "wide";
         links, rather than interrupting them from a fixed corner. */
     }
     <ToTopLink />
+    <HotkeyHelp />
+    {/* Theme, search and the keyboard layer, as one script. */}
+    <script>
+      import "../scripts/site";
+    </script>
   </body>
 </html>

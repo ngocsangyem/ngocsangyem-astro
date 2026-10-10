@@ -28,8 +28,8 @@
 
      Two alternatives were rejected. `animation-timeline: scroll()` reads better
      but stable Firefox does not implement it, which would leave the anchor
-     permanently visible there. A scroll listener would be a fourth inline
-     script, and `npm run audit:dist` asserts three. */
+     permanently visible there. A scroll listener would be another script on
+     every page, which `npm run audit:dist` budgets exactly. */
   .to-top-rail {
     position: absolute;
     inset-block: 100vh 0;

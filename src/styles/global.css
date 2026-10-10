@@ -248,6 +248,11 @@ time,
   }
 }
 
+/* Shortcuts switched off: the hints go with them. */
+[data-hotkeys='off'] .k {
+  display: none;
+}
+
 .visually-hidden {
   position: absolute;
   inline-size: 1px;
