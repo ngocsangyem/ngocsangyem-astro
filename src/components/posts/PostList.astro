@@ -1,0 +1,71 @@
+---
+import { groupPostsByYear, type Post } from '../../lib/posts';
+import PostRow from './PostRow.astro';
+
+interface Props {
+  posts: Post[];
+  /** Year chapters, each under a mono `2026 4` label. */
+  grouped?: boolean;
+  /** Reading time per post id. */
+  minutes?: Map<string, number>;
+  /** Marks the list the home page's LOAD MORE appends to. */
+  id?: string;
+}
+
+const { posts, grouped = false, minutes, id } = Astro.props;
+const groups = grouped ? groupPostsByYear(posts) : [];
+---
+
+{
+  grouped ? (
+    <div class="groups">
+      {groups.map((group) => (
+        <section class="group">
+          <h2 class="year">
+            <span class="num">{group.year}</span>
+            <span class="count num">
+              <span aria-hidden="true">{group.posts.length}</span>
+              <span class="visually-hidden">
+                , {group.posts.length} {group.posts.length === 1 ? 'post' : 'posts'}
+              </span>
+            </span>
+          </h2>
+          <ul class="rows" role="list">
+            {group.posts.map((post) => <PostRow post={post} minutes={minutes?.get(post.id)} />)}
+          </ul>
+        </section>
+      ))}
+    </div>
+  ) : (
+    <ul class="rows" role="list" id={id}>
+      {posts.map((post) => <PostRow post={post} minutes={minutes?.get(post.id)} />)}
+    </ul>
+  )
+}
+
+<style>
+  .groups {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .year {
+    color: var(--color-ink-3);
+    display: flex;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    font-weight: 400;
+    gap: var(--space-3);
+    letter-spacing: var(--tracking-label);
+    margin-block-end: var(--space-2);
+  }
+
+  .year > :first-child {
+    color: var(--color-ink);
+  }
+
+  .rows {
+    border-block-start: var(--border-hairline) solid var(--color-line-soft);
+    margin: 0;
+  }
+</style>

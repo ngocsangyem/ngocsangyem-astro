@@ -66,7 +66,9 @@ const year = new Date().getFullYear();
     gap: var(--space-3);
     letter-spacing: var(--tracking-label);
     margin-block-start: var(--space-12);
-    padding-block: var(--space-6) var(--space-8);
+    /* The end padding clears the sticky back-to-top control, which comes to
+       rest over the last stretch of the page. */
+    padding-block: var(--space-6) calc(var(--control-size) + var(--space-8));
   }
 
   .row {

@@ -1,80 +1,107 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PostRows from "../components/posts/PostRows.astro";
-import SocialRow from "../components/base/SocialRow.astro";
+import FeaturedPost from "../components/posts/FeaturedPost.astro";
+import LoadMore from "../components/posts/LoadMore.astro";
+import PostList from "../components/posts/PostList.astro";
 import { SITE } from "../config/site";
-import { getPublishedPosts } from "../lib/posts";
+import { getFeaturedPost, getPublishedPosts, getReadingTimes } from "../lib/posts";
 
-const RECENT_COUNT = 6;
+const PAGE_SIZE = 6;
 const posts = await getPublishedPosts();
-const recent = posts.slice(0, RECENT_COUNT);
-const hasMore = posts.length > recent.length;
+const minutes = await getReadingTimes(posts);
+const featured = getFeaturedPost(posts);
+const rest = posts.filter((post) => post.id !== featured?.id);
+const firstPage = rest.slice(0, PAGE_SIZE);
+const heldBack = rest.slice(PAGE_SIZE);
 ---
 
 {
-  /* The contact links belong to the introduction here, not to the foot of the
-     page, so the layout's own copy of them is switched off. */
+  /* The profile links belong to the introduction here, so the footer's own
+     copy of them is switched off. */
 }
 <BaseLayout socials={false}>
-  {
-    /* Rows carry their own stagger, so the wrapper must not add a second one. */
-  }
-  <div class="prose-column">
-    <h1 data-enter>Hello World!</h1>
-    <div data-enter style="--enter-stage: 1">
-      <SocialRow variant="chips" />
-    </div>
-    {
-      SITE.greeting && (
-        <p class="greeting" data-enter style="--enter-stage: 2">
-          {SITE.greeting}
-        </p>
-      )
-    }
-
-    <section data-enter style="--enter-stage: 3">
-      <h2 class="heading">Recent</h2>
-      <PostRows posts={recent} />
+  <div class="home">
+    <header class="hero">
+      <h1 class="page-title title" data-enter>Hello World!</h1>
+      <p class="page-tagline" data-enter style="--enter-stage: 1">{SITE.description}</p>
       {
-        hasMore && (
-          <p class="more">
-            <a href="/posts">All posts</a>
+        SITE.greeting && (
+          <p class="dek" data-enter style="--enter-stage: 2">
+            {SITE.greeting}
           </p>
         )
       }
-    </section>
+      <ul class="profile" role="list" aria-label="Elsewhere" data-pagefind-ignore>
+        {
+          SITE.socials.map((social) => (
+            <li>
+              <a href={social.href} rel="me noopener">
+                {social.label}
+                <span aria-hidden="true"> ↗</span>
+              </a>
+            </li>
+          ))
+        }
+        <li><a href="/rss.xml">RSS<span aria-hidden="true"> ↗</span></a></li>
+      </ul>
+    </header>
+
+    <div class="index">
+      {featured && <FeaturedPost post={featured} minutes={minutes.get(featured.id)} />}
+
+      <PostList posts={firstPage} minutes={minutes} id="home-posts" />
+      <LoadMore rest={heldBack} minutes={minutes} listId="home-posts" />
+    </div>
   </div>
 </BaseLayout>
 
 <style>
-  h1 {
-    font-size: 1.875rem;
-    letter-spacing: -0.015em;
-    margin-block: 1.5rem 0;
+  /* One centred column: home is an introduction and a reading list, not the
+     archive's filter view, so it has no topic tabs and no side column. */
+  .home {
+    margin-inline: auto;
+    max-inline-size: 45rem;
   }
 
-  .greeting {
+  .hero {
+    margin-block: var(--space-8) var(--space-10);
+  }
+
+  /* Kept verbatim, so not lowercased like the other page titles. */
+  .title {
+    text-transform: none;
+  }
+
+  .dek {
     color: var(--color-ink-2);
-    font-size: 1.0625rem;
-    line-height: 1.75;
-    /* The chip row sits between this and the title now, so the space above only
-       has to clear the chips rather than open the page. */
-    margin-block: 1.25rem 3.5rem;
-    max-width: 52ch;
-  }
-
-  .heading {
-    color: var(--color-ink-3);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    margin-block-end: var(--space-3);
-    text-transform: uppercase;
-  }
-
-  .more {
-    color: var(--color-ink-3);
-    font-size: 0.9375rem;
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
     margin-block-start: var(--space-5);
+  }
+
+  .profile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-block-start: var(--space-5);
+  }
+
+  .profile a {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .profile a:hover {
+    color: var(--color-ink);
+  }
+
+  .index {
+    display: grid;
+    gap: var(--space-6);
   }
 </style>

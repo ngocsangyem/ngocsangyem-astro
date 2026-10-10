@@ -39,7 +39,6 @@ export default defineConfig({
     icon({
       include: {
         lucide: ['sun', 'moon', 'chevron-right', 'text-align-start'],
-        'simple-icons': ['github', 'linkedin'],
       },
     }),
   ],

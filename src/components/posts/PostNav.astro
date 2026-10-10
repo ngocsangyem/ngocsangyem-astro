@@ -1,7 +1,8 @@
 ---
-import PostRows from './PostRows.astro';
+import PostList from './PostList.astro';
 import {
   getPublishedPosts,
+  getReadingTimes,
   getRelatedPosts,
   getSiblings,
   postUrl,
@@ -17,6 +18,7 @@ const { post } = Astro.props;
 // in memory at build time, and every article wants the same whole list.
 const posts = await getPublishedPosts();
 const related = getRelatedPosts(posts, post);
+const minutes = await getReadingTimes(related);
 const { newer, older } = getSiblings(posts, post);
 const hasSiblings = Boolean(newer || older);
 ---
@@ -27,7 +29,7 @@ const hasSiblings = Boolean(newer || older);
       {related.length > 0 && (
         <section class="related">
           <h2 class="label">Related</h2>
-          <PostRows posts={related} />
+          <PostList posts={related} minutes={minutes} />
         </section>
       )}
 

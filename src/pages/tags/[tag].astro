@@ -1,54 +1,39 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostRows from '../../components/posts/PostRows.astro';
-import { getAllTags, getPostsByTag, getPublishedPosts } from '../../lib/posts';
+import PostIndex from '../../components/posts/PostIndex.astro';
+import {
+  getAllTags,
+  getPostsByTag,
+  getPublishedPosts,
+  getReadingTimes,
+  getTopTags,
+} from '../../lib/posts';
+
+const TOP_TAGS = 5;
 
 export const getStaticPaths = (async () => {
   const posts = await getPublishedPosts();
   return getAllTags(posts).map((tag) => ({
     params: { tag: tag.slug },
-    props: { label: tag.label, posts: getPostsByTag(posts, tag.slug) },
+    props: { tag, all: posts, posts: getPostsByTag(posts, tag.slug) },
   }));
 }) satisfies GetStaticPaths;
 
-const { label, posts } = Astro.props;
+const { tag, all, posts } = Astro.props;
 const count = posts.length;
+const minutes = await getReadingTimes(posts);
 ---
 
-<BaseLayout title={`#${label}`} description={`Posts tagged ${label}.`}>
-  <div class="prose-column">
-    <h1>#{label}</h1>
-    <p class="count">
-      {count} {count === 1 ? 'post' : 'posts'}
-      <span aria-hidden="true"> · </span>
-      <a href="/tags">all tags</a>
-    </p>
-    <PostRows posts={posts} />
-  </div>
+<BaseLayout title={`#${tag.label}`} description={`Posts tagged ${tag.label}.`}>
+  <PostIndex
+    title={`#${tag.label}`}
+    tagline={`${count} ${count === 1 ? 'post' : 'posts'} tagged ${tag.label}.`}
+    posts={posts}
+    minutes={minutes}
+    topTags={getTopTags(all, TOP_TAGS)}
+    total={all.length}
+    current={tag.slug}
+    extra={tag}
+  />
 </BaseLayout>
-
-<style>
-  h1 {
-    font-size: 1.75rem;
-    margin-block-start: var(--space-4);
-  }
-
-  .count {
-    color: var(--color-ink-3);
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    margin-block: var(--space-2) var(--space-7);
-  }
-
-  /* A way back out of a single tag, on the line that already says which tag
-     this is — the header has no entry for it, by design. */
-  .count a {
-    color: inherit;
-    transition: color var(--motion-fast) var(--ease-out);
-  }
-
-  .count a:hover {
-    color: var(--color-ink);
-  }
-</style>

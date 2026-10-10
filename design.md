@@ -28,7 +28,7 @@ progressive enhancement.
 - Collections: `posts`, `projects` (data collection), plus an `about` page.
 - URLs · `/posts/[slug]`, `/posts`, `/projects`, `/portfolio`, `/about`, `/tags`, `/tags/[tag]`.
 - Format · MDX for all content (plain Markdown still works).
-- Home · greeting + recent posts, link to `/posts` for the rest. H1 stays "Hello World!".
+- Home · one centred column: greeting, profile links, a featured post, recent posts with LOAD MORE, link to `/posts` for the rest. H1 stays "Hello World!". No topic tabs — home is the author's introduction and deliberately does not copy claude.dev's index layout; tabs belong to the archive.
 - `/posts` · rows of mono date · sans title · mono reading time, 1px separators, no thumbnails, no summaries. Topic tabs swap the list with no sliding indicator.
 - Post page · tag chip, H1, standfirst, AUTHOR / PUBLISHED / READING TIME grid, sticky left rail with TREE table of contents, ASCII progress and SHARE.
 - `/portfolio` · wide editorial résumé on the same tokens; no second visual identity.

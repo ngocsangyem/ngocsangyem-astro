@@ -40,13 +40,15 @@ const localAssets = new Set();
  * point of asserting them.
  *
  * An article carries a second: the copy control on its code blocks. Portfolio
- * also carries a second, its scroll-linked career-route indicator. Both are
- * budgeted separately rather than by raising the figure everywhere, so a script
- * arriving on a page that should carry none of it still fails the audit.
+ * also carries a second, its scroll-linked career-route indicator, and the home
+ * page a second, its LOAD MORE control. Each is budgeted separately rather than
+ * by raising the figure everywhere, so a script arriving on a page that should
+ * carry none of it still fails the audit.
  */
 const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 1;
 const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 2;
 const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 2;
+const ALLOWED_INLINE_SCRIPTS_HOME = 2;
 
 /** `posts/<slug>/index.html`, but not the `posts/index.html` listing. */
 function isArticle(where) {
@@ -56,6 +58,7 @@ function isArticle(where) {
 function allowedInlineScripts(where) {
   if (isArticle(where)) return ALLOWED_INLINE_SCRIPTS_PER_ARTICLE;
   if (where === 'portfolio/index.html') return ALLOWED_INLINE_SCRIPTS_PORTFOLIO;
+  if (where === 'index.html') return ALLOWED_INLINE_SCRIPTS_HOME;
   return ALLOWED_INLINE_SCRIPTS_PER_PAGE;
 }
 let htmlCount = 0;

@@ -1,0 +1,110 @@
+---
+import { tagUrl, type Tag } from '../../lib/posts';
+
+interface Props {
+  tags: Tag[];
+  /** Count shown beside ALL. */
+  total: number;
+  /** Selected tag slug; omitted means ALL is selected. */
+  current?: string;
+  /**
+   * A tag outside the top set that is selected on its own page. Appended as an
+   * extra tab so every tag page shows a selected tab.
+   */
+  extra?: Tag;
+  /** Stacks into a Greptile-style filter column from 64rem up. */
+  column?: boolean;
+}
+
+const { tags, total, current, extra, column = false } = Astro.props;
+const shown = extra && !tags.some((tag) => tag.slug === extra.slug) ? [...tags, extra] : tags;
+// ALL is the current page on /posts itself, and only there.
+const allCurrent = current === undefined ? 'page' : undefined;
+---
+
+{
+  /* Links, not buttons: each tab is a page with a shareable URL, so selection
+     is MPA navigation and there is no indicator to animate. */
+}
+<div class:list={['tabs', { column }]} data-pagefind-ignore>
+  <nav aria-label="Topics">
+    <ul role="list">
+      <li>
+        <a href="/posts" aria-current={allCurrent}>
+          All <span class="count num">{total}</span>
+        </a>
+      </li>
+      {
+        shown.map((tag) => (
+          <li>
+            <a href={tagUrl(tag.slug)} aria-current={current === tag.slug ? 'page' : undefined}>
+              {tag.label} <span class="count num">{tag.count}</span>
+            </a>
+          </li>
+        ))
+      }
+      <li><a class="all-tags" href="/tags">All tags <span aria-hidden="true">→</span></a></li>
+    </ul>
+  </nav>
+</div>
+
+<style>
+  .tabs {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    justify-content: space-between;
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+  }
+
+  a {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  a:hover,
+  a[aria-current] {
+    color: var(--color-ink);
+  }
+
+  /* The count stays muted even on the selected tab, so the label reads first. */
+  .count {
+    color: var(--color-ink-3);
+  }
+
+  @media (min-width: 64rem) {
+    .column {
+      align-items: stretch;
+      flex-direction: column;
+      justify-content: flex-start;
+      position: sticky;
+      inset-block-start: var(--space-6);
+    }
+
+    .column ul {
+      flex-direction: column;
+    }
+
+    .column nav {
+      display: contents;
+    }
+
+    /* Count pushed to the end of the line, like a ledger. */
+    .column a:not(.all-tags) {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+</style>

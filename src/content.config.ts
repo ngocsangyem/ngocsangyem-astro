@@ -16,6 +16,8 @@ const posts = defineCollection({
     draft: z.boolean().default(false),
     /** Suppresses the table of contents on a post that would otherwise get one. */
     toc: z.boolean().default(true),
+    /** Leads the home page. The newest featured post wins; with none, the newest post. */
+    featured: z.boolean().default(false),
   }),
 });
 
