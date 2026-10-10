@@ -1,0 +1,84 @@
+---
+import { SITE } from '../../config/site';
+import { formatDateShort, toISODate } from '../../lib/dates';
+import { slugifyTag, tagUrl, type Post } from '../../lib/posts';
+
+interface Props {
+  post: Post;
+  minutesRead?: number;
+}
+
+const { post, minutesRead } = Astro.props;
+const firstTag = post.data.tags.map((raw) => ({ slug: slugifyTag(raw), label: raw.trim() })).find((tag) => tag.slug);
+// Only a declared description is a standfirst; the generated excerpt would
+// just repeat the first paragraph a few lines below.
+const standfirst = post.data.description?.trim();
+---
+
+{
+  /* Matter / Substack: a small topic line, the title, an optional standfirst
+     and one quiet meta line, closed by a hairline. */
+}
+<header class="hero">
+  {firstTag && <a class="topic mono-label" href={tagUrl(firstTag.slug)} data-enter>{firstTag.label}</a>}
+  <h1 class="title" data-enter style="--enter-stage: 1">{post.data.title}</h1>
+  {standfirst && <p class="standfirst" data-enter style="--enter-stage: 2">{standfirst}</p>}
+  <p class="meta" data-enter style="--enter-stage: 3">
+    <span>{SITE.author}</span>
+    <span aria-hidden="true">·</span>
+    <time datetime={toISODate(post.data.date)}>{formatDateShort(post.data.date)}</time>
+    {
+      minutesRead !== undefined && (
+        <>
+          <span aria-hidden="true">·</span>
+          <span class="num">{minutesRead} min read</span>
+        </>
+      )
+    }
+  </p>
+</header>
+
+<style>
+  .hero {
+    border-block-end: var(--border-hairline) solid var(--color-line-soft);
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+    margin-block: var(--space-8);
+    padding-block-end: var(--space-6);
+  }
+
+  .topic {
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  .topic:hover {
+    color: var(--color-ink);
+  }
+
+  .title {
+    font-size: var(--text-h1);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .standfirst {
+    color: var(--color-ink-2);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+
+  .meta {
+    color: var(--color-ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--text-label);
+    gap: var(--space-2);
+  }
+
+  /* One voice for the whole line, not a mono date in a sans sentence. */
+  .meta time {
+    font-family: inherit;
+  }
+</style>

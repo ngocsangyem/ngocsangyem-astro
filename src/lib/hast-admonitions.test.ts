@@ -83,6 +83,24 @@ describe('the rendered output', () => {
     }
   });
 
+  it('pairs every label with a hidden single-width glyph', () => {
+    for (const [marker, glyph] of [
+      ['NOTE', '※'],
+      ['TIP', '✓'],
+      ['IMPORTANT', '▲'],
+      ['WARNING', '⚠\uFE0E'],
+      ['CAUTION', '↯'],
+    ]) {
+      const html = render(`> [!${marker}]\n> Body.\n`);
+      expect(html).toContain(`<span class="admonition-glyph" aria-hidden="true">${glyph}</span>`);
+      expect(html).not.toContain('<svg');
+    }
+  });
+
+  it('keeps the label out of the search index', () => {
+    expect(render('> [!NOTE]\n> Body.\n')).toMatch(/class="admonition-label"[^>]*data-pagefind-ignore/);
+  });
+
   it('keeps body text that shares the marker line', () => {
     const html = render('> [!TIP] inline body\n');
     expect(html).toContain('inline body');

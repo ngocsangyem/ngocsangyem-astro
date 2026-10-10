@@ -1,0 +1,82 @@
+---
+import { SITE } from '../../config/site';
+import { postUrl, slugifyTag, tagUrl, type Post } from '../../lib/posts';
+import { shareLinks } from '../../lib/share-links';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const url = `${SITE.url}${postUrl(post)}`;
+const links = shareLinks({ url, title: post.data.title });
+const tags = post.data.tags
+  .map((raw) => ({ slug: slugifyTag(raw), label: raw.trim() }))
+  .filter((tag) => tag.slug);
+---
+
+{
+  /* The end-of-article line, after the text rather than beside it: tags, then
+     share targets as plain words. The copy buttons start hidden and are shown
+     by scripts/share.ts only where the Clipboard API works. */
+}
+<footer class="post-end" data-pagefind-ignore>
+  {
+    tags.length > 0 && (
+      <p class="row">
+        <span class="mono-label">Tagged</span>
+        {tags.map((tag) => <a href={tagUrl(tag.slug)}>#{tag.label}</a>)}
+      </p>
+    )
+  }
+  <p class="row" role="group" aria-label="Share this post">
+    <span class="mono-label" aria-hidden="true">Share</span>
+    <a href={links.x} rel="noopener noreferrer">X<span aria-hidden="true"> ↗</span></a>
+    <a href={links.linkedin} rel="noopener noreferrer">LinkedIn<span aria-hidden="true"> ↗</span></a>
+    <a href={links.email}>Email</a>
+    <button type="button" data-copy="url" data-copy-value={url} hidden>Copy link</button>
+    <button type="button" data-copy="markdown" data-copy-value={`${postUrl(post)}.md`} hidden>
+      Copy markdown
+    </button>
+  </p>
+</footer>
+
+<style>
+  .post-end {
+    border-block-start: var(--border-hairline) solid var(--color-line-soft);
+    display: grid;
+    gap: var(--space-3);
+    margin-block-start: var(--space-8);
+    padding-block-start: var(--space-5);
+  }
+
+  .row {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .row > .mono-label {
+    min-inline-size: 4.5rem;
+  }
+
+  a,
+  button {
+    background: none;
+    border: 0;
+    color: var(--color-ink-2);
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--text-label);
+    padding: 0;
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--ease-out);
+  }
+
+  a:hover,
+  button:hover,
+  button[data-state] {
+    color: var(--color-ink);
+  }
+</style>

@@ -28,7 +28,9 @@ const hasSiblings = Boolean(newer || older);
     <nav class="post-nav" aria-label="More posts" data-pagefind-ignore>
       {related.length > 0 && (
         <section class="related">
-          <h2 class="label">Related</h2>
+          <h2 class="mono-label related-label">
+            More <span class="num">{related.length}</span>
+          </h2>
           <PostList posts={related} minutes={minutes} />
         </section>
       )}
@@ -38,7 +40,7 @@ const hasSiblings = Boolean(newer || older);
           {older && (
             <li class="sibling older">
               <a href={postUrl(older)}>
-                <span class="label">Older</span>
+                <span class="mono-label"><span aria-hidden="true">← </span>Older</span>
                 <span class="title">{older.data.title}</span>
               </a>
             </li>
@@ -46,7 +48,7 @@ const hasSiblings = Boolean(newer || older);
           {newer && (
             <li class="sibling newer">
               <a href={postUrl(newer)}>
-                <span class="label">Newer</span>
+                <span class="mono-label">Newer<span aria-hidden="true"> →</span></span>
                 <span class="title">{newer.data.title}</span>
               </a>
             </li>
@@ -62,7 +64,7 @@ const hasSiblings = Boolean(newer || older);
      finished reading and is now choosing, and the change of mode is the only
      thing the rule has to say. */
   .post-nav {
-    border-block-start: var(--border-hairline) solid var(--color-ink-3);
+    border-block-start: var(--border-hairline) solid var(--color-line);
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
@@ -70,16 +72,12 @@ const hasSiblings = Boolean(newer || older);
     padding-block-start: var(--space-6);
   }
 
-  .label {
-    color: var(--color-ink-3);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+  .related-label {
+    margin-block-end: var(--space-3);
   }
 
-  .related > .label {
-    margin-block-end: var(--space-3);
+  .related-label .num {
+    margin-inline-start: var(--space-2);
   }
 
   .siblings {
@@ -99,7 +97,7 @@ const hasSiblings = Boolean(newer || older);
   }
 
   .sibling .title {
-    color: var(--color-ink-2);
+    color: var(--color-ink);
     transition: color var(--motion-fast) var(--ease-out);
   }
 

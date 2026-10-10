@@ -29,8 +29,9 @@ progressive enhancement.
 - URLs · `/posts/[slug]`, `/posts`, `/projects`, `/portfolio`, `/about`, `/tags`, `/tags/[tag]`.
 - Format · MDX for all content (plain Markdown still works).
 - Home · one centred column: greeting, profile links, a featured post, recent posts with LOAD MORE, link to `/posts` for the rest. H1 stays "Hello World!". No topic tabs — home is the author's introduction and deliberately does not copy claude.dev's index layout; tabs belong to the archive.
-- `/posts` · rows of mono date · sans title · mono reading time, 1px separators, no thumbnails, no summaries. Topic tabs swap the list with no sliding indicator.
-- Post page · tag chip, H1, standfirst, AUTHOR / PUBLISHED / READING TIME grid, sticky left rail with TREE table of contents, ASCII progress and SHARE.
+- `/posts` · rows of mono date · sans title · mono reading time, 1px separators, no thumbnails, no summaries, grouped by year: a large outlined numeral (JetBrains Mono, 1px `--color-ink-3` stroke) with `N posts` in its own sticky column beside the rows from 48rem, above them below that. It never sits under text. Topic tabs swap the list with no sliding indicator.
+- `/tags` · one centred column of ruled rows, most-used first: `#name` large, `N posts` right, newest post title beneath.
+- Post page · one centred reading column, deliberately quieter than claude.dev (2026-10-11): topic line, H1, standfirst, one meta line (author · date · N min read). A small contents list sits in the right margin from 80rem, marked by a left rule on the section being read; below 80rem it is a disclosure under the hero. Tags and share links are one line each after the article. No side rail, no progress meter. Every post is also served as raw source at `/posts/<id>.md` for Copy markdown — MDX imports and components stay as written, since it is the source, not a rendering.
 - `/portfolio` · wide editorial résumé on the same tokens; no second visual identity.
 
 ## Tokens (canonical source: `src/styles/tokens.css`)
@@ -98,7 +99,7 @@ Fonts: the Fonts API owns `--font-inter` (400/500/600) and `--font-jetbrains-mon
 ## Signature moves
 - **Hotkeys printed in the UI** · every nav item shows its key (`[P]POSTS`, `[O]`, `[F]`, `[A]`, plus `H`, `S`, `R`, `?`); keys never fire while typing or with a modifier, and can be switched off from a visible toggle.
 - **Mono labels over sans values** · uppercase JetBrains Mono labels in `--color-ink-3` above Inter values in `--color-ink`.
-- **ASCII instruments** · `░▓` reading progress, `└` TREE outline, `❯` prompts — glyphs instead of icons.
+- **Terminal glyphs, sparingly** · `↗` on external links, `※ ✓ ▲ ⚠ ↯` on admonitions, `❯` in terminal demos — never as chrome decoration.
 - **Words, not icons, for controls** · COPY / COPIED, SHARE, PLAY.
 
 ## CTA voice
@@ -106,14 +107,15 @@ Fonts: the Fonts API owns `--font-inter` (400/500/600) and `--font-jetbrains-mon
 - Hover is a colour step or a row fill (`--color-hover-row`) — never scale or lift.
 
 ## Article voice (post pages)
-- Header · tag chip, H1 (Inter 500), standfirst in `--color-ink-2`, then a ruled AUTHOR / PUBLISHED / READING TIME grid.
+- Header · topic line (mono label, links to the tag), H1 (Inter 500), standfirst in `--color-ink-2`, one meta line, closed by a hairline.
 - Prose · Inter 18px / 1.7 in `--color-ink-2`; H2 is uppercase JetBrains Mono 500.
-- Code blocks · Shiki dual theme (`vitesse-light` / `vitesse-dark`) on `--color-bg-raised`, a `CODE · <lang> · COPY` header row, transformers for highlight / diff / focus / error levels at build time. Diff uses the diff tokens; error levels use the ANSI tokens.
+- Code blocks · Shiki dual theme (`vitesse-light` / `vitesse-dark`), switched by `[data-theme]`. A CSS-variables theme mapped to the ANSI tokens was tried and dropped (2026-10-11): it colours only keywords, functions and strings, so code read as nearly monochrome. On `--color-bg-raised` with a `<lang> · <title> · COPY` header row; transformers for highlight / diff / focus / error levels at build time. Diff uses the diff tokens; error levels use the ANSI tokens.
 - Admonitions · GitHub alert syntax, five types, each label and left hairline in its ANSI hue (note blue, tip green, important magenta, warning yellow, caution red); body text stays `--color-ink-2`.
-- Figures carry `FIG A…` mono labels.
+- Figures · every block-level image becomes a figure lettered `FIG A`, `FIG B`… (then `AA`); the image title is the caption when present, and the alt text is never repeated visibly.
+- External links end in a `↗` hidden from AT; internal links have none.
 
 ## Features
-- Tags + tag pages · RSS · light/dark toggle (`[data-theme]`, respects `prefers-color-scheme`, persisted) · TREE table of contents.
+- Tags + tag pages · RSS · light/dark toggle (`[data-theme]`, respects `prefers-color-scheme`, persisted) · contents list.
 - **Search · Pagefind**, re-skinned as a FINDER command palette (`S`, `/`, `⌘K`); Pagefind keeps the index, ranking and keyboard behaviour.
 - **`<TerminalDemo>`** MDX component: a scripted Claude Code session (prompt → tool → spinner → output → completion) that plays on viewport entry.
 - No comments, no analytics, no newsletter.

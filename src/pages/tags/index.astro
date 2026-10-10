@@ -1,11 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getAllTags, getPublishedPosts, tagUrl } from '../../lib/posts';
+import { getAllTags, getPostsByTag, getPublishedPosts, tagUrl } from '../../lib/posts';
 
 const posts = await getPublishedPosts();
 // Frequency order, unlike a post's own tag list: this page is a map of what the
-// blog is mostly about, so the biggest subjects belong at the top.
-const tags = getAllTags(posts);
+// blog is mostly about, so the biggest subjects belong at the top. Each tag
+// carries its newest post, so a row says what the subject is, not just a name.
+const tags = getAllTags(posts).map((tag) => ({ ...tag, latest: getPostsByTag(posts, tag.slug)[0] }));
 const description = 'Every subject written about here.';
 ---
 
@@ -19,21 +20,26 @@ const description = 'Every subject written about here.';
     {
       tags.length > 0 ? (
         <section>
-          <h2 class="group">
-            Tags <span class="num">{tags.length}</span>
+          <h2 class="mono-label group">
+            {tags.length} {tags.length === 1 ? 'tag' : 'tags'} · {posts.length} {posts.length === 1 ? 'post' : 'posts'}
           </h2>
           <ul class="tags" role="list">
             {tags.map((tag) => (
               <li>
                 <a href={tagUrl(tag.slug)}>
-                  <span class="label">#{tag.label}</span>
-                  <span class="leader" aria-hidden="true" />
-                  <span class="tally num">
-                    <span aria-hidden="true">{tag.count}</span>
-                    <span class="visually-hidden">
-                      , {tag.count} {tag.count === 1 ? 'post' : 'posts'}
-                    </span>
+                  <span class="name">
+                    <span class="hash" aria-hidden="true">#</span>
+                    {tag.label}
                   </span>
+                  <span class="count num">
+                    {tag.count} {tag.count === 1 ? 'post' : 'posts'}
+                  </span>
+                  {tag.latest && (
+                    <span class="latest">
+                      <span class="visually-hidden">Latest: </span>
+                      {tag.latest.data.title}
+                    </span>
+                  )}
                 </a>
               </li>
             ))}
@@ -47,8 +53,11 @@ const description = 'Every subject written about here.';
 </BaseLayout>
 
 <style>
+  /* A centred reading column, like the home page: the tag map is something to
+     scan top to bottom, not a dashboard. */
   .tags-page {
-    max-inline-size: 41rem;
+    margin-inline: auto;
+    max-inline-size: var(--prose-max-width);
   }
 
   .head {
@@ -56,36 +65,26 @@ const description = 'Every subject written about here.';
   }
 
   .group {
-    color: var(--color-ink);
-    font-family: var(--font-mono);
-    font-size: var(--text-label);
-    font-weight: 400;
-    letter-spacing: var(--tracking-label);
-    margin-block-end: var(--space-2);
-    text-transform: uppercase;
-  }
-
-  .group .num {
-    color: var(--color-ink-3);
-    margin-inline-start: var(--space-2);
+    margin-block-end: var(--space-3);
   }
 
   .tags {
-    border-block-start: var(--border-hairline) solid var(--color-line-soft);
+    border-block-start: var(--border-hairline) solid var(--color-line);
     margin: 0;
   }
 
-  /* Rows rather than a cloud: counts only compare when they line up, and the
-     dotted leader carries the eye from the tag to its number. */
-  .tags a {
-    align-items: baseline;
+  .tags li {
     border-block-end: var(--border-hairline) solid var(--color-line-soft);
-    display: flex;
-    font-family: var(--font-mono);
-    font-size: var(--text-label);
-    gap: var(--space-3);
-    letter-spacing: var(--tracking-label);
-    padding: var(--space-3) var(--space-2);
+  }
+
+  /* One link per tag: name and count on the first line, the newest post's
+     title under it. Hover is a row fill, never movement. */
+  .tags a {
+    column-gap: var(--space-4);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: var(--space-4) var(--space-2);
+    row-gap: var(--space-1);
     text-decoration: none;
   }
 
@@ -93,17 +92,33 @@ const description = 'Every subject written about here.';
     background-color: var(--color-hover-row);
   }
 
-  .label {
+  .name {
     color: var(--color-ink);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.3;
   }
 
-  .leader {
-    border-block-end: var(--border-hairline) dotted var(--color-line);
-    flex: 1;
-  }
-
-  .tally {
+  .hash {
     color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-weight: 400;
+    margin-inline-end: 0.1em;
+  }
+
+  .count {
+    align-self: baseline;
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+  }
+
+  .latest {
+    color: var(--color-ink-3);
+    font-size: var(--text-label);
+    grid-column: 1 / -1;
+    line-height: 1.4;
   }
 
   .empty {

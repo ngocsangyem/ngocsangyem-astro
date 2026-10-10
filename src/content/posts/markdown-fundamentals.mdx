@@ -2,7 +2,7 @@
 title: "Markdown fundamentals"
 date: 2026-08-22
 tags: ["markdown", "reference"]
-description: "Every Markdown feature this blog renders, in one page: admonitions, syntax highlighting, link chips, tables, footnotes and the rest."
+description: "Every Markdown feature this blog renders, in one page: admonitions, syntax highlighting, external links, tables, footnotes and the rest."
 ---
 
 Everything below is rendered by this site's own pipeline, so this page doubles as
@@ -170,18 +170,16 @@ the delimiter around a word.
 <path class="name" pathLength="1" stroke-width="2.6" d="M122.7 21.5C126.7 16.4 134.7 2.6 122.5 1.4" />
 ```
 
-## Link chips
+## External links
 
-An external link becomes a chip when a favicon for its hostname is committed to
-the repository. The [Astro documentation](https://docs.astro.build/en/guides/syntax-highlighting/)
-and [Playwright](https://playwright.dev) both have one, so they render as chips
-with the brand mark supplying the only colour on the page.
+A link that leaves the site ends in a small ↗, added at build time. The
+[Astro documentation](https://docs.astro.build/en/guides/syntax-highlighting/),
+[Playwright](https://playwright.dev) and
+[MDN](https://developer.mozilla.org/en-US/docs/Web/API/DOMException) all get one,
+whatever the host. The arrow is hidden from screen readers, since the link's
+destination already says where it goes.
 
-A link to a host with no committed icon, such as
-[MDN](https://developer.mozilla.org/en-US/docs/Web/API/DOMException), stays a
-plain underlined link. That is deliberate: a chip with an empty icon slot reads
-as a broken image, and fetching favicons at runtime would break this site's
-no-external-requests rule.
+A link that stays on the site, such as [the post archive](/posts), has no arrow.
 
 ## Headings
 
@@ -224,7 +222,7 @@ Task lists render checkboxes, disabled since a static page has nothing to submit
 | --- | --- | --- |
 | Admonition | `> [!NOTE]` | Five types |
 | Code | Fenced block | Shiki, dual theme |
-| Chip | Any external link | Needs a committed favicon |
+| External link | Any `https://` link | Ends in ↗ |
 
 A wide table scrolls inside its own container rather than pushing the page
 sideways, and that container is focusable so the scroll works from the keyboard.

@@ -23,7 +23,7 @@ is the emitted source of truth for its token values.
   paint so the wrong theme never flashes.
 - Markdown that does its work at build time: reading time, admonitions, code
   titles, line and word highlighting, diff and focus annotations, accessible task
-  lists, scrollable tables, and favicon link chips.
+  lists, scrollable tables, lettered figures, and a ↗ on external links.
 - A handwritten "Sang" signature that draws itself once per visit.
 
 ## Project structure
@@ -33,7 +33,7 @@ src/
   components/
     base/         header, nav, head, theme toggle, social row, cd-up and to-top links
     identity/     the signature
-    posts/        rows, meta, tag list, table of contents
+    posts/        rows, index template, hero, contents, share line, post nav
     projects/     grid and item
     search/       the Pagefind modal
   content/posts/  the posts: `slug.md`, or `slug/index.md` when it colocates images
@@ -43,7 +43,7 @@ src/
   pages/          routes, including og/[id].png for the per-post social cards
   scripts/        the two client scripts: theme, search
   styles/         tokens, global, prose, shiki, animations
-public/           favicons, robots.txt, OG card artwork (light and dark)
+public/           fonts (terminal-glyph subset), robots.txt, OG card artwork
 scripts/          audit-dist.mjs
 vercel.json       security headers and asset caching
 ```
@@ -87,10 +87,11 @@ Only `title` and `date` are required. Notes on the rest:
   get one. By default it appears whenever a post has two or more headings at
   depth 2 or 3, and is absent otherwise, so most posts need nothing here.
 - Reading time is computed at build time. Nothing to fill in.
-- External links in prose become link chips when `public/favicons/<hostname>.svg`
-  exists. Add that file to opt a domain in; without it the link stays a plain
-  underlined link, which is the intended fallback. A `www.` host also matches the
-  bare domain's icon.
+- External links get a trailing ↗ at build time; nothing to opt into. An image
+  that is the only thing in its paragraph becomes a lettered figure (`FIG A`…),
+  and a Markdown image title (`![alt](./x.webp "Caption")`) becomes its caption.
+- Every post is also published as raw Markdown at `/posts/<id>.md`, which the
+  article's Copy markdown control copies.
 - Code fences take a `title="path/to/file.ts"` for a caption, a line range such
   as `{2,4-5}` to highlight lines, and comment markers for the rest:
   `// [!code ++]` and `// [!code --]` for a diff, `// [!code error]` or
@@ -120,16 +121,16 @@ npm run build && npm run preview
 `src/lib/` holds the logic the build needs, kept out of the components so it can
 be tested without rendering a page. The markdown pipeline runs on satteri:
 `mdast-reading-time` counts words while the content is still a syntax tree, then
-the hast plugins rewrite the emitted HTML for admonitions, code titles, task
-lists, tables and link chips. Shiki highlights code with both palettes written
+the hast plugins rewrite the emitted HTML for admonitions, code headers, task
+lists, tables, external links and figures. Shiki highlights code with both palettes written
 out as CSS variables, so switching theme recolours the page without
 re-highlighting anything.
 
 Two rules decide most of the arguments.
 
 Nothing reaches a third-party origin. Fonts are self-hosted through Astro's font
-provider, link-chip favicons are committed under `public/favicons/`, and the
-content schema rejects a remote project icon instead of fetching it.
+provider, terminal glyphs come from a committed font subset under
+`public/fonts/`, and the content schema rejects a remote project icon instead of fetching it.
 
 No framework runtime on content pages. Anything that can be resolved during the
 build is resolved during the build, which is why the markdown features above are

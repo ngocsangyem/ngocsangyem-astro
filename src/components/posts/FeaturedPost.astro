@@ -32,8 +32,10 @@ const tag = post.data.tags[0];
 </article>
 
 <style>
+  /* Top rule only: the list that follows draws its own top border, so a rule
+     here as well would double the line. */
   .featured {
-    border-block: var(--border-hairline) solid var(--color-line);
+    border-block-start: var(--border-hairline) solid var(--color-line);
     display: grid;
     gap: var(--space-3);
     padding-block: var(--space-6);

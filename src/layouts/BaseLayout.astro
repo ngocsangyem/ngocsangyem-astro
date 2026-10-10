@@ -4,7 +4,6 @@ import Header from "../components/base/Header.astro";
 import CdUpLink from "../components/base/CdUpLink.astro";
 import SiteFooter from "../components/base/SiteFooter.astro";
 import HotkeyHelp from "../components/base/HotkeyHelp.astro";
-import ReadingProgress from "../components/posts/ReadingProgress.astro";
 import ToTopLink from "../components/base/ToTopLink.astro";
 import { SITE } from "../config/site";
 import type { Post } from "../lib/posts";
@@ -17,8 +16,6 @@ import "../styles/animations.css";
 interface Props {
   title?: string;
   description?: string;
-  /** Widens the main container so an article can use the margin beside it. */
-  wide?: boolean;
   /** Handed to the head so an article can describe itself as one. */
   post?: Post;
   /**
@@ -33,7 +30,6 @@ interface Props {
 const {
   title,
   description,
-  wide = false,
   post,
   socials = true,
   canvas = "prose",
@@ -48,17 +44,11 @@ const isWideCanvas = canvas === "wide";
     <Head title={title} description={description} post={post} />
   </head>
   <body>
-    {
-      /* Outside <main> on purpose: a transformed or filtered ancestor would
-        become the containing block for this fixed bar and let it scroll away
-        with the page. */
-    }
-    {post && <ReadingProgress />}
     <a class="skip-link" href="#main">Skip to content</a>
     <Header />
     <main
       id="main"
-      class:list={["page", { "page-wide": wide, "page-canvas-wide": isWideCanvas }]}
+      class:list={["page", { "page-canvas-wide": isWideCanvas }]}
       data-pagefind-body
     >
       <slot />

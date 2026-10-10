@@ -2,9 +2,7 @@
  * Marks the table-of-contents entry for the section the reader is in.
  *
  * Pure enhancement: without it the list is exactly the list it was, every entry
- * at rest colour and every link still working. It is also the only reason an
- * article needs this file at all — the reveal, the layout and the scrolling are
- * all CSS.
+ * at rest colour and every link still working.
  *
  * An IntersectionObserver rather than a scroll listener: the browser does the
  * measuring off the main thread, and a heading entering or leaving the viewport
@@ -23,7 +21,7 @@ function activate(links: Map<string, HTMLAnchorElement[]>, id: string) {
     for (const anchor of anchors) {
       // aria-current, not a class alone: the mark is a real statement about
       // where the reader is, and a screen reader should hear it too.
-      if (slug === id) anchor.setAttribute('aria-current', 'true');
+      if (slug === id) anchor.setAttribute('aria-current', 'location');
       else anchor.removeAttribute('aria-current');
     }
   }
@@ -33,7 +31,7 @@ function start() {
   const lists = document.querySelectorAll<HTMLElement>('[data-toc]');
   if (lists.length === 0) return;
 
-  /** One slug can appear in both the margin list and the inline one. */
+  /** One slug can appear in both the margin list and the inline disclosure. */
   const links = new Map<string, HTMLAnchorElement[]>();
   for (const list of lists) {
     for (const anchor of list.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')) {

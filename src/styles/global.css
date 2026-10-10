@@ -8,6 +8,7 @@
   /* Shared layout scale. These stay beside the page-level constants rather
      than the canonical visual tokens because they describe reusable geometry,
      not new design decisions. */
+  --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
@@ -269,6 +270,17 @@ time,
   margin-block-start: var(--space-2);
 }
 
+/* The site's label voice: uppercase JetBrains Mono in the muted ink. Uppercase
+   comes from CSS, so the text stays readable as written for AT and search. */
+.mono-label {
+  color: var(--color-ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
 .visually-hidden {
   position: absolute;
   inline-size: 1px;
@@ -280,31 +292,3 @@ time,
   white-space: nowrap;
 }
 
-/* Magic-link chip: the favicon is the only chroma on the page. Global rather
-   than prose-scoped because a chip is chrome -- rehype mints them inside posts,
-   and the home page writes them by hand. */
-.link-chip {
-  align-items: center;
-  background-color: var(--color-hover-row);
-  border-radius: 0;
-  display: inline-flex;
-  gap: 0.28em;
-  font-family: var(--font-sans);
-  font-size: 0.94em;
-  line-height: 1.2;
-  padding: 0.1em 0.32em 0.1em 0.28em;
-  text-decoration: none;
-  transition: opacity var(--motion-fast) var(--ease-out);
-}
-
-.link-chip:hover {
-  opacity: 0.7;
-}
-
-/* `img` for a rehype chip's committed favicon, `svg` for one written inline so
-   the mark can take its colour from the text around it. */
-.link-chip :is(img, svg) {
-  display: inline-block;
-  block-size: 0.95em;
-  inline-size: 0.95em;
-}

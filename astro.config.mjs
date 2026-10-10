@@ -14,7 +14,8 @@ import {
 } from '@shikijs/transformers';
 import { shikiCodeTitle } from './src/lib/shiki-code-title';
 import { mdastReadingTime } from './src/lib/mdast-reading-time';
-import { hastLinkChips } from './src/lib/hast-link-chips';
+import { hastExternalLinks } from './src/lib/hast-external-links';
+import { hastFigures } from './src/lib/hast-figures';
 import { hastAdmonitions } from './src/lib/hast-admonitions';
 import { hastCodeTitles } from './src/lib/hast-code-titles';
 import { hastTaskLists } from './src/lib/hast-task-lists';
@@ -38,7 +39,7 @@ export default defineConfig({
     // typo'd name fails the build instead of rendering an empty box.
     icon({
       include: {
-        lucide: ['sun', 'moon', 'chevron-right', 'text-align-start'],
+        lucide: ['sun', 'moon', 'chevron-right'],
       },
     }),
   ],
@@ -46,11 +47,15 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       mdastPlugins: [mdastReadingTime],
-      hastPlugins: [hastAdmonitions, hastCodeTitles, hastTaskLists, hastTables, hastLinkChips],
+      // Figures last among the content plugins; it wraps image paragraphs in
+      // place so Astro's own image marker, which runs after, still finds them.
+      hastPlugins: [hastAdmonitions, hastCodeTitles, hastTaskLists, hastTables, hastExternalLinks, hastFigures],
     }),
     shikiConfig: {
       themes: { light: 'vitesse-light', dark: 'vitesse-dark' },
-      // Emits both palettes as CSS vars so [data-theme] can switch them.
+      // Emits both palettes as CSS vars so [data-theme] can switch them. A
+      // CSS-variables theme was tried and dropped: it colours only keywords,
+      // functions and strings, so code read as nearly monochrome.
       defaultColor: false,
       // All build-time: annotations become classes in the emitted HTML, so the
       // page ships no script for any of this.
