@@ -34,15 +34,15 @@
   --color-accent-text: #a94e2f;
   --color-focus: var(--color-accent);
 
-  /* ANSI status set: admonitions, terminal output, error levels. Each ≥ 4.97:1
-     on bg. Yellow is not measured on claude.dev; #7a5d00 solved to 5.9:1.
-     Light blue, cyan, green and magenta hold AA on bg only (4.3–4.6:1 on
-     raised, panel and hover), so re-solve them before setting text in these
-     hues on another surface. */
-  --color-ansi-blue: #3065d7;    /* 5.0:1 */
-  --color-ansi-cyan: #16749a;    /* 5.0:1 */
-  --color-ansi-green: #567527;   /* 5.0:1 */
-  --color-ansi-magenta: #914dbe; /* 5.0:1 */
+  /* ANSI status set: admonitions, terminal output, error levels. Blue, cyan,
+     green and magenta are a shade darker than claude.dev's so they hold AA on
+     every surface, not only bg: ≥ 5.3:1 bg, ≥ 4.6:1 raised, panel and the
+     hovered row. Yellow is not measured on claude.dev; #7a5d00 solved to
+     5.9:1 bg, 5.1:1 panel. Ratios re-checked in the QA contrast matrix. */
+  --color-ansi-blue: #2a60d6;    /* 5.3:1 bg, 4.6:1 panel */
+  --color-ansi-cyan: #156f93;    /* 5.4:1 bg, 4.6:1 panel */
+  --color-ansi-green: #537126;   /* 5.3:1 bg, 4.6:1 panel */
+  --color-ansi-magenta: #8c46bb; /* 5.4:1 bg, 4.7:1 panel */
   --color-ansi-yellow: #7a5d00;  /* 5.9:1 */
   --color-ansi-red: #a04545;     /* 5.8:1 */
 

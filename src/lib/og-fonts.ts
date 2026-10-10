@@ -27,6 +27,7 @@ import { fontData, experimental_getFontFileURL, type CssVariable } from 'astro:a
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { decompress } from 'wawoff2';
+import { HEADLINE_WEIGHT as CARD_HEADLINE_WEIGHT } from './og-card';
 
 /** Decompressed faces land here, gitignored with the rest of `.astro`. */
 const SFNT_DIR = '.astro/og-fonts';
@@ -40,7 +41,8 @@ const FAMILIES = ['--font-inter', '--font-jetbrains-mono'] as const satisfies re
 
 /** What the template sets the headline in, and so what it is measured against. */
 const HEADLINE_FAMILY: CssVariable = '--font-inter';
-const HEADLINE_WEIGHT = '500';
+// The measured face must be the drawn one; og-card.ts owns the number.
+const HEADLINE_WEIGHT = CARD_HEADLINE_WEIGHT;
 
 type Face = (typeof fontData)[CssVariable][number];
 

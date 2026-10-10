@@ -29,6 +29,13 @@ const TRACKING_RATIO = -1.5 / 76;
 const FONT_SIZES = [76, 66, 58, 52] as const;
 const MAX_LINES = 4;
 
+/**
+ * Weight of the template's headline lines. Shared with og-fonts.ts, which
+ * measures titles in this face, so what is measured is what is drawn; a test
+ * pins it to public/og-default.svg.
+ */
+export const HEADLINE_WEIGHT = '500';
+
 export const CARD_WIDTH = 1200;
 export const CARD_HEIGHT = 630;
 
@@ -126,9 +133,9 @@ export function renderCardSvg(template: string, headline: Headline): string {
   const family = found[0].match(/\bfont-family="([^"]+)"/)?.[1];
   // The weight too: the artwork is the design source, so its headline weight
   // is what the substituted title is set in.
-  const weight = found[0].match(/\bfont-weight="([^"]+)"/)?.[1] ?? '500';
-  if (!fill || !family) {
-    throw new Error('og card template: headline line carries no fill or font-family');
+  const weight = found[0].match(/\bfont-weight="([^"]+)"/)?.[1];
+  if (!fill || !family || !weight) {
+    throw new Error('og card template: headline line carries no fill, font-family or font-weight');
   }
 
   const { lines, fontSize } = headline;

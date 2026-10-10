@@ -56,8 +56,8 @@ Ratios are WCAG contrast against `--color-bg` unless noted.
 | Accent (non-text, large) | `--color-accent` | #c15f3c (4.0) | #d97757 (5.9) |
 | Accent text, links | `--color-accent-text` | #a94e2f (5.2) | #d97757 (5.9) |
 | Focus ring | `--color-focus` | = accent | = accent |
-| ANSI blue / cyan / green | `--color-ansi-*` | #3065d7 / #16749a / #567527 (≈5.0) | #82aaff / #89ddff / #c3e88d |
-| ANSI magenta / yellow / red | `--color-ansi-*` | #914dbe / #7a5d00 / #a04545 (5.0–5.9) | #c792ea / #e5c07b / #e08f8f |
+| ANSI blue / cyan / green | `--color-ansi-*` | #2a60d6 / #156f93 / #537126 (≈5.3; ≥4.6 on every surface) | #82aaff / #89ddff / #c3e88d |
+| ANSI magenta / yellow / red | `--color-ansi-*` | #8c46bb / #7a5d00 / #a04545 (5.4–5.9) | #c792ea / #e5c07b / #e08f8f |
 | Diff add / del (on own tint) | `--color-diff-*` | #356b35 (5.5) / #a04545 (5.2) | #9ac29a (8.3) / #c29a9a (6.8) |
 
 Deviations from the measured values, all for AA:
@@ -65,6 +65,7 @@ Deviations from the measured values, all for AA:
 - Light accent text is #a94e2f; the measured #c15f3c is 4.0:1 and is used only for non-text or large marks.
 - Light diff-add is #356b35; the measured #3e7a3e reads 4.47:1 on its own tint.
 - ANSI yellow and dark red are not measured on claude.dev; solved to ≥ 5.9:1 and 7.5:1.
+- Light ANSI blue, cyan, green and magenta are a shade darker than measured so every text token holds ≥ 4.5:1 on bg, raised, panel and the hovered row in both themes (QA, 2026-10-11).
 
 Type tokens: `--text-display` (lowercase page titles), `--text-h1` (post title, 500), `--text-body` 1.125rem / `--leading-body` 1.7, `--text-ui` 1rem, `--text-label` 0.8125rem with `--tracking-label` 0.02em, `--text-code` 0.8125rem / `--leading-code` 1.75, `--text-caption` 0.75rem.
 

@@ -259,6 +259,16 @@ try {
   failures.push('no og cards in dist/og: the card route produced nothing');
 }
 
+// The site-wide card is rasterised from the same template; it must exist and
+// must not collapse onto a post card's bytes.
+try {
+  const fallback = createHash('sha256').update(await readFile(join(DIST, 'og-default.png'))).digest('hex');
+  const twin = cardHashes.get(fallback);
+  if (twin) failures.push(`og-default.png is byte-identical to og/${twin}`);
+} catch {
+  failures.push('no og-default.png in dist: the fallback card route produced nothing');
+}
+
 console.log(
   `audited ${htmlCount} pages, ${cardHashes.size} og cards, ` +
     `${inlineScriptCount} inline scripts, ` +

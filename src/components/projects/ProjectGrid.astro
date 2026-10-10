@@ -28,7 +28,7 @@ const categories = [...byCategory.entries()];
   {categories.map(([category, items]) => (
     <section>
       <h2 class="mono-label category">
-        {category} <span class="num">{items.length}</span>
+        {category} <span class="num">{items.length}<span class="visually-hidden"> {items.length === 1 ? 'project' : 'projects'}</span></span>
       </h2>
       <ul class="rows" role="list">
         {items.map((project) => <li><ProjectItem project={project} /></li>)}
