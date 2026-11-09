@@ -58,3 +58,13 @@ export const SITE = {
   ] as string[],
   repository: 'https://github.com/ngocsangyem/ngocsangyem-astro',
 } as const;
+
+/**
+ * The downloadable résumé in `public/resume/`. `filename` is what the browser
+ * saves it as; `size` is printed beside the link, so update it with the file.
+ */
+export const RESUME = {
+  href: '/resume/nguyen-ngoc-sang-software-engineer-cv.pdf',
+  filename: 'Nguyen_Ngoc_Sang_Software_Engineer_CV.pdf',
+  size: '115 KB',
+} as const;

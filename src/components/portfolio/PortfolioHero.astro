@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../../config/site';
+import { RESUME, SITE } from '../../config/site';
 ---
 
 <section class="hero" aria-labelledby="portfolio-title">
@@ -15,10 +15,23 @@ import { SITE } from '../../config/site';
 
   <div class="intro-row" data-enter style="--enter-stage: 3">
     <p>
-      I’m a Software Engineer at Aspire. I build interfaces that feel simple to
-      use and stay sensible to maintain.
+      I’m a Software Engineer at Aspire with 7+ years building enterprise web
+      applications in TypeScript, React, Vue.js and PHP. I build interfaces that
+      feel simple to use and stay sensible to maintain.
     </p>
-    <a href="#experience">Follow the path <span aria-hidden="true">↓</span></a>
+    <div class="actions">
+      <a
+        class="resume"
+        href={RESUME.href}
+        download={RESUME.filename}
+        type="application/pdf"
+      >
+        <span class="resume-glyph" aria-hidden="true">↓</span>
+        Download résumé
+        <span class="resume-meta">PDF · {RESUME.size}</span>
+      </a>
+      <a href="#experience">Follow the path <span aria-hidden="true">↓</span></a>
+    </div>
   </div>
 </section>
 
@@ -74,11 +87,59 @@ import { SITE } from '../../config/site';
     text-wrap: pretty;
   }
 
-  .intro-row a {
-    color: var(--color-ink-3);
+  .actions {
+    align-items: flex-end;
+    display: flex;
     flex: none;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .actions a {
+    color: var(--color-ink-3);
     font-family: var(--font-mono);
     font-size: 0.8125rem;
+  }
+
+  /* Square-cornered mono label, per the CTA voice: no pill, hover is a colour
+     step plus the row fill, never a lift. */
+  .actions .resume {
+    align-items: baseline;
+    border: var(--border-hairline) solid var(--color-line);
+    color: var(--color-ink);
+    display: inline-flex;
+    font-size: 0.75rem;
+    gap: var(--space-2);
+    letter-spacing: 0.04em;
+    padding: 0.65rem 0.9rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition:
+      background-color var(--motion-fast) ease-out,
+      border-color var(--motion-fast) ease-out,
+      color var(--motion-fast) ease-out;
+  }
+
+  .resume-glyph {
+    color: var(--color-accent);
+  }
+
+  .resume-meta {
+    color: var(--color-ink-3);
+    letter-spacing: 0.02em;
+    margin-inline-start: var(--space-2);
+    text-transform: none;
+  }
+
+  .actions .resume:hover {
+    background-color: var(--color-hover-row);
+    border-color: var(--color-ink-3);
+    color: var(--color-accent-text);
+  }
+
+  .actions .resume:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
   }
 
   @media (max-width: 42rem) {
@@ -116,8 +177,8 @@ import { SITE } from '../../config/site';
       inline-size: 100%;
     }
 
-    .intro-row a {
-      align-self: flex-start;
+    .actions {
+      align-items: flex-start;
     }
   }
 </style>

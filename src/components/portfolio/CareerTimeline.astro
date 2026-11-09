@@ -27,6 +27,7 @@ const { items } = Astro.props;
         </header>
 
         <p class="location">{item.location}</p>
+        <p class="summary">{item.summary}</p>
         <p class="highlights-label">What I worked on</p>
         <ul class="experience-points" aria-label={`Experience highlights for ${item.role} at ${item.company}`}>
           {item.highlights.map((highlight) => <li>{highlight}</li>)}
@@ -138,6 +139,16 @@ const { items } = Astro.props;
     color: var(--color-ink-3);
     font-size: 0.9rem;
     margin-block-start: var(--space-3);
+  }
+
+  .summary {
+    color: var(--color-ink-3);
+    font-size: 0.95rem;
+    font-style: italic;
+    line-height: 1.5;
+    margin-block-start: var(--space-2);
+    max-inline-size: min(68ch, 100%);
+    text-wrap: pretty;
   }
 
   .experience-points {

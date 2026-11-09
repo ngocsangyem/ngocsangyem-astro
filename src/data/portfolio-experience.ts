@@ -4,6 +4,8 @@ export interface PortfolioExperience {
   period: string;
   year: string;
   location: string;
+  /** One-line description of what the company does. */
+  summary: string;
   highlights: string[];
   skills: string[];
 }
@@ -15,45 +17,49 @@ export const PORTFOLIO_EXPERIENCE: PortfolioExperience[] = [
     period: 'Jun 2022 to present',
     year: '2022',
     location: 'Vietnam',
+    summary:
+      'All-in-one finance operating system serving growing businesses across payments, accounting, and business operations.',
     highlights: [
+      'Developed and launched a No KYB/KYC onboarding experience using PHP and Vue.js, removing verification barriers to early product exploration and contributing to a 14% increase in new user sign-ups within two months of launch.',
       'Built AI-driven workflows that reduced frontend workload by 40%, improving team productivity and delivery speed. The solution is now open-sourced at: https://github.com/ngocsangyem/MeowKit',
-      'Developed customer-facing and internal business applications using React.js, TypeScript, and modern frontend architecture patterns.',
-      'Architected modular frontend features using Vue.js 3 and TypeScript, improving UI responsiveness and reducing state-management related defects through structured Pinia store design.',
-      'Led full Vue 2 to Vue 3 migration for a multi-year codebase, removing legacy code and improving application maintainability while reducing initial load time by 20%.',
-      'Collaborated closely with backend engineers to integrate APIs and deliver scalable frontend solutions across accounting and business operation modules.',
-      'Mentored junior developers, accelerating onboarding time from 6 weeks to 4 weeks through pair-programming and internal training.',
-      'Implemented Jest unit tests and Cypress/Playwright end-to-end testing to improve release confidence and reduce production defects.',
+      'Developed production React and TypeScript applications for customer-facing and internal operational workflows, building reusable components and integrating backend APIs across complex business domains.',
+      'Architected modular, production-grade frontend applications using Vue 3 and TypeScript, designing reusable UI modules and structured state-management patterns for complex enterprise workflows.',
+      'Built a notifier that posts failed end-to-end test runs to the team channel, so developers see a failure and fix it right away instead of missing it among GitHub CI/CD notifications. This cut the time to merge pull requests by about 10%.',
+      'Collaborated with backend engineers and product teams to define API contracts, integrate REST services, and deliver end-to-end business capabilities across complex enterprise workflows.',
+      'Built automated unit and end-to-end test coverage using Jest, Playwright, and Cypress, improving release confidence and reducing production regressions.',
       'Participated in Agile ceremonies including sprint planning, backlog refinement, technical design discussions, and peer code reviews within distributed teams.',
     ],
-    skills: ['React', 'Vuejs', 'Typescript', 'Laravel', 'PHP', 'CSS', 'HTML5', 'AI-workflow', 'E2E/Playwright/Cypress', 'Unit test'],
+    skills: ['React', 'Vue.js', 'TypeScript', 'PHP', 'REST APIs', 'CSS/SCSS', 'HTML5', 'AI workflows', 'Jest', 'Playwright', 'Cypress'],
   },
   {
     company: 'GForces',
-    role: 'Frontend Developer',
+    role: 'Software Engineer',
     period: 'Sep 2020 to Jun 2022',
     year: '2020',
     location: 'Ho Chi Minh City, Vietnam',
+    summary: 'Global automotive e-commerce platform.',
     highlights: [
-      'Developed and maintained React.js and Vue.js applications supporting global automotive dealership platforms with high availability requirements.',
+      'Implemented internationalized UI features supporting multiple markets and locales across the global dealership platform.',
       'Built reusable drag-and-drop UI components, reducing project setup time across multiple client implementations.',
       'Collaborated with international delivery teams in Agile environments to deliver customer-facing features and enhancements.',
       'Contributed architectural input during sprint planning and technical design discussions, improving development efficiency and delivery predictability.',
       'Authored and maintained reusable component documentation, reducing onboarding time for new engineers.',
     ],
-    skills: ['JavaScript', 'Sass', 'Vuejs', 'Reactjs', 'Typescript', 'Unit test'],
+    skills: ['JavaScript', 'TypeScript', 'Vue.js', 'React', 'Sass', 'i18n', 'Documentation'],
   },
   {
     company: 'Kyanon Digital',
-    role: 'Frontend Developer',
+    role: 'Software Engineer',
     period: 'Jul 2019 to Sep 2020',
     year: '2019',
     location: 'Vietnam',
+    summary: 'Digital agency for custom software solutions.',
     highlights: [
-      'Delivered mobile-first web applications using Angular, improving performance through lazy loading and code splitting techniques.',
+      'Built responsive production web applications using Angular and TypeScript, improving runtime and loading performance through lazy loading and code splitting.',
       'Developed responsive SASS/BEM-based user interfaces serving high-traffic consumer platforms.',
       'Implemented WCAG 2.1 accessibility standards across multiple client projects.',
       'Improved maintainability and performance of legacy web applications through systematic refactoring and frontend optimization.',
     ],
-    skills: ['JavaScript', 'Sass', 'Angular', 'HTML5', 'Unit test'],
+    skills: ['Angular', 'TypeScript', 'JavaScript', 'Sass/BEM', 'HTML5', 'WCAG 2.1'],
   },
 ];

@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../../config/site';
+import { RESUME, SITE } from '../../config/site';
 ---
 
 <section class="contact" aria-labelledby="contact-title">
@@ -13,6 +13,7 @@ import { SITE } from '../../config/site';
       {SITE.socials.map((social) => (
         <a href={social.href} rel="me noopener">{social.label}</a>
       ))}
+      <a href={RESUME.href} download={RESUME.filename} type="application/pdf">Résumé (PDF)</a>
     </nav>
   </div>
 </section>
