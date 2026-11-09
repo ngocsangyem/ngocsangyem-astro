@@ -1,5 +1,5 @@
 ---
-import { buildTimeline, choicesText, finalLines, type Turn } from '../../lib/terminal-demo';
+import { buildTimeline, choicesText, DEMO_TIMING, finalLines, type Turn } from '../../lib/terminal-demo';
 
 interface Props {
   /** One-sentence summary, read by assistive tech in place of the animation. */
@@ -23,6 +23,9 @@ if (!Array.isArray(turns) || turns.length === 0) throw new Error(`<TerminalDemo 
 for (const turn of turns) {
   if (!turn.prompt) throw new Error(`<TerminalDemo "${label}">: every turn needs a prompt.`);
   if (turn.seconds !== undefined && !(turn.seconds >= 0)) throw new Error(`<TerminalDemo "${label}">: seconds must be ≥ 0.`);
+  for (const link of turn.links ?? []) {
+    if (!link.label?.trim() || !link.href?.trim()) throw new Error(`<TerminalDemo "${label}">: every link needs a label and an href.`);
+  }
   if (turn.pane?.tone && !TONES.includes(turn.pane.tone)) {
     throw new Error(`<TerminalDemo "${label}">: pane tone "${turn.pane.tone}" is not one of ${TONES.join(', ')}.`);
   }
@@ -48,6 +51,7 @@ const byTurn = turns.map((turn, index) => {
     tools: own.filter((step) => step.kind === 'tool').map((step) => step.at),
     spin,
     lines: own.filter((step) => step.kind === 'line').map((step) => step.at),
+    linksAt: own.find((step) => step.kind === 'links')?.at,
     paneAt: own.find((step) => step.kind === 'pane')?.at,
     doneAt: own.find((step) => step.kind === 'done')!.at,
   };
@@ -62,23 +66,26 @@ const byTurn = turns.map((turn, index) => {
     {turns.flatMap(finalLines).map((line) => <li>{line}</li>)}
   </ol>
 
-  <div class="frame" aria-hidden="true" data-pagefind-ignore data-frame>
+  {/* Every animated line is hidden from AT, which reads the transcript above;
+      only the links row is not, so its links stay reachable and announced. */}
+  <div class="frame" data-pagefind-ignore data-frame>
     <div class="stage" data-stage>
       {
-        byTurn.map(({ turn, promptAt, tools, spin, lines, paneAt, doneAt }) => (
+        byTurn.map(({ turn, promptAt, tools, spin, lines, linksAt, paneAt, doneAt }) => (
           <div class="turn">
-            <p class="row prompt" data-at={promptAt}>
+            <p class="row prompt" aria-hidden="true" data-at={promptAt}>
               <span class="glyph">❯</span>
               <span data-type={turn.prompt}>{turn.prompt}</span>
             </p>
             {(turn.tools ?? []).map((tool, i) => (
-              <p class="row tool" data-at={tools[i]}>
+              <p class="row tool" aria-hidden="true" data-at={tools[i]}>
                 <span class="glyph">●</span>
                 {tool}
               </p>
             ))}
             <p
               class="row spinner"
+              aria-hidden="true"
               data-spin
               data-at={spin.at}
               data-duration={String(spin.payload.duration)}
@@ -91,21 +98,33 @@ const byTurn = turns.map((turn, index) => {
               <span data-spin-text />
             </p>
             {(turn.output ?? []).map((line, i) => (
-              <p class="row output" data-at={lines[i]}>{line}</p>
+              <p class="row output" dir="auto" aria-hidden="true" data-at={lines[i]}>
+                {turn.stream ? <span data-type={line} data-rate={String(DEMO_TIMING.stream)}>{line}</span> : line}
+              </p>
             ))}
+            {linksAt !== undefined && (
+              <p class="row links" data-at={linksAt}>
+                {(turn.links ?? []).map((link) => (
+                  <a href={link.href} rel={link.rel}>
+                    {link.label}
+                    <span aria-hidden="true"> ↗</span>
+                  </a>
+                ))}
+              </p>
+            )}
             {turn.pane && (
-              <div class:list={['pane', `tone-${turn.pane.tone ?? 'yellow'}`]} data-at={paneAt}>
+              <div class:list={['pane', `tone-${turn.pane.tone ?? 'yellow'}`]} aria-hidden="true" data-at={paneAt}>
                 <p class="pane-title">{turn.pane.title}</p>
                 {(turn.pane.lines ?? []).map((line) => <p class="row">{line}</p>)}
                 {turn.pane.choices && <p class="row choices">{choicesText(turn.pane.choices)}</p>}
               </div>
             )}
-            <p class="row done" data-at={doneAt}>{finalLines(turn).at(-1)}</p>
+            <p class="row done" aria-hidden="true" data-at={doneAt}>{finalLines(turn).at(-1)}</p>
           </div>
         ))
       }
     </div>
-    {footer && <p class="status">{footer}</p>}
+    {footer && <p class="status" aria-hidden="true">{footer}</p>}
   </div>
 
   <figcaption class="caption">
@@ -134,7 +153,10 @@ const byTurn = turns.map((turn, index) => {
     line-height: var(--leading-code);
   }
 
+  /* Top-aligned, so the reserved finished height is empty space at the foot
+     instead of being shared out between the lines shown so far. */
   .stage {
+    align-content: start;
     display: grid;
     gap: var(--space-4);
     padding: var(--space-4);
@@ -178,6 +200,22 @@ const byTurn = turns.map((turn, index) => {
 
   .output {
     padding-inline-start: 1.5ch;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) 3ch;
+    padding-inline-start: 1.5ch;
+  }
+
+  .links a {
+    color: var(--color-accent-text);
+    text-decoration: none;
+  }
+
+  .links a:hover {
+    text-decoration: underline;
   }
 
   /* The climax, and the only smooth motion in a demo. */

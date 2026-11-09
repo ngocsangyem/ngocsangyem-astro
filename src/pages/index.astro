@@ -14,11 +14,20 @@ const featured = getFeaturedPost(posts);
 const rest = posts.filter((post) => post.id !== featured?.id);
 const firstPage = rest.slice(0, PAGE_SIZE);
 const heldBack = rest.slice(PAGE_SIZE);
+
+// The profile links close the intro's reply; "me" marks them as the author's.
+const intro = SITE.greeting && {
+  ...SITE.greeting,
+  links: [
+    ...SITE.socials.map((social) => ({ label: social.label, href: social.href, rel: "me noopener" })),
+    { label: "RSS", href: "/rss.xml" },
+  ],
+};
 ---
 
 {
-  /* The profile links belong to the introduction here, so the footer's own
-     copy of them is switched off. */
+  /* The profile links belong to the introduction here (the terminal reply),
+     so the footer's own copy of them is switched off. */
 }
 <BaseLayout socials={false}>
   <div class="home">
@@ -26,25 +35,12 @@ const heldBack = rest.slice(PAGE_SIZE);
       <h1 class="page-title title" data-enter>Hello World!</h1>
       <p class="page-tagline" data-enter style="--enter-stage: 1">{SITE.description}</p>
       {
-        SITE.greeting && (
+        intro && (
           <div class="intro" data-enter style="--enter-stage: 2">
-            <TerminalDemo label={SITE.greeting.output?.join(" ") ?? SITE.greeting.prompt} turns={[SITE.greeting]} />
+            <TerminalDemo label={intro.output?.join(" ") ?? intro.prompt} turns={[intro]} />
           </div>
         )
       }
-      <ul class="profile" role="list" aria-label="Elsewhere" data-pagefind-ignore>
-        {
-          SITE.socials.map((social) => (
-            <li>
-              <a href={social.href} rel="me noopener">
-                {social.label}
-                <span aria-hidden="true"> ↗</span>
-              </a>
-            </li>
-          ))
-        }
-        <li><a href="/rss.xml">RSS<span aria-hidden="true"> ↗</span></a></li>
-      </ul>
     </header>
 
     <div class="index">
@@ -80,27 +76,6 @@ const heldBack = rest.slice(PAGE_SIZE);
   /* The demo's own top margin is sized for prose; the wrapper spaces it here. */
   .intro :global(.terminal-demo) {
     margin: 0;
-  }
-
-  .profile {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-5);
-    margin-block-start: var(--space-5);
-  }
-
-  .profile a {
-    color: var(--color-ink-3);
-    font-family: var(--font-mono);
-    font-size: var(--text-label);
-    letter-spacing: var(--tracking-label);
-    text-decoration: none;
-    text-transform: uppercase;
-    transition: color var(--motion-fast) var(--ease-out);
-  }
-
-  .profile a:hover {
-    color: var(--color-ink);
   }
 
   .index {

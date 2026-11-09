@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, DEMO_TIMING, pastTense, spinDuration, spinnerText, type Turn } from './terminal-demo';
+import { buildTimeline, DEMO_TIMING, graphemes, pastTense, spinDuration, spinnerText, type Turn } from './terminal-demo';
 
 const turn: Turn = {
   prompt: 'npm test',
@@ -97,5 +97,37 @@ describe('buildTimeline', () => {
     const kinds = steps.map((step) => step.kind);
     expect(kinds.indexOf('pane')).toBeGreaterThan(kinds.lastIndexOf('line'));
     expect(kinds.indexOf('pane')).toBeLessThan(kinds.indexOf('done'));
+  });
+});
+
+describe('streamed output and links', () => {
+  it('streams each line one character at a time before the next starts', () => {
+    const { steps } = buildTimeline([{ prompt: 'hi', output: ['abc', 'de'], stream: true }]);
+    const lines = steps.filter((step) => step.kind === 'line');
+    expect(lines[1].at - lines[0].at).toBe(3 * DEMO_TIMING.stream + DEMO_TIMING.line);
+  });
+
+  it('places the links row after the output and before the pane', () => {
+    const { steps } = buildTimeline([
+      { prompt: 'hi', output: ['a'], links: [{ label: 'GitHub', href: 'https://github.com' }], pane: { title: 'P' } },
+    ]);
+    const kinds = steps.map((step) => step.kind).filter((kind) => kind !== 'type');
+    expect(kinds).toEqual(['spin', 'line', 'links', 'pane', 'done']);
+  });
+
+  it('adds no links step without links', () => {
+    const { steps } = buildTimeline([{ prompt: 'hi', links: [] }]);
+    expect(steps.some((step) => step.kind === 'links')).toBe(false);
+  });
+});
+
+describe('graphemes', () => {
+  it('keeps combining marks and emoji sequences with their base', () => {
+    expect(graphemes('e\u0301a')).toEqual(['e\u0301', 'a']);
+    expect(graphemes('👍🏽!')).toEqual(['👍🏽', '!']);
+  });
+
+  it('splits right-to-left text in reading order, marks attached', () => {
+    expect(graphemes('بِك')).toEqual(['بِ', 'ك']);
   });
 });

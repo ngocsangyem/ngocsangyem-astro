@@ -8,7 +8,7 @@
  * off-screen and in a hidden tab, and remembers a reader's own pause.
  * Reduced motion: no player at all; the finished session stays as rendered.
  */
-import { DEMO_TIMING, spinnerText } from '../lib/terminal-demo';
+import { DEMO_TIMING, graphemes, spinnerText } from '../lib/terminal-demo';
 
 const SPIN_FRAMES = ['·', '✢', '✳', '✶', '✻', '✽'];
 /** Mirrors --spinner-frame in tokens.css; change both together. */
@@ -34,7 +34,14 @@ function setup(root: HTMLElement): void {
   // Spinners own their visibility (a window, not a start time), so they are
   // left out of the plain show-from-t pass.
   const timed = [...stage.querySelectorAll<HTMLElement>('[data-at]:not([data-spin])')];
-  const typed = [...stage.querySelectorAll<HTMLElement>('[data-type]')];
+  // Split once, not every frame. By grapheme, so a character is never shown
+  // without its combining marks. `data-rate` is ms per character.
+  const typed = [...stage.querySelectorAll<HTMLElement>('[data-type]')].map((el) => ({
+    el,
+    start: Number(el.closest<HTMLElement>('[data-at]')?.dataset.at ?? 0),
+    full: graphemes(el.dataset.type ?? ''),
+    rate: Number(el.dataset.rate) || DEMO_TIMING.tick,
+  }));
   const spinners = [...stage.querySelectorAll<HTMLElement>('[data-spin]')];
 
   const autoplay = root.dataset.autoplay !== 'false';
@@ -52,12 +59,8 @@ function setup(root: HTMLElement): void {
       const hidden = Number(el.dataset.at) > t;
       if (el.hidden !== hidden) el.hidden = hidden;
     }
-    for (const el of typed) {
-      const row = el.closest<HTMLElement>('[data-at]');
-      const start = Number(row?.dataset.at ?? 0);
-      // By code point, so a character outside the BMP is never split mid-frame.
-      const full = Array.from(el.dataset.type ?? '');
-      const chars = Math.max(0, Math.min(full.length, Math.floor((t - start) / DEMO_TIMING.tick) + 1));
+    for (const { el, start, full, rate } of typed) {
+      const chars = Math.max(0, Math.min(full.length, Math.floor((t - start) / rate) + 1));
       const text = full.slice(0, chars).join('');
       if (el.textContent !== text) el.textContent = text;
     }

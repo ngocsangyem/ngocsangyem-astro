@@ -20,6 +20,13 @@ export interface Pane {
   choices?: string[];
 }
 
+/** A link printed in the reply, e.g. a profile. */
+export interface TurnLink {
+  label: string;
+  href: string;
+  rel?: string;
+}
+
 export interface Turn {
   prompt: string;
   /** Collapsed tool calls, e.g. "Read 4 files". */
@@ -30,12 +37,20 @@ export interface Turn {
   seconds?: number;
   tokens?: number;
   output?: string[];
+  /**
+   * Stream each output line one character at a time, in reading order (the
+   * browser lays right-to-left scripts out from the right), instead of
+   * printing it whole.
+   */
+  stream?: boolean;
+  /** Links printed as one row after the output. */
+  links?: TurnLink[];
   /** Clock time for the completion line, e.g. "4:20 PM". */
   done?: string;
   pane?: Pane;
 }
 
-export type StepKind = 'type' | 'tool' | 'spin' | 'line' | 'pane' | 'done';
+export type StepKind = 'type' | 'tool' | 'spin' | 'line' | 'links' | 'pane' | 'done';
 
 export interface Step {
   /** Milliseconds from the start of playback. */
@@ -52,6 +67,8 @@ export interface Step {
  */
 export const DEMO_TIMING = {
   tick: 20,
+  /** Per character of streamed output: replies arrive faster than typing. */
+  stream: 8,
   line: 90,
   pause: 300,
   hold: 2500,
@@ -115,6 +132,18 @@ export function finalLines(turn: Turn): string[] {
   ];
 }
 
+/**
+ * User-perceived characters (grapheme clusters), so a base letter and its
+ * combining marks, an emoji sequence, or an Arabic letter with its harakat
+ * appear together rather than one code point at a time.
+ */
+export function graphemes(text: string): string[] {
+  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+    return Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), (part) => part.segment);
+  }
+  return Array.from(text);
+}
+
 export function buildTimeline(turns: Turn[]): { steps: Step[]; total: number } {
   const t = DEMO_TIMING;
   const steps: Step[] = [];
@@ -138,6 +167,11 @@ export function buildTimeline(turns: Turn[]): { steps: Step[]; total: number } {
 
     for (const line of turn.output ?? []) {
       steps.push({ at, kind: 'line', turn: index, payload: { text: line } });
+      at += turn.stream ? graphemes(line).length * t.stream + t.line : t.line;
+    }
+
+    if (turn.links?.length) {
+      steps.push({ at, kind: 'links', turn: index, payload: {} });
       at += t.line;
     }
 

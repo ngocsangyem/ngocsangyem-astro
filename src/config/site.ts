@@ -38,7 +38,8 @@ export const SITE = {
   email: 'nnsang24@gmail.com',
   /**
    * Home introduction, played as a short terminal session. Kept brief: the
-   * full story lives on /about. The home page omits the block while null.
+   * full story lives on /about. The home page adds the profile links to the
+   * reply, and omits the block while null.
    */
   greeting: {
     prompt: 'introduce yourself, briefly',
@@ -49,6 +50,7 @@ export const SITE = {
       'This blog is my notebook: frontend, code quality, tools, and workflows.',
       'Things I’ve learned, built, broken, and figured out. More on /about.',
     ],
+    stream: true,
   } as Turn | null,
   /** Author's bio for /about, one paragraph per entry. */
   bio: [
