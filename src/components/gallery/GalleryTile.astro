@@ -1,49 +1,38 @@
 ---
 import { Picture } from 'astro:assets';
 import { formatDateShort, toISODate } from '../../lib/dates';
-import { galleryTransitionName, getFirstTag, postUrl, type CoveredPost } from '../../lib/posts';
+import { galleryTransitionName, postUrl, type CoveredPost } from '../../lib/posts';
 
 interface Props {
   post: CoveredPost;
-  /** Tiles in the first row load eagerly; the rest wait until scrolled near. */
+  /** Tiles in the first screen load eagerly; the rest wait until scrolled near. */
   eager?: boolean;
 }
 
 const { post, eager = false } = Astro.props;
-const topic = getFirstTag(post);
-const name = (part: 'cover' | 'title' | 'topic') => `view-transition-name: ${galleryTransitionName(part, post.id)}`;
+const { cover } = post.data;
+const name = (part: 'cover' | 'title') => `view-transition-name: ${galleryTransitionName(part, post.id)}`;
 ---
 
 {
-  /* Topic, title, then the drawing: the order the post's own head uses, so
-     each part has a short, parallel path into the post. The title names the
-     link, so the drawing is decorative here; the post page shows the same
-     image with its real alt text. */
+  /* The drawing at its own shape, captioned underneath; nothing is laid over
+     it. The title names the link, so the drawing itself is decorative here;
+     the post page shows it with its real alt text. */
 }
 <a class="tile" href={postUrl(post)}>
-  <span class="label">
-    {
-      topic && (
-        <>
-          <span class="topic mono-label" style={name('topic')}>{topic.label}</span>
-          <span class="mono-label" aria-hidden="true">·</span>
-        </>
-      )
-    }
-    <time class="mono-label" datetime={toISODate(post.data.date)}>{formatDateShort(post.data.date)}</time>
-  </span>
-  <span class="title" style={name('title')}>{post.data.title}</span>
   <Picture
     class="tile-image"
-    src={post.data.cover}
+    src={cover}
     alt=""
     formats={['avif', 'webp']}
     widths={[400, 640, 960]}
-    sizes="(min-width: 80rem) 24rem, (min-width: 48rem) 45vw, 100vw"
+    sizes="(min-width: 64rem) 22rem, (min-width: 40rem) 45vw, 100vw"
     loading={eager ? 'eager' : 'lazy'}
     decoding="async"
-    style={name('cover')}
+    style={`${name('cover')}; --cover-ratio: ${cover.width / cover.height}`}
   />
+  <span class="title" style={name('title')}>{post.data.title}</span>
+  <time class="date" datetime={toISODate(post.data.date)}>{formatDateShort(post.data.date)}</time>
 </a>
 
 <style>
@@ -51,38 +40,23 @@ const name = (part: 'cover' | 'title' | 'topic') => `view-transition-name: ${gal
     color: var(--color-ink);
     display: grid;
     gap: var(--space-2);
-    /* Each part is as wide as its own content, so the topic and title
-       snapshots carry no empty row end into the morph. */
-    justify-items: start;
     text-decoration: none;
   }
 
-  .label {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-
-  .topic,
-  .title {
-    view-transition-class: post-heading;
-  }
-
-  /* Only the text shrink-wraps. Left to `justify-items: start`, the <picture>
-     wrapper and its 100%-wide image size each other in a circle and collapse
-     until the file arrives, so a lazy tile would load as a sliver and jump. */
+  /* Full column width, never shrink-wrapped: the picture and image take a
+     definite box from the ratio before a byte of the file arrives, which is
+     what the board measures and what the morph into the post snapshots. */
   .tile > :global(picture) {
-    justify-self: stretch;
+    display: block;
+    margin-block-end: var(--space-1);
   }
 
-  /* Every cover is drawn 16:10; a differently shaped upload is cropped to the
-     same box so the grid rows stay level. */
   .tile :global(.tile-image) {
-    aspect-ratio: 16 / 10;
-    background-color: var(--color-bg-raised);
+    aspect-ratio: var(--cover-ratio);
     border: var(--border-hairline) solid var(--color-line-soft);
+    display: block;
     inline-size: 100%;
-    margin-block-start: var(--space-2);
+    max-inline-size: none;
     object-fit: cover;
     transition: border-color var(--motion-fast) var(--ease-out);
     view-transition-class: cover;
@@ -91,17 +65,29 @@ const name = (part: 'cover' | 'title' | 'topic') => `view-transition-name: ${gal
   .title {
     font-size: var(--text-ui);
     font-weight: 500;
-    line-height: 1.4;
+    justify-self: start;
+    line-height: 1.35;
     transition: color var(--motion-fast) var(--ease-out);
+    view-transition-class: post-heading;
   }
 
-  /* A colour step, never a lift or a zoom: the only scale this tile gets is
-     the morph into the post it opens. */
+  .date {
+    color: var(--color-ink-3);
+    font-size: var(--text-label);
+  }
+
+  /* A colour step, never a lift or a zoom: the only scale a tile gets is the
+     morph into the post it opens. */
+  .tile:hover :global(.tile-image) {
+    border-color: var(--color-line);
+  }
+
   .tile:hover .title {
     color: var(--color-accent-text);
   }
 
-  .tile:hover :global(.tile-image) {
-    border-color: var(--color-line);
+  .tile:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: var(--space-1);
   }
 </style>

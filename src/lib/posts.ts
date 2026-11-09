@@ -175,7 +175,7 @@ export function getCoveredPosts(posts: Post[]): CoveredPost[] {
 }
 
 /** The parts of a post that travel from its gallery tile into the post. */
-export type GalleryPart = 'cover' | 'title' | 'topic';
+export type GalleryPart = 'cover' | 'title';
 
 /**
  * `view-transition-name` shared by a part of a post's gallery tile and the

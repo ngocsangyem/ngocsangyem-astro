@@ -12,9 +12,8 @@ interface Props {
 const { post, minutesRead } = Astro.props;
 const firstTag = getFirstTag(post);
 // Only a post with a cover has a gallery tile to travel from, so only it names
-// its topic and title; the rest keep the plain page dissolve.
-const travel = (part: 'title' | 'topic') =>
-  post.data.cover ? `view-transition-name: ${galleryTransitionName(part, post.id)}; ` : '';
+// its title; the rest keep the plain page dissolve.
+const travel = post.data.cover ? `view-transition-name: ${galleryTransitionName('title', post.id)}; ` : '';
 // Only a declared description is a standfirst; the generated excerpt would
 // just repeat the first paragraph a few lines below.
 const standfirst = post.data.description?.trim();
@@ -23,18 +22,18 @@ const standfirst = post.data.description?.trim();
 {
   /* Matter / Substack: a small topic line, the title, an optional cover
      banner, an optional standfirst and one quiet meta line, closed by a
-     hairline. Topic and title sit above the banner in the same order as the
-     gallery tile, so on the way in from /gallery all three travel together. */
+     hairline. On the way in from /gallery the tile's drawing grows into the
+     banner and its caption travels up into the title. */
 }
 <header class="hero">
   {
     firstTag && (
-      <a class="topic mono-label" href={tagUrl(firstTag.slug)} data-enter style={travel('topic')} data-pagefind-ignore>
+      <a class="topic mono-label" href={tagUrl(firstTag.slug)} data-enter data-pagefind-ignore>
         {firstTag.label}
       </a>
     )
   }
-  <h1 class="title" data-enter style={`${travel('title')}--enter-stage: 1`}>{post.data.title}</h1>
+  <h1 class="title" data-enter style={`${travel}--enter-stage: 1`}>{post.data.title}</h1>
   {
     /* Shares its view-transition-name with the gallery tile, so opening a post
        from /gallery grows the tile into this image instead of cutting to it.
@@ -50,7 +49,7 @@ const standfirst = post.data.description?.trim();
         sizes="(min-width: 41rem) 41rem, 100vw"
         loading="eager"
         fetchpriority="high"
-        style={`view-transition-name: ${galleryTransitionName('cover', post.id)}`}
+        style={`view-transition-name: ${galleryTransitionName('cover', post.id)}; --cover-ratio: ${post.data.cover.width / post.data.cover.height}`}
         data-pagefind-ignore
       />
     )
@@ -94,11 +93,15 @@ const standfirst = post.data.description?.trim();
 
   /* No background on purpose: until the file loads the image must be
      transparent, so the gallery tile's snapshot shows through it during the
-     morph instead of being covered by a blank panel. */
+     morph instead of being covered by a blank panel.
+     The banner keeps the drawing's own shape, so the gallery tile morphs into
+     the same proportions. Its size comes from the ratio alone, never from the
+     loaded file: full width, but no taller than 32rem, which narrows an
+     upright or square drawing instead of letting it take over the page. */
   .hero :global(.post-cover) {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: var(--cover-ratio);
     border: var(--border-hairline) solid var(--color-line-soft);
-    inline-size: 100%;
+    inline-size: min(100%, 32rem * var(--cover-ratio));
     margin-block-end: var(--space-2);
     object-fit: cover;
     view-transition-class: cover;
@@ -107,7 +110,6 @@ const standfirst = post.data.description?.trim();
   /* Shrink-wrapped and tagged for the heading morph: a snapshot as wide as its
      text scales evenly from the tile's smaller setting instead of stretching
      the row's empty end. */
-  .topic,
   .title {
     view-transition-class: post-heading;
   }

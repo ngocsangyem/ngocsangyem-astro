@@ -16,8 +16,8 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
-import { createCanvas, WIDTH } from './rough-canvas.mjs';
-import { SCENES } from './cover-scenes.mjs';
+import { createCanvas, HEIGHT, WIDTH } from './rough-canvas.mjs';
+import { SCENES, SHEETS } from './cover-scenes.mjs';
 
 const OUT_DIR = 'src/assets/covers';
 const FONT = '.astro/og-fonts/jetbrains-mono-500-normal-latin.ttf';
@@ -43,9 +43,11 @@ for (const [index, [id, scene]] of entries.entries()) {
   // The seed is fixed per scene, so a rerun only changes covers whose scene did.
   const canvas = createCanvas(1000 + index * 100 + id.length);
   scene(canvas);
+  const [width, height] = SHEETS[id] ?? [WIDTH, HEIGHT];
 
-  const png = new Resvg(canvas.toSvg(), {
-    fitTo: { mode: 'width', value: WIDTH },
+  // Every sheet is rendered with its long edge at WIDTH pixels.
+  const png = new Resvg(canvas.toSvg(width, height), {
+    fitTo: { mode: 'width', value: Math.round((WIDTH * width) / Math.max(width, height)) },
     font: { fontFiles: [FONT], loadSystemFonts: false, defaultFontFamily: 'JetBrains Mono' },
   })
     .render()

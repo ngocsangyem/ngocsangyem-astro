@@ -1,8 +1,10 @@
 /**
  * A tiny drawing surface over rough.js's generator: every call appends SVG
- * markup, and `toSvg()` wraps it in a paper-toned 16:10 sheet. The covers are
+ * markup, and `toSvg()` wraps it in a paper-toned sheet. The covers are
  * meant to sit beside the posts' own Excalidraw figures, which are rough.js
  * underneath, so the line quality matches without hand-tuning each stroke.
+ * A sheet is 16:10 unless a scene asks for another shape, which is what gives
+ * the gallery its mixed portrait, square and landscape tiles.
  *
  * Palette is the site's light theme: cream paper, ink strokes, the one orange
  * accent for hachure, and the label grey for secondary marks.
@@ -87,10 +89,10 @@ export function createCanvas(seed) {
           `${escapeXml(value)}</text>`,
       );
     },
-    toSvg() {
+    toSvg(width = WIDTH, height = HEIGHT) {
       return (
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" ` +
-        `viewBox="0 0 ${WIDTH} ${HEIGHT}"><rect width="100%" height="100%" fill="${PALETTE.paper}"/>` +
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" ` +
+        `viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="${PALETTE.paper}"/>` +
         `${parts.join('')}</svg>`
       );
     },

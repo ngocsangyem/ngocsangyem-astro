@@ -41,7 +41,8 @@ const localAssets = new Set();
  *
  * An article carries a second: the copy control on its code blocks. Portfolio
  * also carries a second, its scroll-linked career-route indicator, and the home
- * page a second, its LOAD MORE control. Each is budgeted separately rather than
+ * page a second, its LOAD MORE control, and the gallery a second, the masonry
+ * placement that has to run before first paint. Each is budgeted separately rather than
  * by raising the figure everywhere, so a script arriving on a page that should
  * carry none of it still fails the audit.
  *
@@ -52,6 +53,7 @@ const ALLOWED_INLINE_SCRIPTS_PER_PAGE = 1;
 const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE = 2;
 const ALLOWED_INLINE_SCRIPTS_PORTFOLIO = 2;
 const ALLOWED_INLINE_SCRIPTS_HOME = 2;
+const ALLOWED_INLINE_SCRIPTS_GALLERY = 2;
 const ALLOWED_INLINE_SCRIPTS_PER_ARTICLE_WITH_DEMO = 3;
 
 /** `posts/<slug>/index.html`, but not the `posts/index.html` listing. */
@@ -69,6 +71,7 @@ function allowedInlineScripts(where, html) {
   }
   if (where === 'portfolio/index.html') return ALLOWED_INLINE_SCRIPTS_PORTFOLIO;
   if (where === 'index.html') return ALLOWED_INLINE_SCRIPTS_HOME;
+  if (where === 'gallery/index.html') return ALLOWED_INLINE_SCRIPTS_GALLERY;
   return ALLOWED_INLINE_SCRIPTS_PER_PAGE;
 }
 let htmlCount = 0;

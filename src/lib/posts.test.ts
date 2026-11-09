@@ -388,8 +388,8 @@ describe('galleryTransitionName', () => {
   });
 
   it('gives each part of one post its own name', () => {
-    const names = (['cover', 'title', 'topic'] as const).map((part) => galleryTransitionName(part, 'a'));
-    expect(new Set(names).size).toBe(3);
+    const names = (['cover', 'title'] as const).map((part) => galleryTransitionName(part, 'a'));
+    expect(new Set(names).size).toBe(2);
   });
 });
 

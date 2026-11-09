@@ -1,10 +1,23 @@
 /**
  * One hand-drawn scene per post, keyed by post id. Each draws the post's core
- * idea on a 1600 x 1000 sheet: ink for structure, the accent hachure for the
+ * idea on a 1600 x 1000 sheet unless SHEETS gives it another shape: ink for structure, the accent hachure for the
  * one thing the post is about, grey for supporting marks. Coordinates are
  * absolute pixels on that sheet.
  */
 import { PALETTE } from './rough-canvas.mjs';
+
+/**
+ * Sheets that are not the default 16:10, as [width, height] in sheet pixels.
+ * A scene takes the shape its idea draws best in: a funnel and a stacked page
+ * stand upright, a single page or snippet sits square. The mix is what lets
+ * the gallery board stagger.
+ */
+export const SHEETS = {
+  'why-i-built-meowkit': [1200, 1500],
+  'multiple-header-and-footer-elements': [1200, 1500],
+  'markdown-fundamentals': [1000, 1000],
+  'javascript-hoisting': [1000, 1000],
+};
 
 const accentFill = { fill: PALETTE.accent };
 const mutedStroke = { stroke: PALETTE.muted, strokeWidth: 3.5 };
@@ -12,13 +25,13 @@ const mutedStroke = { stroke: PALETTE.muted, strokeWidth: 3.5 };
 export const SCENES = {
   // Boxes from four kits funnel into one.
   'why-i-built-meowkit': (c) => {
-    const kits = [190, 530, 870, 1210];
+    const kits = [110, 370, 630, 890];
     for (const x of kits) {
-      c.rect(x, 150, 200, 110, mutedStroke);
-      c.arrow(x + 100, 290, 800 + (x - 700) * 0.18, 560, mutedStroke);
+      c.rect(x, 290, 200, 110, mutedStroke);
+      c.arrow(x + 100, 430, 600 + (x - 500) * 0.18, 950, mutedStroke);
     }
-    c.rect(560, 590, 480, 220, accentFill);
-    c.text(800, 720, 'one kit', { size: 64, anchor: 'middle' });
+    c.rect(360, 980, 480, 220, accentFill);
+    c.text(600, 1110, 'one kit', { size: 64, anchor: 'middle' });
   },
 
   // Call stack, web API and microtask queue, with the loop between them.
@@ -50,40 +63,40 @@ export const SCENES = {
 
   // The read happens above the declaration; the "move" is an illusion.
   'javascript-hoisting': (c) => {
-    c.rect(250, 180, 1100, 640, mutedStroke);
-    c.text(330, 330, 'console.log(x)', { size: 56 });
-    c.rect(1010, 270, 270, 90, accentFill);
-    c.text(1145, 332, 'undefined', { size: 40, anchor: 'middle' });
-    c.text(330, 660, 'var x = 1', { size: 56 });
-    c.arrow(760, 610, 760, 380, mutedStroke);
-    c.line(690, 450, 830, 540, { stroke: PALETTE.accent, strokeWidth: 6 });
-    c.line(830, 450, 690, 540, { stroke: PALETTE.accent, strokeWidth: 6 });
+    c.rect(100, 100, 800, 800, mutedStroke);
+    c.text(170, 250, 'console.log(x)', { size: 56 });
+    c.rect(170, 300, 270, 90, accentFill);
+    c.text(305, 362, 'undefined', { size: 40, anchor: 'middle' });
+    c.text(170, 800, 'var x = 1', { size: 56 });
+    c.arrow(330, 730, 330, 420, mutedStroke);
+    c.line(260, 530, 400, 620, { stroke: PALETTE.accent, strokeWidth: 6 });
+    c.line(400, 530, 260, 620, { stroke: PALETTE.accent, strokeWidth: 6 });
   },
 
   // One page of every block the renderer knows.
   'markdown-fundamentals': (c) => {
-    c.rect(400, 110, 800, 780);
-    c.text(470, 220, '# Heading', { size: 56 });
-    for (const [y, w] of [[290, 600], [340, 520]]) c.line(470, y, 470 + w, y, mutedStroke);
-    c.rect(470, 400, 22, 120, accentFill);
-    c.text(520, 450, '[!NOTE]', { size: 40, color: PALETTE.accent });
-    c.line(520, 500, 1050, 500, mutedStroke);
-    c.rect(470, 570, 660, 150, { fill: PALETTE.muted, hachureGap: 26, fillWeight: 1.5 });
-    c.text(500, 800, '- [x] done', { size: 40 });
+    c.rect(100, 110, 800, 780);
+    c.text(170, 220, '# Heading', { size: 56 });
+    for (const [y, w] of [[290, 600], [340, 520]]) c.line(170, y, 170 + w, y, mutedStroke);
+    c.rect(170, 400, 22, 120, accentFill);
+    c.text(220, 450, '[!NOTE]', { size: 40, color: PALETTE.accent });
+    c.line(220, 500, 750, 500, mutedStroke);
+    c.rect(170, 570, 660, 150, { fill: PALETTE.muted, hachureGap: 26, fillWeight: 1.5 });
+    c.text(200, 800, '- [x] done', { size: 40 });
   },
 
   // A page with sectioning elements, each wearing its own header and footer.
   'multiple-header-and-footer-elements': (c) => {
-    c.rect(180, 110, 1240, 780, mutedStroke);
-    c.rect(220, 150, 1160, 90, accentFill);
-    c.text(260, 210, '<header>', { size: 40 });
-    for (const x of [240, 830]) {
-      c.rect(x, 300, 530, 430);
-      c.rect(x + 30, 330, 470, 80, accentFill);
-      c.rect(x + 30, 620, 470, 80);
-      c.text(x + 60, 677, '<footer>', { size: 36, color: PALETTE.muted });
+    c.rect(120, 110, 960, 1280, mutedStroke);
+    c.rect(160, 150, 880, 90, accentFill);
+    c.text(200, 210, '<header>', { size: 40 });
+    for (const y of [300, 790]) {
+      c.rect(180, y, 840, 430);
+      c.rect(210, y + 30, 780, 80, accentFill);
+      c.rect(210, y + 320, 780, 80);
+      c.text(240, y + 377, '<footer>', { size: 36, color: PALETTE.muted });
     }
-    c.text(800, 830, '<article> × 2', { size: 40, anchor: 'middle', color: PALETTE.muted });
+    c.text(600, 1300, '<article> × 2', { size: 40, anchor: 'middle', color: PALETTE.muted });
   },
 
   // An object, its method, and the copy that keeps pointing at the original.
