@@ -24,6 +24,7 @@ export const SITE = {
   lang: 'en',
   nav: [
     { label: 'Posts', href: '/posts', key: 'P' },
+    { label: 'Gallery', href: '/gallery', key: 'G' },
     { label: 'Projects', href: '/projects', key: 'O' },
     { label: 'Portfolio', href: '/portfolio', key: 'F' },
     { label: 'About', href: '/about', key: 'A' },

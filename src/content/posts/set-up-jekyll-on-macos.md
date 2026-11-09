@@ -3,6 +3,8 @@ title: "Set up a Jekyll environment on macOS"
 date: 2022-03-14
 tags: ["jekyll", "ruby", "macos"]
 description: "Xcode tools, Homebrew, a Ruby that is not the system one, then Bundler and Jekyll, with the PATH edit each step actually needs."
+cover: "../../assets/covers/set-up-jekyll-on-macos.webp"
+coverAlt: "Hand-drawn sketch: a laptop terminal running brew install rbenv, gem install bundler and jekyll serve."
 ---
 
 Based on the Jekyll installation docs and on doing this more times than I would

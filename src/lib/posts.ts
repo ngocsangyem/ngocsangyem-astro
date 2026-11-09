@@ -166,6 +166,33 @@ export async function getReadingTimes(posts: Post[]): Promise<Map<string, number
   );
 }
 
+/** A post that has a cover, narrowed so callers can read it without a guard. */
+export type CoveredPost = Post & { data: Post['data'] & { cover: NonNullable<Post['data']['cover']> } };
+
+/** The gallery: every post with a cover, newest first. */
+export function getCoveredPosts(posts: Post[]): CoveredPost[] {
+  return sortByDateDesc(posts).filter((post): post is CoveredPost => post.data.cover !== undefined);
+}
+
+/** The parts of a post that travel from its gallery tile into the post. */
+export type GalleryPart = 'cover' | 'title' | 'topic';
+
+/**
+ * `view-transition-name` shared by a part of a post's gallery tile and the
+ * same part at the head of the post, so the browser morphs one into the other
+ * on navigation. The value must be a CSS ident unique on the page: the prefix
+ * keeps it from starting with a digit, and anything outside the ident alphabet
+ * is folded.
+ */
+export function galleryTransitionName(part: GalleryPart, id: string): string {
+  return `${part}-${id.toLowerCase().replace(/[^a-z0-9_-]+/g, '-')}`;
+}
+
+/** The post's topic: its first tag that slugifies to something usable. */
+export function getFirstTag(post: Post): { slug: string; label: string } | undefined {
+  return post.data.tags.map((raw) => ({ slug: slugifyTag(raw), label: raw.trim() })).find((tag) => tag.slug);
+}
+
 export function getPostsByTag(posts: Post[], slug: string): Post[] {
   return sortByDateDesc(posts.filter((post) => post.data.tags.some((t) => slugifyTag(t) === slug)));
 }

@@ -3,6 +3,8 @@ title: "script setup is the cool part of Vue, but keep a plain script around"
 date: 2022-06-19
 tags: ["vue", "javascript"]
 description: "Why a single-file component sometimes still wants a plain script block beside script setup, and the reason Vue 3.3 took off that list."
+cover: "../../assets/covers/vue-script-setup-tradeoffs.webp"
+coverAlt: "Hand-drawn sketch: a Vue component file where the plain script runs once and script setup runs per instance."
 ---
 
 `<script setup>` compiles into the component's `setup()` function, so its body

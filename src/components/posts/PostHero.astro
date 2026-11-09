@@ -1,7 +1,8 @@
 ---
+import { Picture } from 'astro:assets';
 import { SITE } from '../../config/site';
 import { formatDateShort, toISODate } from '../../lib/dates';
-import { slugifyTag, tagUrl, type Post } from '../../lib/posts';
+import { galleryTransitionName, getFirstTag, tagUrl, type Post } from '../../lib/posts';
 
 interface Props {
   post: Post;
@@ -9,19 +10,51 @@ interface Props {
 }
 
 const { post, minutesRead } = Astro.props;
-const firstTag = post.data.tags.map((raw) => ({ slug: slugifyTag(raw), label: raw.trim() })).find((tag) => tag.slug);
+const firstTag = getFirstTag(post);
+// Only a post with a cover has a gallery tile to travel from, so only it names
+// its topic and title; the rest keep the plain page dissolve.
+const travel = (part: 'title' | 'topic') =>
+  post.data.cover ? `view-transition-name: ${galleryTransitionName(part, post.id)}; ` : '';
 // Only a declared description is a standfirst; the generated excerpt would
 // just repeat the first paragraph a few lines below.
 const standfirst = post.data.description?.trim();
 ---
 
 {
-  /* Matter / Substack: a small topic line, the title, an optional standfirst
-     and one quiet meta line, closed by a hairline. */
+  /* Matter / Substack: a small topic line, the title, an optional cover
+     banner, an optional standfirst and one quiet meta line, closed by a
+     hairline. Topic and title sit above the banner in the same order as the
+     gallery tile, so on the way in from /gallery all three travel together. */
 }
 <header class="hero">
-  {firstTag && <a class="topic mono-label" href={tagUrl(firstTag.slug)} data-enter data-pagefind-ignore>{firstTag.label}</a>}
-  <h1 class="title" data-enter style="--enter-stage: 1">{post.data.title}</h1>
+  {
+    firstTag && (
+      <a class="topic mono-label" href={tagUrl(firstTag.slug)} data-enter style={travel('topic')} data-pagefind-ignore>
+        {firstTag.label}
+      </a>
+    )
+  }
+  <h1 class="title" data-enter style={`${travel('title')}--enter-stage: 1`}>{post.data.title}</h1>
+  {
+    /* Shares its view-transition-name with the gallery tile, so opening a post
+       from /gallery grows the tile into this image instead of cutting to it.
+       Eager and high priority: it is the largest thing above the fold, and the
+       morph reads poorly if the image lands after the transition ends. */
+    post.data.cover && (
+      <Picture
+        class="post-cover"
+        src={post.data.cover}
+        alt={post.data.coverAlt ?? ''}
+        formats={['avif', 'webp']}
+        widths={[640, 960, 1312]}
+        sizes="(min-width: 41rem) 41rem, 100vw"
+        loading="eager"
+        fetchpriority="high"
+        style={`view-transition-name: ${galleryTransitionName('cover', post.id)}`}
+        data-pagefind-ignore
+      />
+    )
+  }
   {standfirst && <p class="standfirst" data-enter style="--enter-stage: 2">{standfirst}</p>}
   {/* Chrome, not content: kept out of search excerpts. */}
   <p class="meta" data-enter style="--enter-stage: 3" data-pagefind-ignore>
@@ -47,6 +80,36 @@ const standfirst = post.data.description?.trim();
     justify-items: start;
     margin-block: var(--space-8);
     padding-block-end: var(--space-6);
+  }
+
+  /* The <picture> wrapper is the grid item, and `justify-items: start` would
+     shrink-wrap it around an image sized at 100% of it: a circular width that
+     collapses to a few pixels while the file is still downloading. On an
+     uncached visit the browser snapshots that collapsed box, so the morph
+     shrank the tile to a dot and the cover then jumped to full size. Stretched,
+     the box has its real size before a single byte of the image arrives. */
+  .hero > :global(picture) {
+    justify-self: stretch;
+  }
+
+  /* No background on purpose: until the file loads the image must be
+     transparent, so the gallery tile's snapshot shows through it during the
+     morph instead of being covered by a blank panel. */
+  .hero :global(.post-cover) {
+    aspect-ratio: 16 / 10;
+    border: var(--border-hairline) solid var(--color-line-soft);
+    inline-size: 100%;
+    margin-block-end: var(--space-2);
+    object-fit: cover;
+    view-transition-class: cover;
+  }
+
+  /* Shrink-wrapped and tagged for the heading morph: a snapshot as wide as its
+     text scales evenly from the tile's smaller setting instead of stretching
+     the row's empty end. */
+  .topic,
+  .title {
+    view-transition-class: post-heading;
   }
 
   .topic {

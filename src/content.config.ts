@@ -8,17 +8,31 @@ const posts = defineCollection({
   // id stays a single slug segment either way, which is what the /posts/[id]
   // route and the design's /posts/[slug] contract require.
   loader: glob({ pattern: ['*.{md,mdx}', '*/index.{md,mdx}'], base: './src/content/posts' }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    tags: z.array(z.string()).default([]),
-    description: z.string().optional(),
-    draft: z.boolean().default(false),
-    /** Suppresses the table of contents on a post that would otherwise get one. */
-    toc: z.boolean().default(true),
-    /** Leads the home page. The newest featured post wins; with none, the newest post. */
-    featured: z.boolean().default(false),
-  }),
+  schema: ({ image }) =>
+    z
+      .object({
+        title: z.string(),
+        date: z.coerce.date(),
+        tags: z.array(z.string()).default([]),
+        description: z.string().optional(),
+        draft: z.boolean().default(false),
+        /** Suppresses the table of contents on a post that would otherwise get one. */
+        toc: z.boolean().default(true),
+        /** Leads the home page. The newest featured post wins; with none, the newest post. */
+        featured: z.boolean().default(false),
+        /**
+         * Image for the /gallery tile and the head of the post. A local path,
+         * so astro:assets owns it: the build emits sized AVIF/WebP and nothing
+         * is fetched from another origin.
+         */
+        cover: image().optional(),
+        /** Required with a cover: the post shows the image as content. */
+        coverAlt: z.string().trim().min(1).optional(),
+      })
+      .refine((data) => !data.cover || data.coverAlt, {
+        message: 'a post with a cover needs coverAlt',
+        path: ['coverAlt'],
+      }),
 });
 
 const projects = defineCollection({

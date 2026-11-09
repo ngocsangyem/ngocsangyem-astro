@@ -3,6 +3,8 @@ title: "JavaScript closures"
 date: 2025-07-20
 tags: ["javascript"]
 description: "The box analogy, then counters, private state, modules and memoization, plus three closure claims that do not survive checking."
+cover: "../../assets/covers/javascript-closures.webp"
+coverAlt: "Hand-drawn sketch: a counter function whose inner function reaches back into the box holding count."
 ---
 
 MDN's definition is precise and not much help the first time you read it: a

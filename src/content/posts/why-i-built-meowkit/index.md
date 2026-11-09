@@ -3,6 +3,8 @@ title: "Why I built MeowKit"
 date: 2026-10-26
 tags: ["claude-code", "ai", "tooling"]
 description: "MeowKit is a folder of rules, skills and hooks for Claude Code. This is where it came from and the problem it tries to fix."
+cover: "../../../assets/covers/why-i-built-meowkit.webp"
+coverAlt: "Hand-drawn sketch: four small kits with arrows converging into one kit."
 ---
 
 MeowKit is a set of skills for Claude Code that are made to work together. Some

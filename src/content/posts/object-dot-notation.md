@@ -3,6 +3,8 @@ title: "Object dot notation"
 date: 2022-03-12
 tags: ["javascript"]
 description: "Bundling data with the functions that act on it, and why the obvious first version breaks the moment you copy the object."
+cover: "../../assets/covers/object-dot-notation.webp"
+coverAlt: "Hand-drawn sketch: a user object with name, score and addPoint, and a copy still linked back to the original."
 ---
 
 Say an application stores each user's name and score, and the only behaviour it

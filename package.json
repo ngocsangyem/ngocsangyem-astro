@@ -36,6 +36,7 @@
     "@types/wawoff2": "^1.0.2",
     "opentype.js": "^2.0.0",
     "pagefind": "1.5.2",
+    "roughjs": "^4.6.6",
     "typescript": "5.9.3",
     "vitest": "4.1.11",
     "wawoff2": "^2.0.1"

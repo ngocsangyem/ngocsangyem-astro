@@ -3,6 +3,8 @@ title: "How async/await really works"
 date: 2022-06-03
 tags: ["javascript", "async"]
 description: "Walking a single fetch through the call stack, the browser and the microtask queue, one whiteboard frame at a time."
+cover: "../../../assets/covers/how-async-await-really-works.webp"
+coverAlt: "Hand-drawn sketch: a call stack holding await, a fetch in the web APIs box, and the microtask queue feeding back into the stack."
 ---
 
 MDN puts it plainly: `async` and `await` let you write promise-based code in a

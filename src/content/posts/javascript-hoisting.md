@@ -3,6 +3,8 @@ title: "What you need to know about hoisting"
 date: 2025-07-19
 tags: ["javascript"]
 description: "Why var hands you undefined, let throws instead, and why nothing actually moves to the top of anything."
+cover: "../../assets/covers/javascript-hoisting.webp"
+coverAlt: "Hand-drawn sketch: console.log(x) above var x = 1 printing undefined, with the upward move crossed out."
 ---
 
 Hoisting is behind a good share of the mysterious `undefined` values and the

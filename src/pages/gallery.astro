@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GalleryTile from '../components/gallery/GalleryTile.astro';
+import { getCoveredPosts, getPublishedPosts } from '../lib/posts';
+
+// A post joins the gallery by declaring a cover; there is nothing to list here.
+const posts = getCoveredPosts(await getPublishedPosts());
+const description = 'The posts, drawn by hand.';
+// The widest grid shows three across, so three tiles cover the first screen.
+const EAGER_TILES = 3;
+---
+
+<BaseLayout title="Gallery" description={description}>
+  <div class="gallery-page">
+    <header class="head">
+      <h1 class="page-title" data-enter>Gallery</h1>
+      <p class="page-tagline" data-enter style="--enter-stage: 1">{description}</p>
+    </header>
+    <ul class="grid" role="list">
+      {posts.map((post, index) => <li><GalleryTile post={post} eager={index < EAGER_TILES} /></li>)}
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    margin-block: var(--space-8) var(--space-7);
+  }
+
+  .grid {
+    display: grid;
+    gap: var(--space-8) var(--space-6);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    margin: 0;
+  }
+</style>

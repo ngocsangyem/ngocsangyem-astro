@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   getAllTags,
+  getCoveredPosts,
   getDescription,
   getFeaturedPost,
+  getFirstTag,
+  galleryTransitionName,
   getTopTags,
   getPostsByTag,
   getRelatedPosts,
@@ -25,6 +28,7 @@ interface Fixture {
   draft?: boolean;
   featured?: boolean;
   body?: string;
+  cover?: string;
 }
 
 function post({
@@ -36,12 +40,13 @@ function post({
   draft = false,
   featured = false,
   body = '',
+  cover,
 }: Fixture) {
   return {
     id,
     body,
     collection: 'posts',
-    data: { title, date: new Date(date), tags, description, draft, featured },
+    data: { title, date: new Date(date), tags, description, draft, featured, cover },
   } as unknown as Post;
 }
 
@@ -359,5 +364,44 @@ describe('getTopTags', () => {
 
   it('returns every tag when there are fewer than n', () => {
     expect(getTopTags(posts, 10)).toHaveLength(3);
+  });
+});
+
+describe('getCoveredPosts', () => {
+  it('keeps only posts with a cover, newest first', () => {
+    const posts = [
+      post({ id: 'old', date: '2025-01-01', cover: 'old.webp' }),
+      post({ id: 'bare', date: '2026-02-01' }),
+      post({ id: 'new', date: '2026-01-01', cover: 'new.webp' }),
+    ];
+    expect(getCoveredPosts(posts).map((p) => p.id)).toEqual(['new', 'old']);
+  });
+});
+
+describe('galleryTransitionName', () => {
+  it('is a valid ident even when the id starts with a digit', () => {
+    expect(galleryTransitionName('cover', '2024-recap')).toBe('cover-2024-recap');
+  });
+
+  it('folds characters a CSS ident cannot carry', () => {
+    expect(galleryTransitionName('title', 'Vue 3.3 notes')).toBe('title-vue-3-3-notes');
+  });
+
+  it('gives each part of one post its own name', () => {
+    const names = (['cover', 'title', 'topic'] as const).map((part) => galleryTransitionName(part, 'a'));
+    expect(new Set(names).size).toBe(3);
+  });
+});
+
+describe('getFirstTag', () => {
+  it('skips a tag with nothing usable in it and keeps the label as written', () => {
+    expect(getFirstTag(post({ id: 'a', date: '2026-01-01', tags: ['!!!', ' Vue '] }))).toEqual({
+      slug: 'vue',
+      label: 'Vue',
+    });
+  });
+
+  it('is undefined for an untagged post', () => {
+    expect(getFirstTag(post({ id: 'a', date: '2026-01-01' }))).toBeUndefined();
   });
 });

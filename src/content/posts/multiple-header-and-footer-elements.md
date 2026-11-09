@@ -3,6 +3,8 @@ title: "Can a web page contain multiple header and footer elements?"
 date: 2022-03-08
 tags: ["html", "w3c", "semantics"]
 description: "Yes to both. Header and footer are scoped to their nearest sectioning ancestor, and that scoping is what decides how many a page should hold."
+cover: "../../assets/covers/multiple-header-and-footer-elements.webp"
+coverAlt: "Hand-drawn sketch: a page header above two articles, each with its own header and footer."
 ---
 
 Yes to both, and a page carrying several of each is ordinary markup. `<footer>`

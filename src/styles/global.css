@@ -107,6 +107,70 @@ html {
   view-transition-name: site-header;
 }
 
+/* Gallery tile <-> post cover. Both carry `view-transition-class: cover` and
+   the same per-post name, so the one image the reader clicked grows from its
+   tile into the head of the post (and shrinks back on Back). This is the one
+   sanctioned scale in the site's motion: it is the navigation itself, not a
+   hover or a reveal. Swift easing, so the growth is visible at both ends
+   rather than spent in the first frames. */
+::view-transition-group(.cover),
+::view-transition-group(.post-heading) {
+  animation-duration: calc(var(--motion-slow) + var(--motion-fast));
+  animation-timing-function: var(--ease-swift);
+}
+
+/* The topic and title ride along with the drawing, growing from the tile's
+   1rem setting into the post's. Text wraps differently at the two widths, so
+   the two snapshots crossfade rather than one stretching into the other: each
+   is sized by the box's height and keeps its own proportions, anchored at the
+   start edge where both headings begin. */
+::view-transition-old(.post-heading),
+::view-transition-new(.post-heading) {
+  animation-duration: calc(var(--motion-slow) + var(--motion-fast));
+  block-size: 100%;
+  inline-size: auto;
+}
+
+/* No crossfade inside the morph. On a first visit the post's cover is a larger
+   file than the tile's and is usually still downloading when the browser
+   snapshots the new page; a crossfade would fade the tile out over an empty
+   box, so the drawing vanished mid-growth. Instead the tile's snapshot, which
+   is always decoded, stays fully opaque underneath, and the incoming cover
+   (transparent until it loads, see .post-cover) paints over it the moment it
+   arrives. Both are the same drawing, so the swap cannot be seen. `none` also
+   drops the UA's plus-lighter blend, which would brighten two opaque layers. */
+::view-transition-old(.cover),
+::view-transition-new(.cover) {
+  animation: none;
+  /* Both snapshots fill the morphing box; an upload of another shape is
+     already cropped to 16:10 on both pages, so nothing distorts. */
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* Every other tile on the gallery, and its topic and title, has a name too,
+   with no partner on the post page. They leave exactly as the rest of the
+   page does. */
+::view-transition-old(.cover):only-child,
+::view-transition-old(.post-heading):only-child {
+  animation: fade-out var(--motion-base) var(--ease-out) both;
+}
+
+/* A cover arriving from a page without its tile (the post list, a tag page)
+   has nothing to grow from; it fades in rather than popping above the
+   outgoing page. */
+::view-transition-new(.cover):only-child,
+::view-transition-new(.post-heading):only-child {
+  animation: fade-enter var(--motion-base) var(--ease-out) both;
+}
+
+/* On a post with a cover, the article waits for the outgoing page to clear,
+   then comes in gradually under the growing image. Read on the incoming
+   document, so only navigations into such a post are affected. */
+:root:has(.post-cover)::view-transition-new(root) {
+  animation: fade-enter var(--motion-slow) var(--ease-out) var(--motion-base) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   @view-transition {
     navigation: none;
