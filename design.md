@@ -16,7 +16,7 @@ progressive enhancement.
 
 ## System
 - Genre · editorial, set in a TUI register.
-- Macrostructure · Long Document; home = index-first (greeting + recent posts), listing pages = dense date · title · reading-time rows.
+- Macrostructure · Long Document; home = index-first (terminal intro + recent posts), listing pages = dense date · title · reading-time rows.
 - Theme · claude.dev, measured 2026-10-10 (light and dark).
 - Axes · cream page (#faf9f5) / near-black dark (#141413) / one orange accent spent sparingly / ANSI status hues for content semantics.
 - Type · **Inter** for titles, prose and values; **JetBrains Mono** for every label, nav item, hotkey, date, code and terminal glyph. Uppercase is mono only; page titles are lowercase. Self-hosted woff2, latin subset, plus a 4KB JetBrains Mono symbol subset (see Tokens).
@@ -28,7 +28,7 @@ progressive enhancement.
 - Collections: `posts`, `projects` (data collection), plus an `about` page.
 - URLs · `/posts/[slug]`, `/posts`, `/projects`, `/portfolio`, `/about`, `/tags`, `/tags/[tag]`.
 - Format · MDX for all content (plain Markdown still works).
-- Home · one centred column: greeting, profile links, a featured post, recent posts with LOAD MORE, link to `/posts` for the rest. H1 stays "Hello World!". No topic tabs — home is the author's introduction and deliberately does not copy claude.dev's index layout; tabs belong to the archive.
+- Home · one centred column: short intro played in a TerminalDemo (full story on /about), profile links, a featured post, recent posts with LOAD MORE, link to `/posts` for the rest. H1 stays "Hello World!". No topic tabs — home is the author's introduction and deliberately does not copy claude.dev's index layout; tabs belong to the archive.
 - `/posts` · rows of mono date · sans title · mono reading time, 1px separators, no thumbnails, no summaries, grouped by year: a large outlined numeral (JetBrains Mono, 1px `--color-ink-3` stroke) with `N posts` in its own sticky column beside the rows from 48rem, above them below that. It never sits under text. Topic tabs swap the list with no sliding indicator.
 - `/tags` · one centred column of ruled rows, most-used first: `#name` large, `N posts` right, newest post title beneath.
 - Post page · one centred reading column, deliberately quieter than claude.dev (2026-10-11): topic line, H1, standfirst, one meta line (author · date · N min read). A small contents list sits in the right margin from 80rem, marked by a left rule on the section being read; below 80rem it is a disclosure under the hero. Tags and share links are one line each after the article. No side rail, no progress meter. Every post is also served as raw source at `/posts/<id>.md` for Copy markdown — MDX imports and components stay as written, since it is the source, not a rendering.
@@ -150,7 +150,7 @@ Fonts: the Fonts API owns `--font-inter` (400/500/600) and `--font-jetbrains-mon
 - **D7** Magic-link chips become plain links, with ↗ on external ones.
 
 ## Notes
-- Never ship sample or lorem copy; existing copy (greeting, bio, home H1) is kept verbatim.
+- Never ship sample or lorem copy; existing copy (bio, home H1) is kept verbatim.
 - **The page tone belongs on `html`, never on `body`**, so a short page and a full-height one are the same colour to the bottom of the viewport.
 - Anthropic Sans / Mono are proprietary and are not used; Inter and JetBrains Mono stand in.
 

@@ -1,3 +1,5 @@
+import type { Turn } from '../lib/terminal-demo';
+
 export interface NavLink {
   label: string;
   href: string;
@@ -35,14 +37,19 @@ export const SITE = {
   /** Rendered in the site footer. */
   email: 'nnsang24@gmail.com',
   /**
-   * Home greeting, first person, one or two lines. The home page omits the
-   * block entirely while this is empty; the design forbids stand-in copy.
+   * Home introduction, played as a short terminal session. Kept brief: the
+   * full story lives on /about. The home page omits the block while null.
    */
-  greeting:
-    "Hey! I’m a software engineer who enjoys turning ideas into thoughtful digital experiences. " +
-    'I care about writing good code, building things that last, and constantly finding better ways to solve problems.  ' +
-    'This blog is where I document what I learn along the way, from frontend engineering and code quality to tools, workflows, and the craft of building software. ' +
-    'Think of it as a collection of things I’ve learned, built, broken, and figured out along the way.',
+  greeting: {
+    prompt: 'introduce yourself, briefly',
+    verb: 'Thinking',
+    seconds: 2,
+    output: [
+      'Hey! I’m Sang, a software engineer who turns ideas into thoughtful digital experiences.',
+      'This blog is my notebook: frontend, code quality, tools, and workflows.',
+      'Things I’ve learned, built, broken, and figured out. More on /about.',
+    ],
+  } as Turn | null,
   /** Author's bio for /about, one paragraph per entry. */
   bio: [
     "I’m a software engineer who enjoys turning ideas into thoughtful digital experiences. " +

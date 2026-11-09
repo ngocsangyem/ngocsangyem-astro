@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import FeaturedPost from "../components/posts/FeaturedPost.astro";
 import LoadMore from "../components/posts/LoadMore.astro";
 import PostList from "../components/posts/PostList.astro";
+import TerminalDemo from "../components/mdx/TerminalDemo.astro";
 import { SITE } from "../config/site";
 import { getFeaturedPost, getPublishedPosts, getReadingTimes } from "../lib/posts";
 
@@ -26,9 +27,9 @@ const heldBack = rest.slice(PAGE_SIZE);
       <p class="page-tagline" data-enter style="--enter-stage: 1">{SITE.description}</p>
       {
         SITE.greeting && (
-          <p class="dek" data-enter style="--enter-stage: 2">
-            {SITE.greeting}
-          </p>
+          <div class="intro" data-enter style="--enter-stage: 2">
+            <TerminalDemo label={SITE.greeting.output?.join(" ") ?? SITE.greeting.prompt} turns={[SITE.greeting]} />
+          </div>
         )
       }
       <ul class="profile" role="list" aria-label="Elsewhere" data-pagefind-ignore>
@@ -72,11 +73,13 @@ const heldBack = rest.slice(PAGE_SIZE);
     text-transform: none;
   }
 
-  .dek {
-    color: var(--color-ink-2);
-    font-size: var(--text-body);
-    line-height: var(--leading-body);
+  .intro {
     margin-block-start: var(--space-5);
+  }
+
+  /* The demo's own top margin is sized for prose; the wrapper spaces it here. */
+  .intro :global(.terminal-demo) {
+    margin: 0;
   }
 
   .profile {
