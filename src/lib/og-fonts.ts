@@ -92,9 +92,14 @@ async function load(): Promise<CardFonts> {
     FAMILIES.flatMap((cssVariable) => {
       const faces = fontData[cssVariable];
       if (!faces?.length) {
+        // The family is declared, so an empty list means the provider lookup
+        // failed at startup. unifont logs that and carries on with no faces
+        // rather than throwing, so the real cause is only in the server log.
         throw new Error(
           `og cards: no faces for ${cssVariable}. It is declared by the \`fonts\` ` +
-            `config in astro.config.mjs, so a card cannot be set without it.`,
+            `config in astro.config.mjs, so the provider failed to resolve it at ` +
+            `startup: look for "Could not resolve font face" in the server log. ` +
+            `A font cache Astro cannot write (.astro/fonts in dev) causes this.`,
         );
       }
       return faces.map(async (face) => ({
