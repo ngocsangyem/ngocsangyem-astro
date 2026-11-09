@@ -21,7 +21,7 @@ const posts = defineCollection({
         /** Leads the home page. The newest featured post wins; with none, the newest post. */
         featured: z.boolean().default(false),
         /**
-         * Image for the /gallery tile and the head of the post. A local path,
+         * Image at the head of the post. A local path,
          * so astro:assets owns it: the build emits sized AVIF/WebP and nothing
          * is fetched from another origin.
          */

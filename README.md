@@ -17,8 +17,6 @@ is the emitted source of truth for its token values.
 
 - Posts at `/posts`, grouped by year, with tag pages at `/tags/[tag]` and a feed
   at `/rss.xml`.
-- A gallery at `/gallery`: every post with a `cover`, as a hand-drawn tile that
-  grows into the post when opened (a browser-native view transition, no script).
 - A projects grid at `/projects`, driven by `src/data/projects.json`.
 - Full-text search over the built site, via Pagefind.
 - Light and dark themes, taken from the OS and overridable, applied before first
@@ -85,9 +83,8 @@ Only `title` and `date` are required. Notes on the rest:
 - `draft: true` keeps a post out of every list, tag page, the feed, the sitemap
   and the search index. There is no scheduled publishing: a future `date`
   publishes immediately.
-- `cover` and `coverAlt` put the post in `/gallery` and at the head of the
-  article. Drop the image in `src/assets/covers/` (any local image; drawn at
-  16:10 it is not cropped) and point at it relative to the post, e.g.
+- `cover` and `coverAlt` put an image at the head of the article, at its own
+  shape. Drop the image in `src/assets/covers/` (any local image) and point at it relative to the post, e.g.
   `cover: "../../assets/covers/my-post.webp"`. The build serves sized AVIF/WebP.
   The hand-drawn covers come from `node scripts/gallery-covers/draw-gallery-covers.mjs`;
   add a scene to `cover-scenes.mjs` to draw a new one.
