@@ -785,3 +785,4 @@
 {"ts":"2026-11-09T17:13:17.791Z","hook":"usage-quota-cache-refresh","event":"PostToolUse","tool":"Bash","target":"","note":"throttled","dur":0,"status":"skip","exit":0,"error":""}
 {"ts":"2026-11-09T17:13:22.013Z","hook":"usage-quota-cache-refresh","event":"PostToolUse","tool":"mcp__ccd_turn__wrap_up","target":"","note":"throttled","dur":0,"status":"skip","exit":0,"error":""}
 {"ts":"2026-11-09T17:13:36.748Z","hook":"usage-quota-cache-refresh","event":"Stop","tool":"","target":"","note":"throttled","dur":0,"status":"skip","exit":0,"error":""}
+{"ts":"2026-11-20T06:53:26.751Z","hook":"session-init","event":"SessionStart","tool":"","target":"","note":"resume","dur":173,"status":"ok","exit":0,"error":""}

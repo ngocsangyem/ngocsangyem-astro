@@ -34,6 +34,17 @@ export const SCENES = {
     c.text(600, 1110, 'one kit', { size: 64, anchor: 'middle' });
   },
 
+  // One source folder fanned out to seven runtimes.
+  'meowkit-3': (c) => {
+    c.rect(560, 150, 480, 200, accentFill);
+    c.text(800, 270, '.claude/', { size: 64, anchor: 'middle' });
+    for (let i = 0; i < 7; i++) {
+      const x = 95 + i * 205;
+      c.arrow(800, 370, x + 80, 640, mutedStroke);
+      c.rect(x, 660, 160, 160, i < 3 ? {} : mutedStroke);
+    }
+  },
+
   // Call stack, web API and microtask queue, with the loop between them.
   'how-async-await-really-works': (c) => {
     c.rect(160, 160, 300, 640);
